@@ -1,0 +1,5 @@
+COM3505 course notes: preliminaries
+===
+
+The week 0 notes are here:
+[gitlab.com/hamishcunningham/unphone...Week00.mkd](https://gitlab.com/hamishcunningham/unphone/blob/master/doc/com3505/Week00.mkd).
