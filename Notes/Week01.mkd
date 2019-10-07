@@ -46,11 +46,13 @@ this is optional.
   week 6 but then you need to hand back the boxed kit _in good condition!_.
   We'll give you an [unPhone](https://unphone.net/the-unphone/) and other
   project hardware (to keep!) in week 6.
-- Always use the Linux option when booting machines in the electronics lab.
+- Always use the Linux option [when booting
+  machines](https://www.sheffield.ac.uk/cics/desktop/bootingltsp) in the
+  electronics lab.
 - When you've got your environment set up properly, `ssh -AX lincomp` will log
   you into a compile server; and `cd ~/unphone; make arduino-ide` will run the
-  IDE for you. (Problem? Email me your account name; perhaps you weren't
-  registered when we set up access to the servers.)
+  IDE for you. (Problem? See
+  [troubleshooting](Week01/Setup.mkd#troubleshooting-ssh-access).)
 - Work through the four assignments above.
 - Finished? Learn a little C! See the resources listed in the lecture slides
   for help.

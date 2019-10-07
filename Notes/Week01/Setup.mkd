@@ -26,7 +26,9 @@ IDF or the latest version of the Arduino IDE.)
 
 ### LTSP Linux in the labs with Arduino IDE and IDF SDK on server VMs
 
-- boot the PC (e.g. in DIA 2.02) into "Diskless Linux" (LTSP)
+- boot the PC (e.g. in DIA 2.02) into "Diskless Linux" (LTSP); [more details
+  and available
+  locations](https://www.sheffield.ac.uk/cics/desktop/bootingltsp)
 - log in
 - click on the "Login to U drive and Resources" icon on the desktop
 - open a terminal (using Cntrl+ALT+T for example)
@@ -36,7 +38,8 @@ IDF or the latest version of the Arduino IDE.)
     - the **first time you log in** you then need to run
       `unphone-sheffield.sh` to set up your compiler and IDE (using a gitlab
       repository called
-      [hamishcunningham/unphone](https://gitlab.com/hamishcunningham/unphone) )
+      [hamishcunningham/unphone](https://gitlab.com/hamishcunningham/unphone)
+      )
 - then do your compiles on the VM (either via `make` and IDF, or the Arduino
   IDE and `Sketch>Export compiled binary`) to .bin; for example in the IDE:
     - `cd unphone; make arduino-ide`
@@ -57,10 +60,6 @@ IDF or the latest version of the Arduino IDE.)
 ~/unphone/bin/listen.sh         # listens for serial line output
 ```
 
-<!-- TODO
-- select the port (probably `/dev/ttyUSB0` or `/dev/ttyUSB1` on Ubuntu)
--->
-
 **Notes:**
 - there's only space for one or two IDE builds and one or two IDF builds in
   your LTSP home space: sometimes you may need delete previous builds
@@ -68,6 +67,22 @@ IDF or the latest version of the Arduino IDE.)
   the Arduino IDE (version 1.9), and this will work both on the compute VMs
   (lincomp01..10) and on the LTSP desktops; in the latter case, it will be
   **slow**, but perhaps useful for serial monitoring!
+
+<!-- TODO
+- select the port (probably `/dev/ttyUSB0` or `/dev/ttyUSB1` on Ubuntu)
+-->
+
+
+#### Troubleshooting ssh access
+
+- If you're logged in to a university machine, then ssh will use the ID you
+  have authenticated with, e.g. ac1hc. If you're on your own machine, then you
+  probably don't use that ID, and therefore need to tell ssh which to use. You
+  can do this by prefixing `my-id@` to the server name you're trying to
+  access, e.g. `ssh -AX ac1hc@lincomp`. Also note that you need to be inside
+  the Uni firewall for this to work, so from home use the VPN.
+- It is possible that you're not on the `lincomp` access control list; email
+  your ID to Hamish and he'll check...
 
 
 ### Working with your Git repository
