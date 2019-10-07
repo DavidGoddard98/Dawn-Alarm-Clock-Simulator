@@ -18,8 +18,6 @@ Our objectives this week are to:
   hardware culture
 - start exploring the hardware space of IoT devices
 
-TODO ??? - perform a first compile/burn using the ESP IDF framework
-
 
 # Assignments
 
@@ -50,7 +48,8 @@ TODO ??? - perform a first compile/burn using the ESP IDF framework
       alternatives
     - if you're feeling brave, try and work out the problem with the results
       returned by `getEfuseMac` -- how would you fix that?
-- **Ex02**: blink the external LED; read from the switch
+- **Ex02**: using the breadboard you constructed above, blink the external
+  LED; read from the switch
     - note: you'll need the `INPUT_PULLUP` macro for the switch code
 - check in and push your code
     - `git add [any files you added]`
