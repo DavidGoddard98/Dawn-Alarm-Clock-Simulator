@@ -7,6 +7,8 @@ Summary:
 - [clone your git repository locally](#working-with-your-git-repository)
 - [install on your own
   machine](#installing-the-development-tools-on-other-machines) (optional)
+- [using VSCode as an editor](#using-vscode)
+- [FAQ](#faq)
 
 In the lab classes we use Linux diskless LTSP machines to burn firmware to IoT
 devices, but to speed up the process we also use VM (virtual machine) Ubuntu
@@ -61,6 +63,9 @@ IDF or the latest version of the Arduino IDE.)
 ```
 
 **Notes:**
+- if you see an error like `esptool: error: argument --port/-p: expected one
+  argument` then you're either still on the compile server (which will show as
+  `lincomp` in your command prompt) or haven't plugged in your ESP32
 - there's only space for one or two IDE builds and one or two IDF builds in
   your LTSP home space: sometimes you may need delete previous builds
 - `make arduino-ide` will, when run from inside the `unphone` tree, fire up
@@ -144,7 +149,7 @@ here -- https://github.com/espressif/arduino-esp32#installation-instructions
 -- and for the IDF here:
 https://docs.espressif.com/projects/esp-idf/en/latest/get-started/
 
-To use the `unphone` setup method:
+To use the `unphone` setup method on Linux:
 
 - to install on your own machine follow the instructions here:
   https://gitlab.com/hamishcunningham/unphone#installation
@@ -159,6 +164,10 @@ To use the `unphone` setup method:
       gitlab repo) so uncheck `File > Preferences > Check` for updates on
       startup
 
+Note that the "setup" target in the unphone Makefile assumes you're on Linux;
+you could tinker with it to do a Mac or Windows download instead, or just
+follow the instructions on the arduino.cc site to install the latest beta for
+Mac or Windows.
 
 <!-- OLD VERSION
 - copy or link the libraries and support files for ESP32 on the Arduino IDE
@@ -227,3 +236,82 @@ To use the `unphone` setup method:
           just created:
             - `cd; ln -s u-drive/Arduino`
 -->
+
+
+### Using VSCode
+
+Simon F contributed this recipe for using VSCode as an editor. (Thanks Simon!)
+Some more tweaks may need to be done for full IntelliSense compatibility, so
+you may need to hide squigglies until we figure out the additional paths you
+need to add. You can still use these instructions to do things like uploading
+your code to the ESP32, though.
+
+First install VSCode itself; on Ubuntu you can do that like this on recent
+versions:
+
+```bash
+snap install code --classic
+```
+
+For older versions:
+
+```bash
+sudo apt install software-properties-common apt-transport-https wget
+wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+sudo apt-get update
+sudo apt-get install code
+```
+
+You can then run the beast from the command line with `code`, or from the
+launcher by `vs...`.
+
+Now install the C++ and Arduino extensions:
+
+- Follow the installation instructions at [this
+  page](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.vscode-arduino)
+  to install the Arduino extension and at [this
+  page](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+  to install the C/C++ extension.
+- Add the following keys and values to your settings.json, usually stored at
+  ~/.config/Code/User/settings.json on Linux systems:
+
+```json
+  "arduino.path": "/home/YOURUSERNAME/unphone/sdks/arduino-PR-beta1.9-BUILD-115",
+  "C_Cpp.default.includePath": ["/home/YOURUSERNAME/unphone/sdks/arduino-PR-beta1.9-BUILD-115/libraries/"]
+```
+
+Your paths might differ from what I've got here. These paths should point to:
+
+- your Arduino IDE installation under your `unphone` directory, which should
+  be `unphone/sdks/arduino-PR-beta1.9-BUILD-115`
+- the `libraries` directory under that one.
+
+Make sure your JSON is still valid, and save it. You might also need to close
+and reopen Visual Studio Code for your include path to be recognised.
+
+Doing all of the above will give you access to many of the Arduino IDE's
+functions from within the Command Palette (usualy Ctrl+Shift+P) within VSCode
+under the same names.
+
+
+### FAQ
+
+- if you can't log in to lincomp send me your uni ID, you may not be
+  registered for access
+- if you see an error like `esptool: error: argument --port/-p: expected one
+  argument` then you're probably either still on the compile server (which
+  will show as `lincomp` in your command prompt) or haven't plugged in your
+  ESP32; occasionally it may also be a connection problem or USB fault
+- the SDK setup process mostly assumes you're on 64 bit Linux; to work on Mac
+  or Windows or 32 bit you'll need to follow the relevant platform install
+  docs for the Arduino IDE and for ESP IDF (messages like "can't execute java"
+  when trying to start the Arduino IDE can indicate that you've done a Linux
+  install on a Mac, for example, or that you're using a 32 bit VM to run
+  Linux)
+- if you're running on your own machine it will likely be fast enough to do
+  your compiles locally and not bother with `lincomp`; if you do want to use
+  lincomp note that you'll need to manually copy the `.bin` files back to your
+  local machine for burning
+- if you're doing your own install on Ubuntu and getting permissions errors on
+  `/dev/ttyUSB0` check that you've added yourself to the `dialout` group

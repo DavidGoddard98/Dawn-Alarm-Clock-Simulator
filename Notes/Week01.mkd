@@ -31,10 +31,10 @@ this is optional.
 - [Get into a pair](Week01/Pairs.mkd) for the lab work and practical
   assessments. (If not, just choose a workstation/partner at random in the
   lab.)
-- Work through [COM3505 DIA 2.02 Introduction](https://goo.gl/GkGvJT) to
-  practice breadboarding, soldering and using a multimeter: (**please pay
-  particular attention to the safety protocols for the electronics lab
-  described there**).
+- **Hardware 1**: work through [COM3505 DIA 2.02
+  Introduction](https://goo.gl/GkGvJT) to practice breadboarding, soldering
+  and using a multimeter: (**please pay particular attention to the safety
+  protocols for the electronics lab described there**).
 - [Set up your programming environment](Week01/Setup.mkd) and try burning the
   "Blink" sketch to your ESP32 (from `File>Examples>01.Basics>Blink` in the
   IDE).

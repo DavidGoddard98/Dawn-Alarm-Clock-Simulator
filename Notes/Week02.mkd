@@ -19,19 +19,13 @@ Our objectives this week are to:
 - start exploring the hardware space of IoT devices
 
 
-# Assignments
+# Assignments, Exercises 1 & 2 (Ex01, Ex02)
 
+**Notes**:
 - pull any new stuff into your git tree:
     - `cd com3505-2019-student; git pull`
     - do this (at least!) every week of the course!
-- fit your ESP32 to the breadboard and add an LED and a switch to create a
-  sensor/actuator circuit
-    - instructions and diagrams [are here](Week02/)
-
-
-## Exercises 1 & 2 (Ex01, Ex02)
-
-- hints
+- coding hints:
     - you will need to use the Arduino library functions `Serial.begin` and
       `pinMode` (in `setup`), and `Serial.println` and `digitalWrite` (in
       `loop`); the ESP32 library function `getEfuseMac` will give you access
@@ -39,6 +33,11 @@ Our objectives this week are to:
     - the Arduino IDE has lots of example sketches built in... (see
       `File>Examples`; the `ESP32>ChipID` for an example of using `Serial`,
       and `Tools>Serial Monitor` to see the results)
+
+**Exercises**:
+- **hardware 2**: fit your ESP32 to the breadboard and add an LED and a switch
+  to create a sensor/actuator circuit
+    - instructions and diagrams [are here](Week02/)
 - **Ex01**: update the MyThing code to:
     - blink the built-in LED
     - print the device MAC address on the serial line (and monitor it in the

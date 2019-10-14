@@ -1,0 +1,37 @@
+Compiling and burning firmware with ESP IDF
+===
+
+As well as the Arduino compatibility layer we've been using to program in the
+Arduino IDE, Espressif also develop a native development kit called [ESP
+IDF](https://docs.espressif.com/projects/esp-idf/en/latest/). The IDF SDK uses
+a Makefile-based build system which means that compiling and burning can be
+faster and fuller-featured than the equivalent Arduino IDE versions.
+
+To try an example IDF build, first log into `lincomp` (the LTSP machines are
+glitchy for this), then do a `make` in the `NineLEDsIDF` directory:
+
+```bash
+ssh -AX lincomp
+cd com3505-2019-student/NineLEDsIDF
+make app
+```
+
+The first time through this will take several minutes, but subsequent builds
+will only compile what has changed from last time.
+
+(If you're working on your own machine, you can just do `make` and the SDK
+will automatically flash your board after the compile, and monitor the serial
+line. You can trigger a rebuild/reflash from the monitor with Cntrl+T Cntrl+F,
+and various other goodies.)
+
+On `lincomp`, if you `ls build` you will see that a `NineLEDsIDF.bin` binary
+has been created. Go back to the LTSP machine and burn it to the board in the
+normal way:
+
+```bash
+~/unphone/bin/burn.sh build/NineLEDsIDF.bin; ~/unphone/bin/listen.sh
+```
+
+If you've [built your breadboard](9leds.mkd) correctly you should see them
+light up in sequence. To have a look at the code [see
+main/main.cpp](../../NineLEDsIDF/main/main.cpp).
