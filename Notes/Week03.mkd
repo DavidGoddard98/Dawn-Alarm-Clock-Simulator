@@ -16,12 +16,18 @@ and figure out how to configure connections for devices without UIs.
 Our objectives this week are to:
 
 - understand more about the ESP32 and the Arduino IDE
+- deepen our understanding of the hardware space around the IoT (SoCs and
+  MCUs, devices vs. gateways, ...)
+- learn about the firmware/software languages used for the IoT
+
+Practical work will include:
+
 - a third outing for the breadboard, working towards a more permanent
   prototype on matrixboard
 - cover some useful programming idioms, and take a peek at ESP IDF:
     - experiment with time slicing in the main loop
     - add debug code to sketches
-    - a first IDF compile
+    - [a first IDF compile](Week03/esp-idf.mkd)
 - start working with the ESP's WiFi stack
 
 (There are a lot of exercises this week; you'll benefit from completing all of

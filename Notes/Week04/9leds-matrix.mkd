@@ -1,0 +1,69 @@
+Moving 9 LEDs to matrixboard
+===
+
+Last week we built [a 9 LED breadboard](../Week03/9leds.mkd). This week the
+task is to transfer the circuit to a piece of matrixboard and solder it up
+into a more permanent form. (Breadboards are great for short-lived
+experiments, but the projects we'll build in the second half of term are
+intended to be more robust, so we need to practice our soldering and circuitry
+skills a little more.)
+
+You'll need your breadboard, and some more parts from your kit:
+
+![9 LEDs matrixboard 01](9leds-mb-01-500.jpg)
+
+![9 LEDs matrixboard 02](9leds-mb-02-500.jpg)
+
+![9 LEDs matrixboard 03](9leds-mb-03-500.jpg)
+
+Try folding the resistors in a group:
+
+![9 LEDs matrixboard 04](9leds-mb-04-500.jpg)
+
+![9 LEDs matrixboard 05](9leds-mb-05-500.jpg)
+
+Place the resistors and LEDs first, ready for soldering:
+
+![9 LEDs matrixboard 06](9leds-mb-06-500.jpg)
+
+![9 LEDs matrixboard 07](9leds-mb-07-500.jpg)
+
+Soldering this circuit is fiddly; remember to make sure both surfaces are hot
+before applying the solder:
+
+![9 LEDs matrixboard 08](9leds-mb-08-500.jpg)
+
+Use bent wire from some of the components to form a ground rail:
+
+![9 LEDs matrixboard 09](9leds-mb-09-500.jpg)
+
+![9 LEDs matrixboard 10](9leds-mb-10-500.jpg)
+
+When you've done the LEDs and resistors, add a ground jumper, and then move
+the other jumpers (connecting the GPIOs to the LEDs' anodes) over:
+
+![9 LEDs matrixboard 13](9leds-mb-13-500.jpg)
+
+Fold the wires together to make connections between jumpers, LEDs and
+resistors, and solder them:
+
+![9 LEDs matrixboard 14](9leds-mb-14-500.jpg)
+
+![9 LEDs matrixboard 15](9leds-mb-15-500.jpg)
+
+![9 LEDs matrixboard 16](9leds-mb-16-500.jpg)
+
+Having an extra pair of hands helps!
+
+![9 LEDs matrixboard 17](9leds-mb-17-500.jpg)
+
+The final board looks like this:
+
+![9 LEDs matrixboard 18](9leds-mb-18-500.jpg)
+
+![9 LEDs matrixboard 20](9leds-mb-20-500.jpg)
+
+![9 LEDs matrixboard 22](9leds-mb-22-500.jpg)
+
+Now burn the firmware in the [same way as last week](../Week03/esp-idf.mkd)
+(e.g. using the [NineLEDsIDF](../../NineLEDsIDF/) code).

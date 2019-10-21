@@ -62,6 +62,9 @@ IDF or the latest version of the Arduino IDE.)
 ~/unphone/bin/listen.sh         # listens for serial line output
 ```
 
+(The `listen.sh` script uses `screen` to capture the serial line output. To
+quit, try `Cntrl+A` and then `\`, and answer `y`.)
+
 **Notes:**
 - if you see an error like `esptool: error: argument --port/-p: expected one
   argument` then you're either still on the compile server (which will show as
@@ -315,3 +318,7 @@ under the same names.
   local machine for burning
 - if you're doing your own install on Ubuntu and getting permissions errors on
   `/dev/ttyUSB0` check that you've added yourself to the `dialout` group
+- what flavour of C++ do these tools use? depending on what versions of ESP
+  IDF we're using, either C++14 or C++17; see e.g.
+  [here](https://www.esp32.com/viewtopic.php?f=10&t=7400&p=31257#p41667) for
+  details
