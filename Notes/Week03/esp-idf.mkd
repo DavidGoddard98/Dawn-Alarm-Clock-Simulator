@@ -46,7 +46,8 @@ main/main.cpp](../../NineLEDsIDF/main/main.cpp).
   that yourself, e.g. `export IDF_PATH=~/unphone/sdks/esp-idf`; `export
   PATH=$PATH:$HOME/unphone/sdks/arduino-esp32/tools/xtensa-esp32-elf/bin`
 - we've seen a [bootloop](#esp32-bootloops/) happening on the NineLEDs
-  example; if you hit one, try erasing flash and re-burning
+  example; if you hit one, try erasing flash and re-burning:
+  `~/unphone/bin/erase.sh; ...`
 
 
 ## ESP32 Bootloops
@@ -78,8 +79,8 @@ think I might see a solution. Notes:
 - in testing, I could replicate the crash on your board for a while, but after
   reflashing several times (inc. from IDF, not burn.sh), I couldn't trigger it
   again
-- I think that an `erase_flash` argument to esptool.py might fix the problem,
-  e.g. (**untested!**):
+- I think that an `erase_flash` argument to esptool.py might fix the problem;
+  this script has been added as `unphone/bin/erase.sh`:
 
 ```bash
 #!/bin/bash
@@ -102,12 +103,10 @@ ARD_HW_DIR=$SDKS_DIR/Arduino/hardware/espressif
 [ -d $OPT_SDKS ] || OPT_SDKS=/resources/hc/unphone/sdks
 [ -d $OPT_SDKS ] || OPT_SDKS=~/unphone/sdks
 
-# burn a .bin
-BINARY=$1
+# erase
 python3 \
         $OPT_SDKS/esp-idf/components/esptool_py/esptool/esptool.py \
-        --chip esp32 --port $ESPPORT erase_flash \
-        ${BINARY}
+        --chip esp32 --port $ESPPORT erase_flash
 ```
 
 Other things to try:
