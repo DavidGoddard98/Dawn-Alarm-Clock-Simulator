@@ -12,7 +12,9 @@ pair you need to:
 - put your (`sheffield.ac.uk`) email and that of your partner in the file
 - commit and push the `pair.txt` file
 
-So, for example, I might create a file with contents like this:
+The team member whose repository will be used for assessed work **should be
+listed first**. So, for example, I might create a file with contents like
+this:
 
 ```bash
 h.cunningham@sheffield.ac.uk

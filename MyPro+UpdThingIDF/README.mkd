@@ -1,0 +1,19 @@
+Provisioning and OTA update example...
+===
+
+...using the
+[Update](https://github.com/espressif/arduino-esp32/tree/master/libraries/Update)
+library from the [ESP32 Arduino
+core](https://github.com/espressif/arduino-esp32), and working over HTTPS from
+Gitlab.
+
+See the [Week05 notes](../Notes/Week05.mkd) for details; **add your own
+documentation** [here](doc/).
+
+Other libraries used:
+
+- [WiFiManager](https://github.com/tzapu/WiFiManager.git)
+- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer.git)
+- [AsyncTCP](https://github.com/me-no-dev/AsyncTCP.git)
+
+(Thanks folks!)

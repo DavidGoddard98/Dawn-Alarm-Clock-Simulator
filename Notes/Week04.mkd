@@ -86,6 +86,19 @@ For Ex09 my code additionally uses:
 - `WiFi.SSID(i)`
 - `WiFi.RSSI(i)`
 
+Ex07 is about templating: basic string manipulation to create HTML from
+component parts; the model solution uses an array of strings, but there are,
+as usual, many different valid solutions (inc. reusing 3rd party libraries).
+
+Ex08 needs to use WiFiClientSecure, and talk to the server on the specified
+port from your notes, and get the URL and paths correct; under those
+circumstances it will return a line of text starting "Received...". Note that
+you don't need the TLS certificate in your code in this instance.
+
+Ex09 is about running a web server (and wifi access point to connect to it)
+which lists all the other access the ESP is in range of, and allows you to
+connect to one of your choice.
+
 
 ## Which WiFi network? What if it doesn't connect?
 

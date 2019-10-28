@@ -25,8 +25,18 @@ line. You can trigger a rebuild/reflash from the monitor with Cntrl+T Cntrl+F,
 and various other goodies.)
 
 On `lincomp`, if you `ls build` you will see that a `NineLEDsIDF.bin` binary
-has been created. Go back to the LTSP machine and burn it to the board in the
-normal way:
+has been created. Go back to the LTSP machine and burn it to the board:
+
+```bash
+make flash monitor
+```
+
+(Ignore errors about "not a git repository.... mruby"! If you get errors about
+a missing or out-of-date python module, try `cd unphone; make
+esp-pip-installs`.)
+
+The older scripts also work, but are prone to creating "flash read error"
+bootloops:
 
 ```bash
 ~/unphone/bin/burn.sh build/NineLEDsIDF.bin; ~/unphone/bin/listen.sh

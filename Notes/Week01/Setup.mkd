@@ -7,6 +7,7 @@ Summary:
 - [clone your git repository locally](#working-with-your-git-repository)
 - [install on your own
   machine](#installing-the-development-tools-on-other-machines) (optional)
+- [using the DIA 2.02 (EE lab) laptops](#ee-lab-laptops)
 - [using VSCode as an editor](#using-vscode)
 - [FAQ](#faq)
 
@@ -75,6 +76,9 @@ quit, try `Cntrl+A` and then `\`, and answer `y`.)
   the Arduino IDE (version 1.9), and this will work both on the compute VMs
   (lincomp01..10) and on the LTSP desktops; in the latter case, it will be
   **slow**, but perhaps useful for serial monitoring!
+- ignore errors about "not a git repository.... mruby"
+- if you get errors about a missing or out-of-date python module, try `cd
+  unphone; make esp-pip-installs`
 
 <!-- TODO
 - select the port (probably `/dev/ttyUSB0` or `/dev/ttyUSB1` on Ubuntu)
@@ -172,73 +176,23 @@ you could tinker with it to do a Mac or Windows download instead, or just
 follow the instructions on the arduino.cc site to install the latest beta for
 Mac or Windows.
 
-<!-- OLD VERSION
-- copy or link the libraries and support files for ESP32 on the Arduino IDE
-    - [linux/ubuntu]:
-        - open a terminal (Cntrl&Alt&T)
-        - make a link to a directory called `Arduino` to pick up the Adafruit
-          ESP32 Feather board definition, and the libraries that we're using
-          on the course:
-              - `cd; ln -s
-                /resources/hc/esp-resources/esp-arduino-ide/Arduino`
-        - make a link to the Arduino IDE runner script:
-              - `cd; ln -s
-                /resources/hc/esp-resources/esp-arduino-ide/arduino-1.8.5/arduino`
-        - you can now start the Arduino IDE by running `cd; ./arduino` in a
-          terminal
-    - [windows]:
-        - on each new machine you use:
-        - is Arduino installed? if not go to Software Center and install
-          Arduino-1.8.4-MSI
-        - you also need a specific set of libraries which are available from
-          the Software Center called `Arduino COM3505 Libraries and Hardware`
-        - when you've started the IDE, make sure from `File>Preferences` that
-          the `Sketchbook location` is set to your home directory, not `My
-          Documents` (as this is where the libraries from the previous step
-          get installed)
-    - [on your own machines]:
-      - install the Arduino IDE from https://www.arduino.cc/ and then follow
-        the instructions at https://github.com/espressif/arduino-esp32
-- you should now have something like this:
-    - `com3505-2019-student/MyThing/`: your code goes here
-    - `com3505-2019-student/Notes/`  : weekly notes update
-    - `Arduino/`: libraries & core to support ESP32
-    - from Week 2 you'll also have `com3505-2019-student/Thing/`  :
-      weekly model code update
-    - **NOTE**: DON'T edit the `Thing/\*` and `Notes/\*` trees!
-- pair working and gitlab: both members of the pair can have copies of the
-  repository and push code if that works for you, but make sure that you're
-  both working with the same repository (and pushing back to origin / master)
-- set up the Arduino IDE
-    - from the Linux terminal do: `./arduino`
-    - from Windows use the start menu to run `Arduino 1.8.4`
-    - use an external editor if you like
-    - **don't** ask the IDE to update your libraries (we'll do that via your
-      gitlab repo) so uncheck File > Preferences > Check for updates on
-      startup
-- get ready to code
-    - plug in your ESP32
-    - open the MyThing sketch
-    - select the board (Adafruit ESP32 Feather) from the Tools menu
-    - select the port (probably `/dev/ttyUSB0` or `/dev/ttyUSB1` on Ubuntu)
-    - serial monitor baud rate should be 115200
--->
 
-<!-- OLD OLD VERSION
-        - in the top left of your desktop (possibly hidden by the browser) you
-          should have an icon "Access-U-drive"; click on it and enter your
-          password
-        - you should now have "Access-Shared-Resources"; click on it
-        - open a terminal (Cntrl&Alt&T)
-        - create a link to your U drive filespace and move there:
-            - `cd; ln -s $U u-drive`
-            - `cd u-drive`
-        - unpack the Arduino libraries and compiler chain:
-            - `tar xvzf /mnt/resources/arduino/Public/Arduino.tgz`
-        - in your home directory make a link to the Arduino directory that you
-          just created:
-            - `cd; ln -s u-drive/Arduino`
--->
+### EE Lab Laptops
+
+From Week 5 there are 40 laptops available that run Ubuntu 16.04, ESP IDF and
+the Arduino IDE. These live in a cabinet in the room behind the EE lab
+lectern.
+
+They **don't** mount your Uni filespace, so you'll need to clone your
+repository each time you use them, and delete your files and credentials
+afterwards.
+
+To use them:
+
+- ask a GTA to give you a machine
+- log in as `robot`, password the name of the building you're in (!)
+- clone your repo
+- work as normal
 
 
 ### Using VSCode
