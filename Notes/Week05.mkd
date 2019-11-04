@@ -1,12 +1,14 @@
 COM3505 week 05 notes
 ===
 
+# **NOTE: as detailed in email on Weds 30th Oct Assessment 1 is extended for one week. The assessment slots to demo your work will be on Tuesday 12th November. (You should check in and push your work before Monday 11th Nov midday.)**
+
 We've now covered quite a lot of ground, from blinking LEDs and reading from
 switches to getting our devices to talk to WiFi and push data into the cloud.
 Below we detail the first assessment, which you now have one week to work on.
 (This assessment counts for 30% of your course marks.)
 
-Next Monday (Nov 4th) you must **check in and push your solutions** (before
+[**Out of date; see above!**] Next Monday (Nov 4th) you must **check in and push your solutions** (before
 midday), and next Tuesday (Nov 5th) between 2pm and 3.50pm you must
 **demonstrate your solutions** to your GTA in DIA 2.02. (There is no lecture
 on Mon 4th Nov.)
@@ -55,8 +57,8 @@ You need to do four things this week:
    and over-the-air update (OTA) on the ESP ([see
    below](#proupdthing-provisioning-and-firmware-update))
 1. check in and push your code and documentation before
-   **midday next Monday** (Nov 4th)
-1. demonstrate your solution to your GTA **next Tuesday** (5th Nov)
+   **midday next Monday** [Out of date, see above] (Nov 4th)
+1. demonstrate your solution to your GTA **next Tuesday** [Out of date, see above] (5th Nov)
 
 
 ## Pro+UpdThing: Provisioning and Firmware Update
@@ -246,13 +248,21 @@ update on your device (which watching on the serial line).
   value returned, the Arduino IDE's `Tools>Serial Plotter` facility will draw
   a nice graph for you.
 - The MyPro+UpdThingIDF tree is an IDF build, so use the [ESP IDF build
-  notes](../Week03/esp-idf.mkd) for how to make and burn.
+  notes](Week03/esp-idf.mkd) for how to make and burn.
 - If you're including C code (as opposed to C++) in a `.c` file and you see a
   compile error something like `undefined reference ... error: ld returned 1
   exit status` try enclosing the references to C entities in your C++ files
   with `extern "C"`. (Otherwise the linker mangles the identifier names to
   avoid conflicts in C++'s object-oriented namespace, and then can't find C's
   procedural method names.)
+- If you see an error like `main.cpp:46:21: error: '_DEFAULT_AP_KEY' was not
+  declared in this scope` you haven't set up your `private.h` file correctly;
+  on `lincomp` this is done by the `unphone-sheffield.sh` script, or [see
+  here](https://gitlab.com/hamishcunningham/unphone#detailed-setup-linux) for
+  an example.
+- The 2019 JoinMe code contains two separate implementations of provisioning;
+  the one in use is the one whose top-level entry point is:
+  `joinmeManageWiFi()`, implemented in `joinme-wfmgr-2019.cpp`.
 - If you wish to work in the Arduino IDE instead of the IDF build, you can
   create a directory of links like this:
 
