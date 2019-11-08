@@ -24,7 +24,7 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 ![](_Basic_Flowchart.png)
 
->>bool **joinmeManageWiFi(const char *apSSID, const char *apKey) → returns true if connection is established
+>bool **joinmeManageWiFi(const char *apSSID, const char *apKey) → returns true if connection is established
 apSSID → the network name we wish to connect to
 apKey → the password associated to the network
 WifiManagerParameter → Create custom parameters that can be added to the WiFiManager setup web page
