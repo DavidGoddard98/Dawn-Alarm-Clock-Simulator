@@ -1,5 +1,56 @@
 My documentation for COM3505 assessment 1 (MyPro+UpdThing)
 ===
+# Assignment 1 Documentation
 
-(put your documentation here!)
+### Pro+UpdThing
+
+In summary, the existing system connects the ESP-32 to a network, and then checks to see if it has the latest version of the firmware by reference to a gitlab repo. If it doesn't, it performs an Over-the-air update by downloading the latest firmware from the repo and writes this to the ESP-32. 
+
+### What is provisioning?
+
+Devices that have limited hardware can connect to a Wi-Fi network by a process called provisioning. They can either be set up in station mode which enables them to connect to a previously saved AP (access point), or in AP mode - which is achieved in most cases by using another external device (with a browser) that allows a user to supply the network information via the newly created web server by the IoT device. 
+
+### Provisioning implementation  
+
+1. On startup, the ESP sets up in station mode {**setSTAStaticIPConfig**} (allows to connect itself to a Wi-Fi network) and attempts to connect to a previously saved AP {**autoConnect()**}.
+
+2. If unsuccessful, it moves into Access Point mode to create its own network {**setAPStaticIPConfig**} and starts a DNS and WebServer for other devices to connect to it {**dnsServer.reset(new DNSServer())** & **server.reset(new WM_WebServer(80))**}.
+
+3. Connecting to the newly created AP via any Wi-Fi enabled device with a browser will prompt the user to enter the apKey (if any) of the AP {**autoConnect(apSSID, apKey)**}.
+
+4. Once successfully connected to the AP, a pop-up will be displayed showing the configuration portal {**startConfigPortal**}, or attempting to visit any domain will redirect to the configuration portal due to the Captive Portal and DNS server {**dnsServer->setErrorReplyCode(DNSReplyCode::NoError)**}.
+
+5. After selecting and entering the password for one of the scanned APs, the ESP will attempt to connect {**joinmeManageWiFi(apSSID.c_str(), apPassword.c_str())**} – if successful, the application is now in control with an established Wi-Fi connection. {**initWebServer()**} If not, reconnect to the AP and reconfigure. {**WiFi_autoReconnect**}
+
+##### Diagram and method descriptions
+
+![Alt text](/relative/path/to/img.png?raw=true "_Basic_Flowchart.png")
+
+>>bool **joinmeManageWiFi(const char *apSSID, const char *apKey) → returns true if connection is established
+apSSID → the network name we wish to connect to
+apKey → the password associated to the network
+WifiManagerParameter → Create custom parameters that can be added to the WiFiManager setup web page
+addParameter → adds a custom parameter, returns false on failure
+setSaveParamsCallback → called when parameters have been set and connection was successful
+setConnectTimeout → how long to try to connect before continuing
+setConfigPortalTimeout → auto close config portal after n seconds
+autoConnect → auto connect to saved wifi, or custom, and start config portal on failures
+setSaveConfigCallback → set a save config callback after closing configportal
+startConfigPortal → config portal start
+autoConnect(apSSID, apKey) → start access point
+
+### Provisioning power consumption
+
+* Station mode: *ESP sets config for a static IP -* ***Low***
+* Auto Connect to saved AP: *Attempting to connect to a previously saved AP will have to scan for nearby networks and attempt to join one -* ***High***
+    * Unsuccessful - *Start AP mode: Initial setup -* ***Low***
+    * Create new AP: *This will set up a custom IP, gateway and subnet configuration -* ***Medium***
+    * Start Web Server - ***High***
+    * Start DNS (inc. captive portal) - ***Medium***
+    * Connect to configuration portal - ***Medium***
+* Start application with established Wi-Fi connection - ***High***
+
+### What is OTA? 
+
+OTA updating is a wireless delivery method of new software to devices; which can be used to send provisioning data and firmware updates without the need of a physical connection.
 
