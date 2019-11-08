@@ -26,27 +26,27 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 >bool **joinmeManageWiFi(const char *apSSID, const char *apKey) → returns true if connection is established
 
-apSSID → the network name we wish to connect to
+>apSSID → the network name we wish to connect to
 
-apKey → the password associated to the network
+>apKey → the password associated to the network
 
-WifiManagerParameter → Create custom parameters that can be added to the WiFiManager setup web page
+>WifiManagerParameter → Create custom parameters that can be added to the WiFiManager setup web page
 
-addParameter → adds a custom parameter, returns false on failure
+>addParameter → adds a custom parameter, returns false on failure
 
-setSaveParamsCallback → called when parameters have been set and connection was successful
+>setSaveParamsCallback → called when parameters have been set and connection was successful
 
-setConnectTimeout → how long to try to connect before continuing
+>setConnectTimeout → how long to try to connect before continuing
 
-setConfigPortalTimeout → auto close config portal after n seconds
+>setConfigPortalTimeout → auto close config portal after n seconds
 
-autoConnect → auto connect to saved wifi, or custom, and start config portal on failures
+>autoConnect → auto connect to saved wifi, or custom, and start config portal on failures
 
-setSaveConfigCallback → set a save config callback after closing configportal
+>setSaveConfigCallback → set a save config callback after closing configportal
 
-startConfigPortal → config portal start
+>startConfigPortal → config portal start
 
-autoConnect(apSSID, apKey) → start access point
+>autoConnect(apSSID, apKey) → start access point
 
 ### Provisioning power consumption
 
