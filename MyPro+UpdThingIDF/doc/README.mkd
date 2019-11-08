@@ -1,7 +1,5 @@
 My documentation for COM3505 assessment 1 (MyPro+UpdThing)
 ===
-# Assignment 1 Documentation
-
 ### Pro+UpdThing
 
 In summary, the existing system connects the ESP-32 to a network, and then checks to see if it has the latest version of the firmware by reference to a gitlab repo. If it doesn't, it performs an Over-the-air update by downloading the latest firmware from the repo and writes this to the ESP-32. 
@@ -24,7 +22,7 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 ##### Diagram and method descriptions
 
-![Alt text](/relative/path/to/img.png?raw=true "_Basic_Flowchart.png")
+(http://full/path/to/_Basic_Flowchart.png "Optional title")
 
 >>bool **joinmeManageWiFi(const char *apSSID, const char *apKey) → returns true if connection is established
 apSSID → the network name we wish to connect to
