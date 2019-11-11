@@ -26,7 +26,7 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 ##### Diagram and method descriptions
 
-![](_Basic_Flowchart.png)
+![](_Basic_Flowchart.png =250x)
 
 >**joinmeManageWiFi(const char *apSSID*, const char *apKey*)** → returns true if connection is established
 
@@ -122,7 +122,7 @@ Then, when apListForm is called, instead of scanning for networks to populate th
 
 The power consumption of the ESP32 varies depending on the running power mode it is in. There are various different configurable modes that have their own power saving capabilities that can help save power when you don't need all resources;
 
-![](esp_modules.png | width=10)
+![](esp_modules.png)
 
 ##### Active mode - 160~260mA 
 Also known as its normal mode, the active mode uses all of the chips features and keeps everything on at all times. 
