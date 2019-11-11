@@ -4,11 +4,14 @@ My documentation for COM3505 assessment 1 (MyPro+UpdThing)
 
 In summary, the existing system connects the ESP-32 to a network, and then checks to see if it has the latest version of the firmware by reference to a gitlab repo. If it doesn't, it performs an Over-the-air update by downloading the latest firmware from the repo and writes this to the ESP-32. 
 
+
+### Provisioning
+
 ### What is provisioning?
 
 Devices that have limited hardware can connect to a Wi-Fi network by a process called provisioning. They can either be set up in station mode which enables them to connect to a previously saved AP (access point), or in AP mode - which is achieved in most cases by using another external device (with a browser) that allows a user to supply the network information via the newly created web server by the IoT device. 
 
-### Provisioning implementation  
+### The implementation in the existing system
 
 1. On startup, the ESP sets up in station mode {**setSTAStaticIPConfig**} (allows to connect itself to a Wi-Fi network) and attempts to connect to a previously saved AP {**autoConnect()**}.
 
@@ -48,6 +51,23 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 >**autoConnect(apSSID, apKey)** → start access point
 
+
+
+
+
+
+
+
+
+
+
+
+### Security 
+
+Despite this, there are some aspects of the system that are not secure. For instance the ESPs mac address is used as the APs SSID. The vulnerability of this is that if an attacker is on the same network as you they could intercept your traffic by posing as the networks router. It would therefore be a better idea to use store the SSID as a different term.
+
+### Over-The-Air Implementation
+
 ### What is OTA? 
 
 The very nature of the Internet of Things makes OTA updating a necessary requirement to ensure firmware is kept up to date. Indeed, millions of devices make-up the IOT and updating these all individually in person is neither a cost-effective nor a practical way to install the latest firmware. This is why OTA processes are so important: it enables manufacturers who incorporate the microcontroller into their device the ability to update the devices over the internet. This very fact describes the importance of provisioning - it enables OTA updates to take place. 
@@ -56,15 +76,14 @@ The very nature of the Internet of Things makes OTA updating a necessary require
 
 To upload the latest version of the firmware to Gitlab, so it is ready to be fetched by the ESP, the user writes ‘make push-firmware’ in the terminal. This compiles the firmware and creates a version.txt file which holds the value of the compiled firmwares version number. It then pushes these both to Gitlab in the firmware directory.
  
-Once the ESP has established a connection, it is ready to perform an OTA update. It begins by calling a function called joinmeOTAUpdate, which in turn calls another function called joinMeCloudGet. This creates a get request to retrieve an integer value containing the latest version number of the firmware available on Gitlab. It then cross references this with the version of the firmware currently on the ESP. If it is outdated it means the firmware needs to be upgraded. The system therefore makes a final call to joinmeCloudGet which creates another get request to retrieve the (firmwareVersion).bin file from Gitlab. If this is retrieved successfully, it writes this to the ESP and restarts it. The ESP now has the latest version of the firmware successfully installed. 
+Once the ESP has established a connection, it is ready to perform an OTA update. It begins by calling a function called joinmeOTAUpdate, which in turn calls another function called joinMeCloudGet. This creates a get request to retrieve an integer value containing the latest version number of the firmware available on Gitlab. It then cross references this with the version of the firmware currently on the ESP. If it is outdated it means the firmware needs to be upgraded. The system therefore makes a final call to joinmeCloudGet which creates another get request to retrieve the (firmwareVersion).bin file from Gitlab. If this is retrieved successfully, it writes this to the ESP and restarts it. The ESP now has the latest version of the firmware successfully installed.
 
-### How Secure is the implementation 
+### Security
 
 On the whole, the existing system is fairly secure. The main reason for this is because the firmware updates are retrieved from Gitlab using a secure transfer protocol known as HTTPS. This is secure for two reasons. One, it ensures the validity of the website you are connected with by checking the validity of the certificate from the server. In the context of the existing system, this means that the firmware will always be downloaded from the legitimate repository on Gitlab preventing the risk of an attacker transferring malicious code to the ESP32. 
 
 Secondly, HTTPS encrypts all communications between the client and the server. Again, in this context this removes the potential for an attacker to eavesdrop on the data transferred which could contain sensitive information such as network credentials. 
 
-Despite this, there are some aspects of the system that are not secure. For instance the ESPs mac address is used as the APs SSID. The vulnerability of this is that if an attacker is on the same network as you they could intercept your traffic by posing as the networks router. It would therefore be a better idea to use store the SSID as a different term.
 
     
 ### How efficient is the implementation? 
