@@ -48,6 +48,55 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 >**autoConnect(apSSID, apKey)** → start access point
 
+### What is OTA? 
+
+The very nature of the Internet of Things makes OTA updating a necessary requirement to ensure firmware is kept up to date. Indeed, millions of devices make-up the IOT and updating these all individually in person is neither a cost-effective nor a practical way to install the latest firmware. This is why OTA processes are so important: it enables manufacturers who incorporate the microcontroller into their device the ability to update the devices over the internet. This very fact describes the importance of provisioning - it enables OTA updates to take place. 
+
+### OTA Implementation 
+
+To upload the latest version of the firmware to Gitlab, so it is ready to be fetched by the ESP, the user writes ‘make push-firmware’ in the terminal. This compiles the firmware and creates a version.txt file which holds the value of the compiled firmwares version number. It then pushes these both to Gitlab in the firmware directory.
+ 
+Once the ESP has established a connection, it is ready to perform an OTA update. It begins by calling a function called joinmeOTAUpdate, which in turn calls another function called joinMeCloudGet. This creates a get request to retrieve an integer value containing the latest version number of the firmware available on Gitlab. It then cross references this with the version of the firmware currently on the ESP. If it is outdated it means the firmware needs to be upgraded. The system therefore makes a final call to joinmeCloudGet which creates another get request to retrieve the (firmwareVersion).bin file from Gitlab. If this is retrieved successfully, it writes this to the ESP and restarts it. The ESP now has the latest version of the firmware successfully installed. 
+
+### How Secure is the implementation 
+
+On the whole, the existing system is fairly secure. The main reason for this is because the firmware updates are retrieved from Gitlab using a secure transfer protocol known as HTTPS. This is secure for two reasons. One, it ensures the validity of the website you are connected with by checking the validity of the certificate from the server. In the context of the existing system, this means that the firmware will always be downloaded from the legitimate repository on Gitlab preventing the risk of an attacker transferring malicious code to the ESP32. 
+
+Secondly, HTTPS encrypts all communications between the client and the server. Again, in this context this removes the potential for an attacker to eavesdrop on the data transferred which could contain sensitive information such as network credentials. 
+
+Despite this, there are some aspects of the system that are not secure. For instance the ESPs mac address is used as the APs SSID. The vulnerability of this is that if an attacker is on the same network as you they could intercept your traffic by posing as the networks router. It would therefore be a better idea to use store the SSID as a different term.
+
+    
+### How efficient is the implementation? 
+
+One efficiency of the system is the fact that it only carries out an OTA update when the ESP is started. This means that it is not constantly searching for updates while it is running, resulting in a lower power consumption. However, although this might improve efficiency, calli 
+
+
+### How might it be improved? 
+
+As stated above, the system only checks for updates when the ESP is restarted and although this improves efficiency it sort of defeats the point of the OTA implementation. This is because with the current configuration of the system, someone would have to restart the device manually for any updated firmware to be downloaded. Usually, in real world applications the ESP would be embedded within a system and therefore restarting the device whenever an update is required is unrealistic. To overcome this issue, the ESP could check for updates periodically while it is running. This could be achieved by regularly calling the joinmeOTAUpdate method within the loop function in the main file. In our code we made this improvement, calling the OTA function every 1000 iterations of the loop function in the main file. 
+
+### Securing the ESP through sense of touch
+
+With ESPs a major cause for concern is its physical security due to the fact that an attacker could tamper with the device in certain ways. Instances of this include; burning malicious firmware to the device, listening to the device and installing sensors to monitor the device. 
+
+To protect against physical tampering, we decided to utilize the ESPs ‘sense of touch’. We did this by monitoring the capacitive variance on one of the pins on the ESP device. In the loop function we call a method we wrote called getTouch(). This reads the values of the capacitive variance on pin 32 of the ESP and then pushes these values to the array tValArray. Once this has a size of 20 it takes the average and if this is less than 20 it is inferred that the device has been touched and therefore sets the boolean tamperedBool to true. This boolean is then checked before the function joinmeOTAUpdate is called in the loop body and therefore an update will only occur if the device has never ‘felt a sense of touch’.  On the other hand, if when the average is taken it is higher than 20, then the array is cleared ready to be filled with new readings.
+
+Once the tamperedBool has been set to true, it remains in this state permanently, which means you have to restart the device to reset it. To put this into context, this would allow someone to physically check the device for tampering before any more updates are installed. 
+
+
+### Keeping a cached list of access points
+
+One use of keeping a cached list of access points is that it removes the need to scan for networks whenever the /wifi page is called. This speeds up the get request the ESP makes to the web server when loading the page as the information is loaded from memory. 
+
+To implement this, we wrote the function getWifiNetworks() which is called every 50 iterations within the loop body which equates to around every… seconds. This function scans for surrounding networks and stores these in two vectors; SSIDArray and RSSIArray. The next time the function is called these vectors are then cleared and repopulated. 
+Then, when apListForm is called, instead of scanning for networks to populate the form the names and signals of the networks are loaded from memory. 
+
+
+
+
+
+
 ### Provisioning power consumption
 
 * Station mode: *ESP sets config for a static IP -* ***Low***
@@ -59,7 +108,5 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
     * Connect to configuration portal - ***Medium***
 * Start application with established Wi-Fi connection - ***High***
 
-### What is OTA? 
 
-OTA updating is a wireless delivery method of new software to devices; which can be used to send provisioning data and firmware updates without the need of a physical connection.
 
