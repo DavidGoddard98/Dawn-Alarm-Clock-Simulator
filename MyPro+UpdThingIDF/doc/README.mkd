@@ -6,7 +6,7 @@ In summary, the existing system connects the ESP-32 to a network, and then check
 
 
 ## Provisioning
-***
+
 
 ### What is provisioning?
 
@@ -68,7 +68,7 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 Despite this, there are some aspects of the system that are not secure. For instance the ESPs mac address is used as the APs SSID. The vulnerability of this is that if an attacker is on the same network as you they could intercept your traffic by posing as the networks router. It would therefore be a better idea to use store the SSID as a different term.
 
 ## Over-The-Air
-***
+
 
 ### What is OTA? 
 
@@ -118,9 +118,11 @@ Then, when apListForm is called, instead of scanning for networks to populate th
 
 
 
-### Power consumption
+## Power consumption
 
-The power consumption of the ESP32 varies depending on the running power mode it is in. There are various different configurable modes that have their own power saving capabilities that can help save power when you don't need all resources. 
+The power consumption of the ESP32 varies depending on the running power mode it is in. There are various different configurable modes that have their own power saving capabilities that can help save power when you don't need all resources;
+
+![](esp_modules.png | width=10)
 
 ##### Active mode - 160~260mA 
 Also known as its normal mode, the active mode uses all of the chips features and keeps everything on at all times. 
@@ -148,7 +150,7 @@ This mode is ideal for checking for updates and reading sensor values when the E
 ##### Hibernation mode - 2.5µA
 In hibernation mode, the ULP-Coprocessor and RTC memory are both powered down. The only active components in this mode are the RTC timer and some RTC GPIOs which are responsible for waking the chip up from hibernation. 
 
-If there is no connection to the web server, or the user fails to enter the network credentials on the config portal (timeout), then there is no need for the ESP to be running any modules at all until a reset is established. Thus, entering the ESP into hibernation mode during this period would be appropriate for minimal power consumption. Another thing to note is that there comes a trade-off between security and power consumption; connecting to a secured network that involves generating certificates will use more power than an open network. 
+If there is no connection to the web server, or the user fails to enter the network credentials on the config portal (timeout), then there is no need for the ESP to be running any modules at all until a reset is established. Thus, entering the ESP into hibernation mode during this period would be appropriate for minimal power consumption. Another thing to consider is that there comes a trade-off between security and power consumption; connecting to a secured network that involves generating certificates will use more power than an open network. 
 
 
 
