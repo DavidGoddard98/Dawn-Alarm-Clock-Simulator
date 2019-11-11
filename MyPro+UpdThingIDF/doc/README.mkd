@@ -120,7 +120,7 @@ To protect against physical tampering, we decided to utilize the ESPs ‘sense o
 
 Once the tamperedBool has been set to true, it remains in this state permanently, which means you have to restart the device to reset it. To put this into context, this would allow someone to physically check the device for tampering before any more updates are installed. 
 
-An extention to the physical security of the ESP can also be done in a similar way with a motion sensor. Readings can be monitored and thresholds calculated in order to stop an update from being carried out when certain disturbances are detected; anomalous readings and spikes will have to be dealt with in order to prevent unwanted erroneous results. 
+An extention to the physical security of the ESP can also be done in a similar way with a motion sensor. Readings can be monitored and thresholds calculated in order to stop an update from being carried out when certain disturbances are detected, and anomalous readings will have to be dealt with in order to prevent erroneous results. 
 
 ```c++
 //reads touch values on pin 32
