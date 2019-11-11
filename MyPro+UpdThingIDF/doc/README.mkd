@@ -87,7 +87,7 @@ On the whole, the existing system is fairly secure. The main reason for this is 
 
 Secondly, HTTPS encrypts all communications between the client and the server. Again, in this context this removes the potential for an attacker to eavesdrop on the data transferred which could contain sensitive information such as network credentials. 
 
-
+***
     
 ### How efficient is the implementation? 
 
