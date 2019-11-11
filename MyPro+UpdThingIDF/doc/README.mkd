@@ -62,11 +62,11 @@ A further insecurity is the fact that on the config portal, the password is stor
 
 ## <div align="center">OVER-THE-AIR UPDATES</div> 
 
-### What is OTA? 
+### Why bother with OTA?
 
 The very nature of the Internet of Things makes OTA updating a necessary requirement to ensure firmware is kept up to date. Indeed, millions of devices make-up the IOT and updating these all individually in person is neither a cost-effective nor a practical way to install the latest firmware. This is why OTA processes are so important: it enables manufacturers who incorporate the microcontroller into their device the ability to update the devices over the internet. This very fact describes the importance of provisioning - it enables OTA updates to take place. 
 
-### OTA Implementation
+### The implementation in the existing system
 
 
 To upload the latest version of the firmware to Gitlab, so it is ready to be fetched by the ESP, the user writes ‘make push-firmware’ in the terminal. This compiles the firmware and creates a version.txt file which holds the value of the compiled firmwares version number. It then pushes these both to Gitlab in the firmware directory.
@@ -88,6 +88,8 @@ int joinmeCloudGet(HTTPClient *http, String gitProjID, String gitToken, String f
 }
 //returns  resp code as int
 ``` 
+
+![](OTA_Flowchart.png)
 
 ### Security
 
