@@ -5,7 +5,8 @@ My documentation for COM3505 assessment 1 (MyPro+UpdThing)
 In summary, the existing system connects the ESP-32 to a network, and then checks to see if it has the latest version of the firmware by reference to a gitlab repo. If it doesn't, it performs an Over-the-air update by downloading the latest firmware from the repo and writes this to the ESP-32. 
 
 
-### Provisioning
+## Provisioning
+***
 
 ### What is provisioning?
 
@@ -66,7 +67,8 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 Despite this, there are some aspects of the system that are not secure. For instance the ESPs mac address is used as the APs SSID. The vulnerability of this is that if an attacker is on the same network as you they could intercept your traffic by posing as the networks router. It would therefore be a better idea to use store the SSID as a different term.
 
-### Over-The-Air Implementation
+## Over-The-Air
+***
 
 ### What is OTA? 
 
