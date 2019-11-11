@@ -26,7 +26,8 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 ##### Diagram and method descriptions
 
-![](_Basic_Flowchart.png =250x)
+![](_Basic_Flowchart.png)
+
 
 >**joinmeManageWiFi(const char *apSSID*, const char *apKey*)** → returns true if connection is established
 
