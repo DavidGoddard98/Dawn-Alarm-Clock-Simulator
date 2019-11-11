@@ -12,7 +12,7 @@ In summary, the existing system connects the ESP-32 to a network, and then check
 
 Devices that have limited hardware can connect to a Wi-Fi network by a process called provisioning. They can either be set up in station mode which enables them to connect to a previously saved AP (access point), or in AP mode - which is achieved in most cases by using another external device (with a browser) that allows a user to supply the network information via the newly created web server by the IoT device. 
 
-### The implementation in the existing system
+### Provisioning implementation
 
 1. On startup, the ESP sets up in station mode (allows to connect itself to a Wi-Fi network) and attempts to connect to a previously saved AP.
 
