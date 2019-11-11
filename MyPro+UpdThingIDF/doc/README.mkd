@@ -87,9 +87,9 @@ int joinmeCloudGet(HTTPClient *http, String gitProjID, String gitToken, String f
     ...     
 }
 //returns  resp code as int
-``` 
+```
 
-![](OTA_Flowchart.png)
+![](OTA_flowchart__2_.png)
 
 ### Security
 
