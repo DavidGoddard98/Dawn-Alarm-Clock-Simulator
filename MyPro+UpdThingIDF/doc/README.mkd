@@ -116,16 +116,39 @@ Then, when apListForm is called, instead of scanning for networks to populate th
 
 
 
-### Provisioning power consumption
+### Power consumption
 
-* Station mode: *ESP sets config for a static IP -* ***Low***
-* Auto Connect to saved AP: *Attempting to connect to a previously saved AP will have to scan for nearby networks and attempt to join one -* ***High***
-    * Unsuccessful - *Start AP mode: Initial setup -* ***Low***
-    * Create new AP: *This will set up a custom IP, gateway and subnet configuration -* ***Medium***
-    * Start Web Server - ***High***
-    * Start DNS (inc. captive portal) - ***Medium***
-    * Connect to configuration portal - ***Medium***
-* Start application with established Wi-Fi connection - ***High***
+The power consumption of the ESP32 varies depending on the running power mode it is in. There are various different configurable modes that have their own power saving capabilities that can help save power when you don't need all resources. 
+
+[img]
+
+##### Active mode - 160~260mA 
+Also known as its normal mode, the active mode uses all of the chips features and keeps everything on at all times. 
+
+***Active modules:***
+* CPU
+* Wi-Fi
+* Bluetooth
+* Radio
+* RTC memory and peripherals
+* ULP-Coprocessor
+
+All of the active provisioning and OTA updates of the ESP will be carried out in active mode as it is the only power mode that supports WiFi functionality.
+
+##### Modem sleep - 3~20mA
+In modem sleep all features are active except for the most draining modules; Wifi, bluetooth and radio. An *association sleep pattern* is used to switch between active mode and modem sleep to keep the WiFi and bluetooth connections alive and stays connected to WiFi through a DTIM beacon mechanism. The AP transmits beacons periodically that the ESP picks up on at certain predetermined intervals to save power.
+
+***Active modules***
+* CPU
+* ULP-Coprocessor
+* RTC memory and peripherals
+
+This mode is ideal for checking for updates and reading sensor values when the ESP is not utilising all of it's modules for provisioning and OTA updates. 
+
+##### Hibernation mode - 2.5µA
+In hibernation mode, the ULP-Coprocessor and RTC memory are both powered down. The only active components in this mode are the RTC timer and some RTC GPIOs which are responsible for waking the chip up from hibernation. 
+
+If there is no connection to the web server, or the user fails to enter the network credentials on the config portal (timeout), then there is no need for the ESP to be running any modules at all until a reset is established. Thus, entering the ESP into hibernation mode during this period would be appropriate for minimal power consumption.
 
 
 
