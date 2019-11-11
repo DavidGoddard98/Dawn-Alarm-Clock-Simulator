@@ -97,7 +97,7 @@ On the whole, the existing system is fairly secure. The main reason for this is 
 
 Secondly, HTTPS encrypts all communications between the client and the server. Again, in this context this removes the potential for an attacker to eavesdrop on the data transferred which could contain sensitive information such as network credentials. 
 
-
+The ESP32-S2 comes with slightly improved on-chip security features and additional integrated cryptographic accelerators compared to its predecessor. It has several dedicated hardware features that include a more advanced flash encryption, secure boot signatures and a digital signature peripheral for secure storage of private keys and generation of RSA signatures. 
     
 ### How efficient is the implementation? 
 
@@ -119,6 +119,8 @@ With ESPs a major cause for concern is its physical security due to the fact tha
 To protect against physical tampering, we decided to utilize the ESPs ‘sense of touch’. We did this by monitoring the capacitive variance on one of the pins on the ESP device. In the loop function we call a method we wrote called getTouch(). This reads the values of the capacitive variance on pin 32 of the ESP and then pushes these values to the array tValArray. Once this has a size of 20 it takes the average and if this is less than 20 it is inferred that the device has been touched and therefore sets the boolean tamperedBool to true. This boolean is then checked before the function joinmeOTAUpdate is called in the loop body and therefore an update will only occur if the device has never ‘felt a sense of touch’.  On the other hand, if when the average is taken it is higher than 20, then the array is cleared ready to be filled with new readings.
 
 Once the tamperedBool has been set to true, it remains in this state permanently, which means you have to restart the device to reset it. To put this into context, this would allow someone to physically check the device for tampering before any more updates are installed. 
+
+An extention to the physical security of the ESP can also be done in a similar way with a motion sensor. Readings can be monitored and thresholds calculated in order to stop an update from being carried out when certain disturbances are detected. Anomalous readings and spikes will have to be dealt with in order to prevent unwanted results. 
 
 ```c++
 //reads touch values on pin 32
