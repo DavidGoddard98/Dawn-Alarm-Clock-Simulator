@@ -58,6 +58,11 @@ main/main.cpp](../../NineLEDsIDF/main/main.cpp).
 - we've seen a [bootloop](#esp32-bootloops/) happening on the NineLEDs
   example; if you hit one, try erasing flash and re-burning:
   `~/unphone/bin/erase.sh; ...`
+- if you're installing on your own system and can't use the `unphone` setup
+  routines (perhaps because you're on Windoze) make sure to use the same
+  versions as we are; they're specified in `unphone/Makefile` (at time of
+  writing we're on IDF 3.2.3 ESP arduino core 06a399b; 3.3 would likely work,
+  but 4.x likely **not**)
 
 
 ## ESP32 Bootloops

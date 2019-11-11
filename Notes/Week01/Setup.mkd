@@ -59,7 +59,8 @@ IDF or the latest version of the Arduino IDE.)
       exported a binary to `~/thing.bin` and `cd`'d there:
 
 ```bash
-~/unphone/bin/burn.sh thing.bin # writes the firmware to the ESP32
+~/unphone/bin/burn.sh
+  thing.bin # writes firmware to ESP (buggy! in IDF use "make flash" instead
 ~/unphone/bin/listen.sh         # listens for serial line output
 ```
 

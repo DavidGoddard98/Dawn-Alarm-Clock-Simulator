@@ -116,6 +116,9 @@ If your ESP doesn't connect, don't panic. Try printing some diagnostics,
 phoning a friend or standing on your head and singing the Congolese national
 anthem backwards in Latin a couple of times. Then try some more diagnostics.
 
+(You probably **don't** want to use the `WifiGuest` network, as this requires
+sign-in.)
+
 
 ## Details of our cloud server (for Ex08)
 

@@ -263,6 +263,7 @@ update on your device (which watching on the serial line).
 - The 2019 JoinMe code contains two separate implementations of provisioning;
   the one in use is the one whose top-level entry point is:
   `joinmeManageWiFi()`, implemented in `joinme-wfmgr-2019.cpp`.
+- **Don't** use the `WifiGuest` network, as this requires sign-in.
 - If you wish to work in the Arduino IDE instead of the IDF build, you can
   create a directory of links like this:
 

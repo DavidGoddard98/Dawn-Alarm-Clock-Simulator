@@ -46,7 +46,9 @@ several names for many of its pins, e.g.:
 schematic")
 
 There's a good description of [pinout detail
-here](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/pinouts).
+here](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/pinouts); and
+a good general discussion on which [ESP32 pins to use
+here](https://randomnerdtutorials.com/esp32-pinout-reference-gpios).
 
 
 in this case we'll use these pins:
