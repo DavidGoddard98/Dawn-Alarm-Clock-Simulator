@@ -55,8 +55,9 @@ noise!
 
 ![Serial monitor touch](serial-monitor-touch.png)
 
-(The serial monitor is accessible via the IDE's `Tools` menu. The IDF API for
-touch sensing (for the version that is currently set up via
+(The serial monitor is accessible via the IDE's `Tools` menu.)
+
+The IDF API for touch sensing (for the version that is currently set up via
 `unphone/Makefile`, 3.2.3) [is detailed
 here](https://docs.espressif.com/projects/esp-idf/en/v3.2.3/api-reference/peripherals/touch_pad.html).
 Using this API in filtered mode (with a filter period of 100mS) results in a

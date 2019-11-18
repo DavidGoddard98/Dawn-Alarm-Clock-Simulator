@@ -175,7 +175,7 @@ When the firmware starts up, it calls a library function (`joinmeManageWiFi`)
 to check if WiFi has previously been configured and if so try and join the
 network. If that fails, it starts up its own WiFi access point on the ESP32
 and runs a webserver on port 80 (with DNS capture, which works _most_ of the
-time; if not, try 192.169.4.1). If you join the access point from a phone or
+time; if not, try 192.168.4.1). If you join the access point from a phone or
 laptop, the webserver provides a list of other available access points, and
 allows you to enter the network key. It then shuts down its own access point
 and joins the network you specified.

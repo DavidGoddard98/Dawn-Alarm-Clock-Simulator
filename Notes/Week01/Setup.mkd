@@ -7,7 +7,7 @@ Summary:
 - [clone your git repository locally](#working-with-your-git-repository)
 - [install on your own
   machine](#installing-the-development-tools-on-other-machines) (optional)
-- [using the DIA 2.02 (EE lab) laptops](#ee-lab-laptops)
+- [using the DIA 2.02 (EE lab) laptops](#ee-lab-robot-laptops)
 - [using VSCode as an editor](#using-vscode)
 - [FAQ](#faq)
 
@@ -178,7 +178,7 @@ follow the instructions on the arduino.cc site to install the latest beta for
 Mac or Windows.
 
 
-### EE Lab Laptops
+### EE Lab ("robot") Laptops
 
 From Week 5 there are 40 laptops available that run Ubuntu 16.04, ESP IDF and
 the Arduino IDE. These live in a cabinet in the room behind the EE lab

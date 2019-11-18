@@ -1,6 +1,14 @@
 COM3505 week 07 notes
 ===
 
+# The Lecture
+
+This week's lecture [slides are
+here](https://docs.google.com/presentation/d/1nKq2Wc0hYn-QwsQ2bz7Bidg9aGA2tDjUhPTkMEYfNTk/edit?usp=sharing).
+(This is Lecture 6, which comes in Week 7 because of the "reading week in Week
+6").
+
+
 # Learning Objectives
 
 Our objectives this week are to:
