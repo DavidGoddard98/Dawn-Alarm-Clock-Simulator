@@ -27,7 +27,7 @@ our formal assessments; 2. to help us give you feedback and help us adjust the
 course to better fit student capabilities.)
 
 In week 12 individuals are given a **MOLE quiz** covering the material in the
-lectures. (This is not assesssed as a pair but as individuals.) There is a
+lectures. (This is not assessed as a pair but as individuals.) There is a
 mock quiz in week 7.
 
 Code is assessed according to both functionality (does the device do what is
@@ -77,7 +77,7 @@ etc.).
 **Also note** that model solutions to the weekly assignments are published at
 the end of each week. It is fine to build on these solutions in subsequent
 weeks. Therefore it is not a requirement that you are successful in all of
-each week's assigments: if something proves too difficult make your best
+each week's assignments: if something proves too difficult make your best
 attempt, then can catch up based on the model solution in subsequent weeks.
 (Student code repository snapshots are taken, and the model solutions are
 published, one hour or less before the lecture, so one hour before the lecture

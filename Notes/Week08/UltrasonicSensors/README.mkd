@@ -2,7 +2,7 @@ Ultrasonic sensors
 ===
 
 The HC-SR04 ultrasonic sensor is a cheap and cheerful way of sensing distance
-to solid objects like a wall. The device is well descibed here: [tutorial on
+to solid objects like a wall. The device is well described here: [tutorial on
 ultrasonic
 sensor](http://www.instructables.com/id/Simple-Arduino-and-HC-SR04-Example/).
 

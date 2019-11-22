@@ -1,8 +1,8 @@
 COM3505 Light Sensor
 ===
 
-We are using the TSL2561 light sensor in a handy breakout [from
-Adafruit](https://learn.adafruit.com/tsl2561?view=all).
+We are using the TSL2591 light sensor in a handy breakout [from
+Adafruit](https://learn.adafruit.com/adafruit-tsl2591).
 
 You will need to solder some jumper wires to four points on the sensor - these
 are the same whether you have the square or round board:
