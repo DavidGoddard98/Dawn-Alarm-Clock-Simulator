@@ -13,6 +13,8 @@
 
 #include "private.h" // stuff not for checking in
 #include "unphone.h"
+#include "IOExpander.h"
+
 
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
@@ -34,9 +36,32 @@ int firmwareVersion = 1; // keep up-to-date! (used to check for updates)
 char *getMAC(char *);    // read the address into buffer
 char MAC_ADDRESS[13];    // MAC addresses are 12 chars, plus the NULL
 void flash();            // the RGB LED
-void loraMessage();      // TTN
+// void loraMessage();      // TTN
 void lcdMessage(char *); // message on screen
+void pixelsOff();
+bool powerOn();
+void powerMode();
+void screenOff();
+
+const byte BM_I2Cadd   = 0x6b; // the chip lives here on I²C
+const byte BM_Status   = 0x08; // system status register
+
 int loopIter = 0;        // loop slices
+float fadeMax = 255.0;
+int bright = 255;
+int col;
+int fadeVal;
+
+void dawnAlarm();
+
+//NEOPIXEL LEDS SHIT
+#define PIN A7
+
+#define NUM_PIXELS 32
+
+#define BRIGHTNESS 1
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
 
 // SETUP: initialisation entry point /////////////////////////////////////////
 void setup() {
@@ -49,9 +74,13 @@ void setup() {
 
   // flash the internal RGB LED
   flash();
+  pixels.setBrightness(1);
+  pixels.begin();
+  pixels.show(); // This sends the updated pixel color to the hardware.
+  fadeVal = 0;
 
-  // LoRaWAN example
-  if(false) loraMessage();
+  // // LoRaWAN example
+  // if(false) loraMessage();
 
   // buzz a bit
   for(int i = 0; i < 3; i++) {
@@ -77,7 +106,14 @@ void loop() {
 
     // TODO do your stuff here...
 
-    unPhone::checkPowerSwitch(); // if power switch is off shutdown
+
+    if (powerOn()) {
+      dawnAlarm();
+    } else if (!powerOn()){
+      powerMode();
+    }
+
+
 
     // allow the protocol CPU IDLE task to run periodically
     if(loopIter % 2500 == 0) {
@@ -91,8 +127,81 @@ void loop() {
     if(unPhone::button1()) Serial.println("button1");
     if(unPhone::button2()) Serial.println("button2");
     if(unPhone::button3()) Serial.println("button3");
+
   }
 }
+
+bool powerOn() {
+  uint8_t inputPwrSw = IOExpander::digitalRead(IOExpander::POWER_SWITCH);
+  bool power;
+  if (inputPwrSw) {
+    power = true;
+  } else {
+    power = false;
+  }
+  return power;
+}
+
+void powerMode(){
+  bool usbConnected = bitRead(unPhone::getRegister(BM_I2Cadd, BM_Status), 2);
+  if (!usbConnected) {
+    pixelsOff();
+    unPhone::setShipping(true);
+  } else {
+    pixelsOff();
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_36, 0); // 1 = High, 0 = Low
+
+    // cludge: LCD (and other peripherals) will still be powered when we're
+    // on USB; the next call turns the LCD backlight off, but would be
+    // preferable if we could cut the 5V to all but the BM (which needs it
+    // for charging)...?
+    IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+    // deep sleep, wait for wakeup on GPIO
+    esp_deep_sleep_start();
+  }
+}
+
+void pixelsOff() {
+  for(int i=0; i<NUM_PIXELS; i++) {
+
+    // pixels.Color takes RGB values, from 0,00 up to 255,255,255
+    pixels.setPixelColor(i, pixels.Color(0,0,0));
+    //if(i > 0) pixels.setPixelColor(i - 1, pixels.Color(0,0,0));
+
+    //delay(delayval); // Delay for a period of time (in milliseconds).
+  }
+  pixels.show(); // This sends the updated pixel color to the hardware.
+
+}
+
+void screenOff() {
+  esp_sleep_enable_timer_wakeup(1000000); // sleep time is in uSec
+  esp_deep_sleep_start();
+}
+
+void dawnAlarm() {
+  col = bright * float(fadeVal/fadeMax);
+  for(uint16_t i=0; i< NUM_PIXELS; i++) {
+    pixels.setPixelColor(i, pixels.Color(255, 0, 0));
+    pixels.setBrightness(col);
+  }
+  Serial.println("col");
+
+  Serial.println(col);
+  Serial.println("pixel brighness");
+
+  Serial.println(pixels.getBrightness());
+  //First loop, fade in!
+
+
+  if(fadeVal < fadeMax) {
+    fadeVal++;
+  }
+  pixels.show();
+  //delay = dawntime in miliseconds / 255
+  delay(1000);
+}
+
 
 // misc utilities ////////////////////////////////////////////////////////////
 // get the ESP's MAC address
@@ -120,25 +229,25 @@ void lcdMessage(char *s) {
   unPhone::tftp->print(s);
 }
 
-// send TTN message
-void loraMessage() {
-  /* LoRaWAN keys: copy these values from TTN
-   * register a device and change it to ABP, then copy the keys in msb format
-   * and define them in your private.h, along with _LORA_DEV_ADDR; they'll
-   * look something like this:
-   *   #define _LORA_APP_KEY  { 0xFF, 0xFF, 0xFF, ... }
-   *   #define _LORA_NET_KEY  { 0xFF, 0xFF, 0xFF, ... }
-   *   #define _LORA_DEV_ADDR 0x99999999
-   */
-  u1_t NWKSKEY[16] = _LORA_NET_KEY;
-  u1_t APPSKEY[16] = _LORA_APP_KEY;
-
-  // send a LoRaWAN message to TTN
-  Serial.printf("doing LoRaWAN to TTN...\n");
-  unPhone::lmic_init(_LORA_DEV_ADDR, NWKSKEY, APPSKEY);
-  unPhone::lmic_do_send(&unPhone::sendjob);
-  Serial.printf("...done (TTN)\n");
-}
+// // send TTN message
+// void loraMessage() {
+//   /* LoRaWAN keys: copy these values from TTN
+//    * register a device and change it to ABP, then copy the keys in msb format
+//    * and define them in your private.h, along with _LORA_DEV_ADDR; they'll
+//    * look something like this:
+//    *   #define _LORA_APP_KEY  { 0xFF, 0xFF, 0xFF, ... }
+//    *   #define _LORA_NET_KEY  { 0xFF, 0xFF, 0xFF, ... }
+//    *   #define _LORA_DEV_ADDR 0x99999999
+//    */
+//   u1_t NWKSKEY[16] = _LORA_NET_KEY;
+//   u1_t APPSKEY[16] = _LORA_APP_KEY;
+//
+//   // send a LoRaWAN message to TTN
+//   Serial.printf("doing LoRaWAN to TTN...\n");
+//   unPhone::lmic_init(_LORA_DEV_ADDR, NWKSKEY, APPSKEY);
+//   unPhone::lmic_do_send(&unPhone::sendjob);
+//   Serial.printf("...done (TTN)\n");
+// }
 
 // cycle the LED
 void flash() {
@@ -146,3 +255,4 @@ void flash() {
   unPhone::rgb(0, 1, 1); delay(300); unPhone::rgb(1, 0, 1); delay(300);
   unPhone::rgb(1, 1, 0); delay(300); unPhone::rgb(1, 1, 1); delay(300);
 }
+
