@@ -4,7 +4,7 @@ UNPHONE_INC_DIR=../../../../unphone/src
 UNPHONE_PARENT_DIR=../../../..
 UNPHONE_SRC_DIR=../../../unphone/src
 UNPHONE_LIB_DIR=../../../unphone/lib
-
+CPPFLAGS += -D_GLIBCXX_USE_C99
 CPPFLAGS += -I$(UNPHONE_INC_DIR) -I$(UNPHONE_PARENT_DIR) \
   -Wno-all -Wno-extra \
   -Wno-error=return-type -Wno-write-strings -Wno-conversion-null \

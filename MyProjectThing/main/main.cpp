@@ -10,7 +10,6 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <WiFi.h>
-
 #include "private.h" // stuff not for checking in
 #include "unphone.h"
 #include "IOExpander.h"
@@ -42,7 +41,7 @@ void pixelsOff();
 bool powerOn();
 void powerMode();
 void screenOff();
-
+std::vector< int >  getTime();
 const byte BM_I2Cadd   = 0x6b; // the chip lives here on I²C
 const byte BM_Status   = 0x08; // system status register
 
@@ -51,8 +50,24 @@ float fadeMax = 255.0;
 int bright = 255;
 int col;
 int fadeVal;
+unsigned long timeNow = 0;
+unsigned long timeLast = 0;
+
+//Time start Settings:
+
+int startingHour = 12; // set your starting hour here, not below at int hour. This ensures accurate daily correction of time
+int seconds = 0;
+int minutes = 0;
+int hours = startingHour;
+int days = 0;
+//Accuracy settings
+int dailyErrorFast = 0; // set the average number of milliseconds your microcontroller's time is fast on a daily basis
+int dailyErrorBehind = 0; // set the average number of milliseconds your microcontroller's time is behind on a daily basis
+int correctedToday = 1; // do not change this variable, one means that the time has already been corrected today for the error in your boards crystal. This is true for the first day because you just set the time when you uploaded the sketch.
+std::vector< int >  current_time;
 
 void dawnAlarm();
+void timePassed();
 
 //NEOPIXEL LEDS SHIT
 #define PIN A7
@@ -112,6 +127,12 @@ void loop() {
     } else if (!powerOn()){
       powerMode();
     }
+    current_time = getTime();
+    Serial.print("secs");
+    Serial.print(current_time[0]);
+    Serial.print("mins");
+    Serial.print(current_time[1]);
+
 
 
 
@@ -129,6 +150,66 @@ void loop() {
     if(unPhone::button3()) Serial.println("button3");
 
   }
+}
+
+
+std::vector< int >  getTime() {
+  timeNow = millis()/1000; // the number of seconds that have passed since boot
+  seconds = timeNow - timeLast;//the number of seconds that have passed since the last time 60 seconds was reached.
+
+
+
+  if (seconds == 60) {
+    timeLast = timeNow;
+    minutes = minutes + 1;
+  }
+
+  //if one minute has passed, start counting milliseconds from zero again and add one minute to the clock.
+
+  if (minutes == 60){
+    minutes = 0;
+    hours = hours + 1;
+  }
+
+  // if one hour has passed, start counting minutes from zero and add one hour to the clock
+
+  if (hours == 24){
+    hours = 0;
+    days = days + 1;
+    }
+
+    //if 24 hours have passed , add one day
+
+  if (hours ==(24 - startingHour) && correctedToday == 0){
+    delay(dailyErrorFast*1000);
+    seconds = seconds + dailyErrorBehind;
+    correctedToday = 1;
+  }
+
+  //every time 24 hours have passed since the initial starting time and it has not been reset this day before, add milliseconds or delay the progran with some milliseconds.
+  //Change these varialbes according to the error of your board.
+  // The only way to find out how far off your boards internal clock is, is by uploading this sketch at exactly the same time as the real time, letting it run for a few days
+  // and then determine how many seconds slow/fast your boards internal clock is on a daily average. (24 hours).
+
+  if (hours == 24 - startingHour + 2) {
+    correctedToday = 0;
+  }
+
+
+
+  //concert to strings
+  // std::string seconds_s = std::to_string(seconds);
+  // std::string minutes_s = std::to_string(minutes);
+  // std::string hour_s = std::to_string(hours);
+  // std::string days_s = std::to_string(days);
+  // //append strings]
+  std::vector< int > the_time;
+  the_time.push_back(seconds);
+  the_time.push_back(minutes);
+  the_time.push_back(hours);
+  the_time.push_back(days);
+
+  return the_time;
 }
 
 bool powerOn() {
@@ -255,4 +336,3 @@ void flash() {
   unPhone::rgb(0, 1, 1); delay(300); unPhone::rgb(1, 0, 1); delay(300);
   unPhone::rgb(1, 1, 0); delay(300); unPhone::rgb(1, 1, 1); delay(300);
 }
-
