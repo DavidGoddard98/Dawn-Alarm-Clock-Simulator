@@ -141,7 +141,7 @@ bool powerOn() {
   }
   return power;
 }
-
+//test change
 void powerMode(){
   bool usbConnected = bitRead(unPhone::getRegister(BM_I2Cadd, BM_Status), 2);
   if (!usbConnected) {
