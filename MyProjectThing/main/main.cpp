@@ -58,6 +58,7 @@ void pixelsOff();
 bool powerOn();
 void powerMode();
 void screenOff();
+void setAlarmTime();
 
 // the UI controller /////////////////////////////////////////////////////////
 UIController *uiCont;
@@ -137,6 +138,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ8
 
 char date_string[50]; //50 chars should be enough
 char time_string[50]; //50 chars should be enough
+char day[2];
 
 
 void printLocalTime()
@@ -147,10 +149,27 @@ void printLocalTime()
     return;
   }
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-
+  Serial.println(&timeinfo);
   strftime(date_string, sizeof(date_string), "%A, %B %d %Y", &timeinfo);
   strftime(time_string, sizeof(time_string), "%H:%M:%S", &timeinfo);
+  setAlarmTime();
+}
 
+void setAlarmTime() {
+  time_t now;
+  struct tm alarmTime;
+  double seconds;
+  time(&now);
+  alarmTime = *localtime(&now);
+  alarmTime.tm_sec = 0;
+  alarmTime.tm_mon = 0;
+  alarmTime.tm_mon = 11;
+  alarmTime.tm_hour = 0;
+  alarmTime.tm_min = 2;
+  alarmTime.tm_mday = 16;
+  alarmTime.tm_year = 119;
+  seconds = difftime(mktime(&alarmTime),now);
+  printf("%.f seconds from alarm.\n", seconds);
 }
 
 // SETUP: initialisation entry point /////////////////////////////////////////
