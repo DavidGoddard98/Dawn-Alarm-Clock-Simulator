@@ -22,6 +22,9 @@
 //time
 #include "time.h"
 
+//power consumption
+#include "driver/rtc_io.h"
+
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include <SPIFFS.h>
@@ -43,6 +46,13 @@ void powerMode();
 void setAlarmTime();
 void dawnAlarm();
 
+//TIME FUNCTIONS
+#include <soc/rtc.h>
+extern "C" {
+  #include <esp_clk.h>
+}
+#include <chrono>
+
 
 // the UI controller /////////////////////////////////////////////////////////
 UIController *uiCont;
@@ -60,6 +70,9 @@ const byte BM_Status   = 0x08; // system status register
 
 #define uS_TO_S_FACTOR 1000000  //Conversion factor for micro seconds to seconds
 #define TIME_TO_SLEEP  7        //Time ESP32 will go to sleep (in seconds)
+#define sleepPeriod 10000000ul  // 10 seconds sleep
+long double offset = 0.004444;  // us (tient compte du temps d'exécution de updateTime)
+
 
 // globals for a wifi access point and webserver ////////////////////////////
 String apSSID = String("Pro+UpdThing-"); // SSID of the AP
@@ -67,8 +80,9 @@ String apPassword = _DEFAULT_AP_KEY;     // passkey for the AP
 
 //Time start Settings:
 const char* ntpServer = "0.pool.ntp.org";
-const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 3600;
+//offsets
+const long  gmtOffset_sec = 0;
+const int   daylightOffset_sec = 0;
 
 //NEOPIXEL LEDS SHIT
 #define PIN A7
@@ -76,40 +90,76 @@ const int   daylightOffset_sec = 3600;
 #define BRIGHTNESS 1
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-char date_string[50]; //50 chars should be enough
-char time_string[50]; //50 chars should be enough
+
+//TODO SAVE DATA OVER BOOT IN RCU MEMORY
+RTC_DATA_ATTR byte bootCountt = 0;
+RTC_DATA_ATTR time_t time_now;
+RTC_DATA_ATTR struct tm * timeinfo;
+RTC_DATA_ATTR int old_milis;
+RTC_DATA_ATTR uint64_t sleepTime;
+RTC_DATA_ATTR uint64_t offset_time;
 
 //gets and print local time, returns failed if no time found.
 //also fill date_string and time_string with relevant info
 void printLocalTime()
 {
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-    return;
+  time(&time_now);
+  timeinfo = localtime (&time_now);
+  Serial.printf ("%s\n", asctime(timeinfo));
+
+
+  // Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+
+
+  // setAlarmTime();
+}
+//
+// void setAlarmTime() {
+//   time_t now;
+//   struct tm alarmTime;
+//   double seconds;
+//   time(&now);
+//   alarmTime = *localtime(&now);
+//   alarmTime.tm_sec = 0;
+//   alarmTime.tm_mon = 0;
+//   alarmTime.tm_mon = 11;
+//   alarmTime.tm_hour = 0;
+//   alarmTime.tm_min = 2;
+//   alarmTime.tm_mday = 16;
+//   alarmTime.tm_year = 119;
+//   seconds = difftime(mktime(&alarmTime),now);
+//   printf("%.f seconds from alarm.\n", seconds);
+// }
+
+int updateTime(uint64_t timeNow) {
+  //convert to milis
+  unsigned long test = timeNow/1000;
+
+  //#secs
+  int seconds = floor((test / 1000));
+
+  //#milis
+  int milis = floor(test % 1000);
+  if (milis+old_milis > 1000) {
+    //if milis more than 1000 add second to time
+    seconds += 1;
+    //make up the difference to save the rest of the milis which didnt make the 1 sec
+    old_milis = (old_milis + milis) -1000 ;
+  } else {
+    old_milis += milis;
   }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-  strftime(date_string, sizeof(date_string), "%A, %B %d %Y", &timeinfo);
-  strftime(time_string, sizeof(time_string), "%H:%M:%S", &timeinfo);
-  setAlarmTime();
+  Serial.print("secs");
+
+  Serial.println(seconds);
+  Serial.print("milis");
+
+  Serial.println(old_milis);
+  return seconds;
+
+
+
 }
 
-void setAlarmTime() {
-  time_t now;
-  struct tm alarmTime;
-  double seconds;
-  time(&now);
-  alarmTime = *localtime(&now);
-  alarmTime.tm_sec = 0;
-  alarmTime.tm_mon = 0;
-  alarmTime.tm_mon = 11;
-  alarmTime.tm_hour = 0;
-  alarmTime.tm_min = 2;
-  alarmTime.tm_mday = 16;
-  alarmTime.tm_year = 119;
-  seconds = difftime(mktime(&alarmTime),now);
-  printf("%.f seconds from alarm.\n", seconds);
-}
 
 // SETUP: initialisation entry point /////////////////////////////////////////
 void setup() {
@@ -118,8 +168,6 @@ void setup() {
   getMAC(MAC_ADDRESS);          // store the MAC address
   apSSID.concat(MAC_ADDRESS);   // add the MAC to the AP SSID
 
-  Serial.printf("\nsetup...\nESP32 MAC = %s\n", MAC_ADDRESS);
-  // power management
 
   //....
   unPhone::printWakeupReason(); // what woke us up?
@@ -132,17 +180,46 @@ void setup() {
   pixels.show(); // This sends the updated pixel color to the hardware.
   fadeVal = 0;
 
+  //first boot so connect to wifi to get time
+  if (bootCountt == 0) {
+    //Connect to save wifi, if none start AP
+    Serial.printf("doing wifi manager\n");
+    joinmeManageWiFi(apSSID.c_str(), apPassword.c_str()); // get net connection
+    Serial.printf("wifi manager done\n\n");
+    //GET current time and print to serial line
+    int year;
+    while( year < 118) {
+      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+      delay(1000);
+      time(&time_now);
+      struct tm yearCheck;
+      yearCheck = *localtime(&time_now);
+      year = yearCheck.tm_year;
+    }
+    bootCountt++;
+    offset_time = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get());
+  }
 
-  //Connect to save wifi, if none start AP
-  Serial.printf("doing wifi manager\n");
-  joinmeManageWiFi(apSSID.c_str(), apPassword.c_str()); // get net connection
-  Serial.printf("wifi manager done\n\n");
 
 
-  //GET current time and print to serial line
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  printLocalTime();
 
+  uint64_t  timeDiff;
+  uint64_t timeNow = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+  timeDiff = timeNow - sleepTime;
+
+  int secs = updateTime(timeDiff);
+  time_now = time_t(time_now) + secs;
+  timeinfo = localtime (&time_now);
+  Serial.printf ("%s\n", asctime(timeinfo));
+
+  printf("offset: %"PRIu64"ms, Duration: %"PRIu64"ms\n", offset_time / 1000, timeDiff / 1000);
+  sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+  esp_sleep_enable_timer_wakeup(5 * 1000000);
+  esp_deep_sleep_start();
+
+
+  // WiFi_Disconnect();
+  // delay(200); // do not remove, need a delay for disconnect to change status()
 
   //Show Alarm User interface
   uiCont = new UIController(ui_alarm);
@@ -150,13 +227,17 @@ void setup() {
     E("WARNING: ui.begin failed!\n")
   }
 
+  // test_function(timer_begin);
+
 }
 
-
+unsigned long timer_begin;
 void loop() {
   D("\nentering main loop\n")
   while(1) {
-    micros(); // update overflow
+
+    printLocalTime();
+
 
     //if power switch on -> do usual activities
     if (powerOn()) {
@@ -166,20 +247,22 @@ void loop() {
       powerMode();
     }
 
-    //print time to serial line
-    printLocalTime();
+
 
     //If button 2 pressed deep_sleep
     if(unPhone::button2()) {
       //set esp to sleep for x seconds or if it gets woken by button
-      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-      Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) +
-      " Seconds");
+      // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+      // Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) +
+      // " Seconds");
+
       //wake up with button one
       esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
+
+      //on sleep = power options
       IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+      // digitalWrite(GPIO_NUM_36, LOW);
       //start deep sleep
-      esp_deep_sleep_start();
     }
 
     // allow the protocol CPU IDLE task to run periodically
@@ -208,6 +291,9 @@ bool powerOn() {
 //other part of power switch. - Checks usb connection and then does the same as
 //the original method
 void powerMode(){
+  //set bootcountt to 0 so that time is fetched next time device turned on
+  bootCountt = 0;
+
   bool usbConnected = bitRead(unPhone::getRegister(BM_I2Cadd, BM_Status), 2);
   if (!usbConnected) {
     pixelsOff();
