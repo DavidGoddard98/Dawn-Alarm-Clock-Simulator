@@ -1,4 +1,4 @@
-// IOExpander.h 
+// IOExpander.h
 // Jon Williamson, Pimoroni, Oct/Nov 2018
 
 #include <stdint.h>
@@ -40,7 +40,7 @@ class IOExpander {
     static const uint8_t VERSION_1     =  0;
     static const uint8_t VERSION_2     = 12;
     static const uint8_t VERSION_3     = 15;
-    
+
     static const uint8_t LCD_RESET     =  1 | 0x40;
     static const uint8_t BACKLIGHT     =  2 | 0x40;
     static const uint8_t LCD_CS        =  3 | 0x40;
