@@ -21,17 +21,37 @@ class MenuUIElement: public UIElement { /////////////////////////////////////
     int8_t getMenuItemSelected() { return menuItemSelected; }
 };
 
+class HomeUIElement: public UIElement { ///////////////////////////////////
+private:
+  long m_timer;
+public:
+  HomeUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
+  : UIElement(tft, ts) { m_timer = millis(); };
+  bool handleTouch(long x, long y);
+  void draw();
+  void runEachTurn();
+};
+
 class AlarmUIElement: public UIElement { ///////////////////////////////////
-  private:
-    long m_timer;
+  // private:
+  //   long m_timer;
   public:
     AlarmUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
-     : UIElement(tft, ts) { m_timer = millis(); };
-    bool handleTouch(long x, long y);
+     : UIElement(tft, ts) { };
+    bool handleTouch(long, long);
     void draw();
     void runEachTurn();
 };
 
-
+class DawnUIElement: public UIElement { ///////////////////////////////////
+  private:
+    // long m_timer;
+  public:
+    DawnUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
+     : UIElement(tft, ts) { };
+    bool handleTouch(long, long);
+    void draw();
+    void runEachTurn();
+};
 
 #endif
