@@ -11,19 +11,19 @@ void saveParamCallback();
 
 bool joinmeManageWiFi(const char *apSSID, const char *apKey) {
   // uncomment for testing
-  // wm.resetSettings(); // wipe settings
+  wm.resetSettings(); // wipe settings
 
   int customFieldLength = 40; // add a custom input field
 
   // new (&custom_field) WiFiManagerParameter("customfieldid", "Custom Field
   // Label", "Custom Field Value", customFieldLength,"placeholder=\"Custom
   // Field Placeholder\"");
-  
+
   // test custom html input type(checkbox) new (&custom_field)
   // WiFiManagerParameter("customfieldid", "Custom Field Label", "Custom Field
   // Value", customFieldLength,"placeholder=\"Custom Field Placeholder\"
   // type=\"checkbox\""); // custom html type
-  
+
   // test custom html(radio)
   const char* custom_radio_str = "<br/><label for='customfieldid'>Custom Field Label</label><input type='radio' name='customfieldid' value='1' checked> One<br><input type='radio' name='customfieldid' value='2'> Two<br><input type='radio' name='customfieldid' value='3'> Three";
   new (&custom_field) WiFiManagerParameter(custom_radio_str); // custom i/p
@@ -31,7 +31,7 @@ bool joinmeManageWiFi(const char *apSSID, const char *apKey) {
   wm.setSaveParamsCallback(saveParamCallback);
 
   // custom menu via array or vector
-  // 
+  //
   // menu tokens,
   // "wifi","wifinoscan","info","param","close","sep","erase","restart","exit"
   // (sep is seperator) (if param is in menu, params will not show up in wifi
@@ -58,7 +58,7 @@ bool joinmeManageWiFi(const char *apSSID, const char *apKey) {
   if(!res) {
     Serial.println("Failed to connect or hit timeout");
   } else {
-    //if you get here you have connected to the WiFi    
+    //if you get here you have connected to the WiFi
 /* TODO unnesc?    wm.stopConfigPortal();
     wm.stopWebPortal(); */
     Serial.println("connected...yeey :)");
