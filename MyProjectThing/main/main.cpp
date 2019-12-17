@@ -77,7 +77,7 @@ unsigned long timer = micros();
 
 
 // globals for a wifi access point and webserver ////////////////////////////
-String apSSID = String("Pro+UpdThing-"); // SSID of the AP
+String apSSID = String("Paz_Dave_Unphone-"); // SSID of the AP
 String apPassword = _DEFAULT_AP_KEY;     // passkey for the AP
 
 //Time start Settings:
