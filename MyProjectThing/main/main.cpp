@@ -121,8 +121,8 @@ void setAlarmTime() {
   alarmTime.tm_sec = 0;
   alarmTime.tm_mon = 0;
   alarmTime.tm_mon  = 11;
-  alarmTime.tm_hour = 3;
-  alarmTime.tm_min = 50;
+  alarmTime.tm_hour = 4;
+  alarmTime.tm_min = 16;
   alarmTime.tm_mday = 16;
   alarmTime.tm_year = 119;
 }
@@ -217,7 +217,7 @@ void setup() {
 
 
   //Show Alarm User interface
-  uiCont = new UIController(ui_alarm);
+  uiCont = new UIController(ui_home);
   if(!uiCont->begin()) {
     E("WARNING: ui.begin failed!\n")
   }
@@ -240,6 +240,7 @@ void loop() {
   unsigned long int timer_2 = micros();
   while(1) {
 
+    uiCont->run();
 
     if (!alarmSet) {
       setAlarmTime();
@@ -298,7 +299,9 @@ void loop() {
       sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
       esp_deep_sleep_start();
     }
-
+    printLocalTime();
+    printf("%.f seconds from alarm.\n", seconds);
+    Serial.print(loopIter);
     // allow the protocol CPU IDLE task to run periodically
     if(loopIter % 2500 == 0) {
       printLocalTime();

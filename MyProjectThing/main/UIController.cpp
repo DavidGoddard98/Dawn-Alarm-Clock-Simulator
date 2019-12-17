@@ -8,9 +8,11 @@ bool UIController::provisioned = false;
 // the UI elements types (screens) /////////////////////////////////////////
 char *ui_mode_names[] = {
   "Menu",
-  "Alarm menu",
+  "Home Display",
+  "Set Alarm",
+  "Set Dawn Color"
 };
-uint8_t NUM_UI_ELEMENTS = 5;  // number of UI elements
+uint8_t NUM_UI_ELEMENTS = 4;  // number of UI elements
 
 // keep Arduino IDE compiler happy /////////////////////////////////////////
 UIElement::UIElement(Adafruit_HX8357* tftp, Adafruit_STMPE610* tsp) {
@@ -46,8 +48,14 @@ UIElement* UIController::allocateUIElement(ui_modes_t newMode) {
     case ui_menu:
       m_element = m_menu;
       break;
+    case ui_home:
+      m_element = new HomeUIElement(unPhone::tftp, unPhone::tsp);
+      break;
     case ui_alarm:
       m_element = new AlarmUIElement(unPhone::tftp, unPhone::tsp);
+      break;
+    case ui_dawn:
+      m_element = new DawnUIElement(unPhone::tftp, unPhone::tsp);
       break;
     default:
       Serial.printf("invalid UI mode %d in allocateUIElement\n", newMode);
@@ -156,8 +164,8 @@ void UIController::changeMode() {
     if(menuSelection != -1)     // if user selected an item use it
       nextMode = (ui_modes_t) menuSelection; // (else use current nextMode)
 
-    if(nextMode == ui_alarm)
-      setTimeSensitivity(25);   // ? make class member and move to TPUIE
+    // if(nextMode == ui_home)
+    //setTimeSensitivity(25);   // ? make class member and move to TPUIE
 
     m_mode =    nextMode;
     m_element = allocateUIElement(nextMode);
@@ -169,7 +177,7 @@ void UIController::changeMode() {
     nextMode = (ui_modes_t) modeCounter;
     dbf(miscDBG, "nextMode=%d, modeCounter=%d\n", nextMode, modeCounter);
 
-    m_mode =    ui_menu;
+    m_mode =   ui_menu;
     m_element = m_menu;
   }
 

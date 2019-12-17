@@ -43,7 +43,9 @@ class UIElement { ///////////////////////////////////////////////////////////
 // the UI elements types (screens) /////////////////////////////////////////
 enum ui_modes_t {
   ui_menu = 0,          //  0
-  ui_alarm    ,         //  1
+  ui_home,
+  ui_dawn,
+  ui_alarm //  1
 };
 extern char *ui_mode_names[];
 extern uint8_t NUM_UI_ELEMENTS;  // number of UI elements (screens)
@@ -56,7 +58,7 @@ class UIController { ////////////////////////////////////////////////////////
     void handleTouch();
     void changeMode();
     ui_modes_t m_mode;
-    ui_modes_t nextMode = ui_alarm; // starting mode
+    ui_modes_t nextMode = ui_home; // starting mode
     uint8_t modeCounter = 1; // number of mode changes % # of ui elements
   public:
     UIController(ui_modes_t);
