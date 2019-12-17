@@ -26,7 +26,7 @@ bool HomeUIElement::handleTouch(long x, long y) {
 void HomeUIElement::draw(){
   //m_tft->setRotation(3);
 
-
+  m_tft->setRotation(1);
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(3);
   m_tft->setCursor(5, 5);
@@ -68,10 +68,10 @@ String greeting() {
   if (hour >= 6 && hour < 12) { // morning 6am to 11.59am
     greet = "Good morning";
   }
-  else if (hour >= 12 && hour < 15) { // noon 12pm to 4.59pm
+  else if (hour >= 12 && hour < 17) { // noon 12pm to 4.59pm
     greet = "Good afternoon";
   }
-  else if (hour >= 15 && hour < 20) { // evening 5pm to 7:59pm
+  else if (hour >= 17 && hour < 20) { // evening 5pm to 7:59pm
     greet = "Good evening";
   }
   else { // night 8pm to 5:59am
