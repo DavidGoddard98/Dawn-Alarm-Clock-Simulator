@@ -30,6 +30,17 @@ public:
   bool handleTouch(long x, long y);
   void draw();
   void runEachTurn();
+  void clearTime();
+  void drawGreeting();
+  void clearSec();
+  void drawTime();
+  void clearMin();
+  void clearHour();
+  void clearAlarm();
+  void drawDate();
+  void flashDots();
+  void drawDawnTime();
+  void clearDate();
 };
 
 class AlarmUIElement: public UIElement { ///////////////////////////////////

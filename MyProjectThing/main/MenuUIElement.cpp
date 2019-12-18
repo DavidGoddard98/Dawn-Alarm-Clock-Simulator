@@ -27,7 +27,7 @@ uint8_t MenuUIElement::mapTextTouch(long xInput, long yInput) {
 
 // draw a textual menu ///////////////////////////////////////////////////
 void MenuUIElement::draw(){
-  m_tft->setTextSize(2);
+  m_tft->setTextSize(1);
   m_tft->setTextColor(BLUE);
 
   m_tft->setCursor(230, 0);

@@ -108,7 +108,7 @@ RTC_DATA_ATTR uint64_t sleepTime;
 RTC_DATA_ATTR uint64_t offset_time;
 RTC_DATA_ATTR bool alarmNotSet = true;
 RTC_DATA_ATTR int am_sec = 0;
-RTC_DATA_ATTR int am_min = 22;
+RTC_DATA_ATTR int am_min = 52;
 RTC_DATA_ATTR int am_hour = 2;
 RTC_DATA_ATTR int am_day = 18;
 RTC_DATA_ATTR int am_mon = 11;
