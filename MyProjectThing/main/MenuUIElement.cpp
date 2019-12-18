@@ -34,15 +34,15 @@ void MenuUIElement::draw(){
   m_tft->print("MENU");
 
   uint16_t yCursor = 30;
-  m_tft->drawFastHLine(0, yCursor, 320, MAGENTA);
+  m_tft->drawFastHLine(0, yCursor, 480, MAGENTA);
   yCursor += 16;
 
   for(int i = 1; i < NUM_UI_ELEMENTS; i++) {
     m_tft->setCursor(0, yCursor);
     m_tft->print(ui_mode_names[i]);
-    drawSwitcher(288, yCursor - 12);
+    drawSwitcher(448, yCursor - 12);
     yCursor += 32;
-    m_tft->drawFastHLine(0, yCursor, 320, MAGENTA);
+    m_tft->drawFastHLine(0, yCursor, 480, MAGENTA);
     yCursor += 16;
   }
 }
