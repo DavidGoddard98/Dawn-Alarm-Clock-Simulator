@@ -95,7 +95,8 @@ String ip2str(IPAddress address);
 void getWiFiNetworks();
 #define ALEN(a) ((int) (sizeof(a) / sizeof(a[0]))) // only in definition scope!
 #define GET_HTML(strout, boiler, repls) \
-  getHtml(strout, boiler, ALEN(boiler), repls, ALEN(repls));
+  getHtml(strout, boiler, ALEN(boiler), repls, ALE
+    N(repls));
 
 
 //SAVE DATA OVER BOOT IN RCU MEMORY
@@ -151,7 +152,7 @@ void setup() {
   apSSID.concat(MAC_ADDRESS);   // add the MAC to the AP SSID
 
   //Show Wifi UI
-  uiCont = new UIController(ui_WiFi);
+  uiCont = new UIController(ui_boot);
   if(!uiCont->begin()) {
     E("WARNING: ui.begin failed!\n")
   }
@@ -240,6 +241,8 @@ void loop() {
 }
 
 void fetchTime() {
+  uiCont->showUI(ui_home);
+
   //Connect to saved wifi, if none start AP
   WiFi.begin();
   delay(1000);
@@ -346,6 +349,7 @@ void pixelsOff() {
   for	( int i = 0 ; i < NR_LED ; i ++ )	{
     np_set_pixel_rgbw(&px, i , 0, 0, 0, 0);
   }
+  delay(1000);
   //let pixels settle
   //re set 1st pixel (often glitches and stays on)
   np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
