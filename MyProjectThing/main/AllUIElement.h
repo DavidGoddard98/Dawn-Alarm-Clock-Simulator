@@ -54,4 +54,26 @@ class DawnUIElement: public UIElement { ///////////////////////////////////
     void runEachTurn();
 };
 
+class WiFiUIElement: public UIElement { ///////////////////////////////////
+  private:
+    // long m_timer;
+  public:
+    WiFiUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
+     : UIElement(tft, ts) { };
+    bool handleTouch(long, long);
+    void draw();
+    void runEachTurn();
+};
+
+class ConfigUIElement: public UIElement { ///////////////////////////////////
+  private:
+    // long m_timer;
+  public:
+    ConfigUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
+     : UIElement(tft, ts) { };
+    bool handleTouch(long, long);
+    void draw();
+    void runEachTurn();
+};
+
 #endif

@@ -32,34 +32,30 @@ extern "C" {
 }
 
 
-
-
-
 //CONSTANTS AND INSTANTS////////////////////////////////////////////////
 int loopIter = 0;        // loop slices
 const byte BM_I2Cadd   = 0x6b; // the chip lives here on I²C
 const byte BM_Status   = 0x08; // system status register
 bool snooze = false;
-int dawnTime = 240000000;
-int time_check_hour =0;
-double seconds;
-unsigned long timer = micros();
+int time_check_hour =0; //hours since last wifi grab
+double seconds; //used for time2alarm
+bool alarm_on = false;
+int year;
+char MAC_ADDRESS[13];    // MAC addresses are 12 chars, plus the NULL
+double dawn_seconds; //used for time2dawn
+unsigned long timer = micros(); // timer to fade in pixels over set time
+const char* ntpServer = "0.pool.ntp.org"; //Time start Settings:
+const long  gmtOffset_sec = 0; //offsets
+const int   daylightOffset_sec = 0;
 UIController *uiCont;
 #define uS_TO_S_FACTOR 1000000  //Convert seconds to microseconds
 // globals for a wifi access point and webserver ////////////////////////////
 String apSSID = String("Paz_Dave_Unphone-"); // SSID of the AP
 String apPassword = _DEFAULT_AP_KEY;     // passkey for the AP
-const char* ntpServer = "0.pool.ntp.org"; //Time start Settings:
-//offsets
-const long  gmtOffset_sec = 0;
-const int   daylightOffset_sec = 0;
 uint64_t timeDiff, timeNow; //RTC clock variables
-bool alarm_on = false;
 
 
-
-
-//NEOPIXEL LEDS SHIT////////////////////////
+//NEOPIXEL ESPIDF variant
 //imports
 #include	<string.h>
 #include	"esp_event_loop.h"	//	for usleep
@@ -68,7 +64,7 @@ bool alarm_on = false;
 #include	<esp_log.h>
 
 //constants and instants
-#define	NEOPIXEL_PORT	15
+#define	NEOPIXEL_PORT	15 //Pin
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
@@ -102,45 +98,257 @@ void getWiFiNetworks();
   getHtml(strout, boiler, ALEN(boiler), repls, ALEN(repls));
 
 
-
-//TODO SAVE DATA OVER BOOT IN RCU MEMORY
+//SAVE DATA OVER BOOT IN RCU MEMORY
 RTC_DATA_ATTR byte bootCountt = 0;
 RTC_DATA_ATTR time_t time_now;
 RTC_DATA_ATTR struct tm * timeinfo;
-RTC_DATA_ATTR struct tm alarmTime;
+RTC_DATA_ATTR struct tm *  alarmTime;
 RTC_DATA_ATTR int old_milis;
 RTC_DATA_ATTR uint64_t sleepTime;
 RTC_DATA_ATTR uint64_t offset_time;
 RTC_DATA_ATTR bool alarmNotSet = true;
 RTC_DATA_ATTR int am_sec = 0;
-RTC_DATA_ATTR int am_min = 36;
-RTC_DATA_ATTR int am_hour = 19;
-RTC_DATA_ATTR int am_day = 17;
+RTC_DATA_ATTR int am_min = 22;
+RTC_DATA_ATTR int am_hour = 2;
+RTC_DATA_ATTR int am_day = 18;
 RTC_DATA_ATTR int am_mon = 11;
 RTC_DATA_ATTR int am_year = 119;
-
+RTC_DATA_ATTR int fade_time = 240000000;
+RTC_DATA_ATTR time_t alarm_time;
+RTC_DATA_ATTR time_t dawn_time;
 
 
 // define methods//////////////////////////////////////////////////////
-char *getMAC(char *);    // read the address into buffer
-char MAC_ADDRESS[13];    // MAC addresses are 12 chars, plus the NULL
-void lcdMessage(char *); // message on screen
+void fetchTime();
+void inActiveSleep();
+void forcedSleep();
 void setupPixels();
 void pixelsOff();
-void fadePixels(long int fade_time);
+void fadePixels();
+void printLocalTime();
+void setAlarmTime() ;
+void printLocalTime() ;
+void updateTime();
+int hourCheck();
+double time2Alarm();
+double time2Dawn();
+void vibrate();
+void stopAlarm();
+void snoozeAlarm();
 bool powerOn();
 void powerMode();
-void setAlarmTime();
+void lcdMessage(char *); // message on screen
+char *getMAC(char *);    // read the address into buffer
+
 /////////////////////////////////////////////////////////////////////////////////
 
+//SETUP METHOD
+//==============================================================================
+void setup() {
+  UNPHONE_DBG = true;
+  unPhone::begin();
+  getMAC(MAC_ADDRESS);          // store the MAC address
+  apSSID.concat(MAC_ADDRESS);   // add the MAC to the AP SSID
+
+  //Show Wifi UI
+  uiCont = new UIController(ui_WiFi);
+  if(!uiCont->begin()) {
+    E("WARNING: ui.begin failed!\n")
+  }
+
+  //....
+  unPhone::printWakeupReason(); // what woke us up?
+  unPhone::checkPowerSwitch();  // if power switch is off, shutdown
+
+  //Initialise and setup pixels up. Also clears them
+  setupPixels();
+
+  //first boot so connect to wifi to get time
+  if (bootCountt == 0 ) {
+    fetchTime(); //connects to wifi and gets time
+  }
+
+  //add time esp has been asleep for to current time
+  updateTime();
+
+  //check if its been two hours since last timefetch (from internet)
+  //if it has restart and fetch again (keep accuraate)
+  if(hourCheck() >= 2) {
+    bootCountt =0;
+    ESP.restart();
+  }
+
+  //show the basic alarm clock UI
+  uiCont->showUI(ui_home);
+
+  //print time
+  Serial.printf ("%s\n", asctime(timeinfo));
+}
+
+//LOOP METHOD
+//==============================================================================
+void loop() {
+  D("\nentering main loop\n")
+  unsigned long int timer_2 = micros();
+  while(1) {
+    uiCont->run();
+
+    //If power switch not on check if usb connected
+    if (!powerOn()) powerMode();
+
+    if (alarmNotSet) setAlarmTime();
+
+    if (time2Dawn() == 0.00 ) { //start dawn simulator
+      if (micros() - timer >= (fade_time/255)) {
+        fadePixels();
+        timer = micros();
+      }
+      if (time2Alarm() == 0.00 ) { //start vibrations
+        alarm_on = true;
+        vibrate();
+        if (unPhone::button3()) snoozeAlarm();
+        if (unPhone::button1()) stopAlarm();
+      }
+    }
+
+    //Sleep the ESP automatically if time 2 alarm is longer than dawn time
+    if (time2Alarm() > (fade_time/1000000) + 5 && (micros() - timer_2 >= 30000000)) {
+      inActiveSleep();
+    }
+
+    //If button 2 pressed deep_sleep
+    if(unPhone::button2()) {
+      forcedSleep();
+    }
+
+    // allow the protocol CPU IDLE task to run periodically
+    if(loopIter % 2500 == 0) {
+      printLocalTime();
+
+      if(loopIter % 25000 == 0) {
+        D("completed loop %d, yielding 1000th time since last\n", loopIter);
+        printf("%.f seconds from alarm.\n", seconds);
+        Serial.println("Time to alarm:" + String(time2Alarm()));
+        Serial.println("Time to dawn:" + String(time2Dawn()));
+      }
+
+      delay(100); // 100 appears min to allow IDLE task to fire
+    }
+    loopIter++;
+
+  }
+}
+
+void fetchTime() {
+  //Connect to saved wifi, if none start AP
+  WiFi.begin();
+  delay(1000);
+
+  Serial.printf("Starting AP");
+  WiFi.mode(WIFI_STA);
+
+  //create access point and set up its credentials
+  WiFi.softAP(apSSID.c_str(), apPassword.c_str());
+  vTaskDelay(400); //settle
+
+  // init the web server
+  webServer = new AsyncWebServer(80);
+  initWebServer();
+  vTaskDelay(400); //settle
+
+  //let wifi AP settle
+  if (WiFi.status() != WL_CONNECTED) {
+    uiCont->showUI(ui_config); //show config UI page
+    while(WiFi.status() != WL_CONNECTED) {
+      if (micros() == 300000000) { //4 mins to connect to AP
+        ESP.restart();
+      }
+      Serial.print("Connect to AP");
+    }
+  }
+
+  //GET current time and print to serial line
+  while( year < 118) {
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer); //gets current time
+    delay(1000);
+    time(&time_now);
+    struct tm yearCheck;
+    yearCheck = *localtime(&time_now);
+    year = yearCheck.tm_year;
+    //stores year - (if < 2019 then time was not retrievied correctly)
+    //default is 1970...
+
+  }
+
+  //disconnect WiFi as it's no longer needed
+  WiFi.disconnect(true);
+  WiFi.softAPdisconnect (true);
+  WiFi.mode(WIFI_OFF);
+
+  //increment boot count so wifi isnt connected to again
+  bootCountt++;
+
+  //initialise offset to take off time taken to get here.
+  offset_time = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get());
+}
+
+void inActiveSleep() {
+  //wake up with button one
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
+
+  //Turn off screen
+  IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+
+  //pixels off
+  pixelsOff();
+  delay(1000); //let them settle
+
+  //wake up when dawn simulator is about to start
+  esp_sleep_enable_timer_wakeup((time2Dawn() - 20) * uS_TO_S_FACTOR);
+
+  Serial.println("Setup ESP32 to sleep for:");
+  Serial.println(time2Dawn()-20);
+
+  //Keep track of time before sleep
+  sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+
+  //start deep sleep
+  esp_deep_sleep_start();
+}
+
+void forcedSleep() {
+  //wake up with button one
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
+
+  //or before dawn simulator starts
+  if(time2Dawn() > 0) {
+    esp_sleep_enable_timer_wakeup(time2Dawn() * uS_TO_S_FACTOR);
+    Serial.println("Setup ESP32 to sleep for:");
+    Serial.println(time2Dawn());
+  }
+
+  //Turn peripherals off to save power
+  IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+  pixelsOff();
+  delay(1000);
+
+  Serial.println("User chose to sleep device with button 2");
+  //Keep track of time before sleep
+  sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+  //start deep sleep
+  esp_deep_sleep_start();
+}
+
+//PIXEL METHODS
+//=============================================================================
 void pixelsOff() {
   //set all values to 0
   for	( int i = 0 ; i < NR_LED ; i ++ )	{
     np_set_pixel_rgbw(&px, i , 0, 0, 0, 0);
   }
-  delay(100);
+  //let pixels settle
+  //re set 1st pixel (often glitches and stays on)
   np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
-  delay(100);
   np_show(&px, NEOPIXEL_RMT_CHANNEL);
 }
 
@@ -148,28 +356,29 @@ void setupPixels() {
 
   rc = neopixel_init(NEOPIXEL_PORT, NEOPIXEL_RMT_CHANNEL);
   ESP_LOGE("main", "neopixel_init rc = %d", rc);
-	usleep(1000*1000);
+  usleep(1000*1000);
 
   pixelsOff();
+  delay(1000);
 
   px.pixels = (uint8_t *)pixels;
-	px.pixel_count = NR_LED;
+  px.pixel_count = NR_LED;
   strcpy(px.color_order, "GRB");
 
-	memset(&px.timings, 0, sizeof(px.timings));
-	px.timings.mark.level0 = 1;
-	px.timings.space.level0 = 1;
-	px.timings.mark.duration0 = 12;
+  memset(&px.timings, 0, sizeof(px.timings));
+  px.timings.mark.level0 = 1;
+  px.timings.space.level0 = 1;
+  px.timings.mark.duration0 = 12;
 
-	px.nbits = 24;
-	px.timings.mark.duration1 = 14;
-	px.timings.space.duration0 = 7;
-	px.timings.space.duration1 = 16;
-	px.timings.reset.duration0 = 600;
-	px.timings.reset.duration1 = 600;
+  px.nbits = 24;
+  px.timings.mark.duration1 = 14;
+  px.timings.space.duration0 = 7;
+  px.timings.space.duration1 = 16;
+  px.timings.reset.duration0 = 600;
+  px.timings.reset.duration1 = 600;
 
   //brightness of 255
-	px.brightness = 0xFF;
+  px.brightness = 0xFF;
 
 }
 
@@ -185,29 +394,39 @@ void fadePixels() {
 
 //gets and print local time, returns failed if no time found.
 //also fill date_string and time_string with relevant info
-void printLocalTime()
-{
+void printLocalTime() {
   time(&time_now);
   timeinfo = localtime (&time_now);
   Serial.printf ("%s\n", asctime(timeinfo));
 }
 
+
 void setAlarmTime() {
   time(&time_now);
-  alarmTime = *localtime(&time_now);
-  alarmTime.tm_sec = am_sec;
-  alarmTime.tm_hour = am_hour;
-  alarmTime.tm_min = am_min;
-  alarmTime.tm_mon  = am_mon;
-  alarmTime.tm_mday = am_day;
-  alarmTime.tm_year = am_year;
+  alarmTime = localtime(&time_now);
+  alarmTime->tm_sec = am_sec;
+  alarmTime->tm_hour = am_hour;
+  alarmTime->tm_min = am_min;
+  alarmTime->tm_mon  = am_mon;
+  alarmTime->tm_mday = am_day;
+  alarmTime->tm_year = am_year;
+  alarm_time = mktime (alarmTime);
+
+  dawn_time = alarm_time - 240;//(fade_time/1000000);
+  alarmNotSet = false;
 }
 
-void updateTime(uint64_t time_diff) {
+void updateTime() {
+  //rtc keeps track of time its been sleeping for.
+  //Time now - time sleep(time before sleep = time been sleeping for
+  //Add this to time clock tells us correct time.
+  timeNow = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+  timeDiff = timeNow - sleepTime;
+
   //#secs
-  int seconds = floor((time_diff / 1000000));
+  int seconds = floor((timeDiff / 1000000));
   //#milis
-  int milis = floor(time_diff % 1000000);
+  int milis = floor(timeDiff % 1000000);
 
   if (milis+old_milis > 1000) {
     //if milis more than 1000 add second to time
@@ -218,15 +437,29 @@ void updateTime(uint64_t time_diff) {
     old_milis += milis;
   }
   time_now = time_t(time_now) + seconds;
+  timeinfo = localtime (&time_now);
+
 }
 
-void hourCheck(uint64_t time_since_start) {
-  time_check_hour = time_since_start/3600000000;
+int hourCheck() {
+  int num_hours = floor(timeNow/3600000000); //divide by hours
+  return num_hours;
 }
 
 double time2Alarm() {
-  seconds = difftime(mktime(&alarmTime),time_now);
+  seconds = difftime(alarm_time,time_now);
+  if (seconds <= 0) {
+    seconds = 0;
+  }
   return seconds;
+}
+
+double time2Dawn() {
+  dawn_seconds = difftime(dawn_time, time_now);
+  if (dawn_seconds <= 0) {
+    dawn_seconds = 0;
+  }
+  return dawn_seconds;
 }
 
 void vibrate() {
@@ -235,195 +468,19 @@ void vibrate() {
 }
 
 void stopAlarm() {
-  pixelsOff();
-  am_year = 130;
+  alarm_on = false;
+  am_year += 50;
   setAlarmTime();
+  pixelsOff();
+  delay(500);
 }
 
 void snoozeAlarm() {
-  am_sec += 300 ;
-  setAlarmTime();
+  alarm_on = false;
+  alarm_time += 300;
+  dawn_time += 300;
   pixelsOff();
-}
-
-// SETUP: initialisation entry point /////////////////////////////////////////
-void setup() {
-  UNPHONE_DBG = true;
-  unPhone::begin();
-  getMAC(MAC_ADDRESS);          // store the MAC address
-  apSSID.concat(MAC_ADDRESS);   // add the MAC to the AP SSID
-
-
-  //....
-  unPhone::printWakeupReason(); // what woke us up?
-  unPhone::checkPowerSwitch();  // if power switch is off, shutdown
-
-  setupPixels();
-
-  //first boot so connect to wifi to get time
-  if (bootCountt == 0 ) {
-    //Connect to save wifi, if none start AP
-    // Serial.printf("doing wifi manager\n");
-    // joinmeManageWiFi(apSSID.c_str(), apPassword.c_str()); // get net connection
-    // Serial.printf("wifi manager done\n\n");
-    // WiFi.begin(ssid, password);
-    // while (WiFi.status() != WL_CONNECTED) {
-    //   delay(500);
-    //   Serial.print(".");
-    //   if (++wifiCounter > 30) ESP.restart(); // restart after 15 s
-    // }
-    // Serial.println(" CONNECTED");
-    WiFi.disconnect(true);
-
-    WiFi.begin();
-    while(WiFi.status() != WL_CONNECTED) {
-      Serial.printf("Starting AP");
-      WiFi.mode(WIFI_STA);
-      //create access point and set up its credentials
-      WiFi.softAP(apSSID.c_str(), apPassword.c_str());
-      vTaskDelay(400);
-
-      //Try and connect to last known network
-      // init the web server, say hello
-      webServer = new AsyncWebServer(80);
-      initWebServer();
-
-
-      if (micros() == 300000000) {
-        ESP.restart();
-      }
-      delay(1000);
-      //let wifi AP settle
-      vTaskDelay(400);
-    }
-
-    delay(1000);
-    //GET current time and print to serial line
-    int year = 0;
-    while( year < 118) {
-      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-      delay(1000);
-      time(&time_now);
-      struct tm yearCheck;
-      yearCheck = *localtime(&time_now);
-      year = yearCheck.tm_year;
-      Serial.print("year");
-
-      Serial.print(year);
-      // WiFi_Disconnect();
-      // delay(200); // do not remove, need a delay for disconnect to cha nge status()
-
-    }
-    bootCountt++;
-
-    offset_time = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get());
-  }
-
-  timeNow = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
-  timeDiff = timeNow - sleepTime;
-  updateTime(timeDiff);
-  timeinfo = localtime (&time_now);
-
-  hourCheck(timeNow);
-  if(time_check_hour >= 2) {
-    bootCountt =0;
-    ESP.restart();
-  }
-
-  Serial.printf ("%s\n", asctime(timeinfo));
-
-
-  //Show Alarm User interface
-  uiCont = new UIController(ui_dawn);
-  if(!uiCont->begin()) {
-    E("WARNING: ui.begin failed!\n")
-  }
-}
-
-void loop() {
-  D("\nentering main loop\n")
-  unsigned long int timer_2 = micros();
-  while(1) {
-    uiCont->run();
-
-    if (alarmNotSet) {
-      setAlarmTime();
-      alarmNotSet = false;
-    }
-
-    //Start alarm
-    if (time2Alarm() <= dawnTime/1000000 ) {
-      if (micros() - timer >= (dawnTime/255)) {
-        Serial.print("here");
-        fadePixels();
-        timer = micros();
-      }
-      if (time2Alarm() <= 0 ) {
-        alarm_on = true;
-        vibrate();
-      }
-    }
-
-    if (time2Alarm() > 800 && (micros() - timer_2 >= 30000000)) {
-      //wake up with button one
-      esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
-      //Set timer to 5 seconds
-      IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
-      digitalWrite(GPIO_NUM_36, LOW);
-
-      pixelsOff();
-      delay(1000); //let pixels settle
-
-    	esp_sleep_enable_timer_wakeup((time2Alarm() / 2) * uS_TO_S_FACTOR);
-    	Serial.println("Setup ESP32 to sleep for every " + String((time2Alarm() / 2)) +" Seconds");
-      esp_deep_sleep_start();
-
-    }
-
-    //else check if usb connected and then do such and such...
-    if (!powerOn()){
-      powerMode();
-    }
-    if(unPhone::button3() && alarm_on) {
-      alarm_on = false;
-      snoozeAlarm();
-    }
-    if(unPhone::button1() && alarm_on) {
-      alarm_on = false;
-      stopAlarm();
-    }
-
-    //If button 2 pressed deep_sleep
-    if(unPhone::button2()) {
-
-      //wake up with button one
-      esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
-
-      //on sleep = power options
-      IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
-      digitalWrite(GPIO_NUM_36, LOW);
-      pixelsOff();
-      delay(1000);
-
-      //start deep sleep
-      sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
-      esp_deep_sleep_start();
-    }
-
-    // allow the protocol CPU IDLE task to run periodically
-    if(loopIter % 2500 == 0) {
-      printLocalTime();
-
-      if(loopIter % 25000 == 0) {
-        D("completed loop %d, yielding 1000th time since last\n", loopIter);
-        printf("%.f seconds from alarm.\n", seconds);
-      }
-
-      delay(100); // 100 appears min to allow IDLE task to fire
-    }
-    loopIter++;
-
-  }
+  delay(500);
 }
 
 //check power switch - rewrote method to get switch state as a return
@@ -454,7 +511,6 @@ void powerMode(){
   } else {
     //turn pixels off
     pixelsOff();
-    //let pixels settle
     delay(1000);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_36, 0); // 1 = High, 0 = Low
     // cludge: LCD (and other peripherals) will still be powered when we're
@@ -492,13 +548,6 @@ char *getMAC(char *buf) { // the MAC is 6 bytes; needs careful conversion...
   }
   buf[12] = '\0';
   return buf;
-}
-
-// cycle the LED
-void flash() {
-  unPhone::rgb(0, 0, 0); delay(300); unPhone::rgb(0, 0, 1); delay(300);
-  unPhone::rgb(0, 1, 1); delay(300); unPhone::rgb(1, 0, 1); delay(300);
-  unPhone::rgb(1, 1, 0); delay(300); unPhone::rgb(1, 1, 1); delay(300);
 }
 
 
@@ -695,8 +744,12 @@ void apListForm(String& f) { // utility to create a form for choosing AP
       f.concat("<br/>\n");
       checked = "";
     }
+    f += "<br/> <br/>";
+    // custom option to choose uos other network
+    f += "UOS-other<input type='radio' name='ssid' value='uos-other' uos-other <br/><br/>";
     f += "<br/>Pass key: <input type='textarea' name='key'><br/><br/> ";
     f += "<input type='submit' value='Submit'></form></p>";
+
   }
 }
 String ip2str(IPAddress address) { // utility for printing IP addresses

@@ -10,11 +10,9 @@ char *ui_mode_names[] = {
   "Menu",
   "Home Display",
   "Set Alarm",
-  "Set Dawn Color",
-  "Joining Wifi",
-  "AP config",
+  "Set Dawn Color"
 };
-uint8_t NUM_UI_ELEMENTS = 6;  // number of UI elements
+uint8_t NUM_UI_ELEMENTS = 4;  // number of UI elements
 
 // keep Arduino IDE compiler happy /////////////////////////////////////////
 UIElement::UIElement(Adafruit_HX8357* tftp, Adafruit_STMPE610* tsp) {
@@ -59,12 +57,6 @@ UIElement* UIController::allocateUIElement(ui_modes_t newMode) {
       break;
     case ui_dawn:
       m_element = new DawnUIElement(unPhone::tftp, unPhone::tsp);
-      break;
-    case ui_WiFi:
-      m_element = new WiFiUIElement(unPhone::tftp, unPhone::tsp);
-      break;
-    case ui_config:
-      m_element = new ConfigUIElement(unPhone::tftp, unPhone::tsp);
       break;
     default:
       Serial.printf("invalid UI mode %d in allocateUIElement\n", newMode);
@@ -192,12 +184,6 @@ void UIController::changeMode() {
 
   redraw();
   return;
-}
-
-void UIController::showUI(ui_modes_t newMode) {
-  m_mode = newMode;
-  m_element = allocateUIElement(newMode);
-  redraw();
 }
 
 /////////////////////////////////////////////////////////////////////////////

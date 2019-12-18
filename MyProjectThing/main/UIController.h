@@ -45,7 +45,9 @@ enum ui_modes_t {
   ui_menu = 0,          //  0
   ui_home,
   ui_dawn,
-  ui_alarm //  1
+  ui_alarm,
+  ui_WiFi,
+  ui_config
 };
 extern char *ui_mode_names[];
 extern uint8_t NUM_UI_ELEMENTS;  // number of UI elements (screens)
@@ -63,6 +65,7 @@ class UIController { ////////////////////////////////////////////////////////
   public:
     UIController(ui_modes_t);
     bool begin();
+    void showUI(ui_modes_t newMode) ;
     UIElement* allocateUIElement(ui_modes_t);
     void run();
     void redraw();

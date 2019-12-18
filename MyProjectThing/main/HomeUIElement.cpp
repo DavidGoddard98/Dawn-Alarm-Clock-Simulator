@@ -42,8 +42,7 @@ void HomeUIElement::draw(){
   m_tft->setTextColor(GREEN);
   m_tft->setTextSize(6);
   m_tft->setCursor(15, 150);
-  double time2 = time2Alarm();
-  m_tft->print(time2--);
+  m_tft->print(String(time2Alarm()));
   m_tft->setCursor(15, 200);
   m_tft->print(time_str);
   delay(1000);
