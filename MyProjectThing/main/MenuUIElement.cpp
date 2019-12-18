@@ -30,10 +30,10 @@ void MenuUIElement::draw(){
   m_tft->setTextSize(1);
   m_tft->setTextColor(BLUE);
 
-  m_tft->setCursor(230, 0);
+  m_tft->setCursor(230, 15);
   m_tft->print("MENU");
 
-  uint16_t yCursor = 30;
+  uint16_t yCursor = 35;
   m_tft->drawFastHLine(0, yCursor, 480, MAGENTA);
   yCursor += 16;
 

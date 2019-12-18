@@ -122,7 +122,7 @@ void HomeUIElement::drawDawnTime() {
   m_tft->setTextColor(YELLOW);
   m_tft->setTextSize(2);
   m_tft->setCursor(120, 200);
-  m_tft->print("Dawn in: ");
+  m_tft->print("Alarm in: ");
   m_tft->print(p.first);m_tft->print("h ");
   m_tft->print(p.second);m_tft->print("m");
   fir = p.first;
