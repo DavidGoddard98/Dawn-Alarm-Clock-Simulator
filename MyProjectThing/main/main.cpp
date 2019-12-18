@@ -64,13 +64,21 @@ uint64_t timeDiff, timeNow; //RTC clock variables
 #include	<esp_log.h>
 
 //constants and instants
-#define	NEOPIXEL_PORT	15 //Pin
+#define	NEOPIXEL_PORT	15 //Pin //15
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
 uint32_t	 pixels[NR_LED];
 int rc;
 int pixelBrightness = 0;
+
+// IR SENSOR stuff
+#define PIR_AOUT A1  // PIR analog output on A0
+#define PIR_DOUT 27   // PIR digital output on D2
+#define LED_PIN  13  // LED to illuminate on motion
+#define PRINT_TIME 100 // Rate of serial printouts
+unsigned long lastPrint = 0; // Keep track of last serial out
+
 /////////////////////////////////////////
 
 //Connect to Wifi stuff/////////////////////
@@ -139,6 +147,8 @@ bool powerOn();
 void powerMode();
 void lcdMessage(char *); // message on screen
 char *getMAC(char *);    // read the address into buffer
+void readDigitalValue();
+void printAnalogValue();
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -150,6 +160,11 @@ void setup() {
   getMAC(MAC_ADDRESS);          // store the MAC address
   apSSID.concat(MAC_ADDRESS);   // add the MAC to the AP SSID
 
+
+  digitalRead(LED_PIN);
+  pinMode(PIR_AOUT, INPUT);
+  pinMode(PIR_DOUT, INPUT);
+  pinMode(LED_PIN, OUTPUT);
   //Show Wifi UI
   uiCont = new UIController(ui_boot);
   if(!uiCont->begin()) {
@@ -192,6 +207,9 @@ void loop() {
   unsigned long int timer_2 = micros();
   while(1) {
     uiCont->run();
+    readDigitalValue();
+    // Read A pin, print that value to serial port:
+    printAnalogValue();
 
     //If power switch not on check if usb connected
     if (!powerOn()) powerMode();
@@ -265,7 +283,6 @@ void fetchTime() {
       if (micros() == 300000000) { //4 mins to connect to AP
         ESP.restart();
       }
-      Serial.print("Connect to AP");
     }
   }
 
@@ -339,6 +356,49 @@ void forcedSleep() {
   sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
   //start deep sleep
   esp_deep_sleep_start();
+}
+
+// IR SENSOR METHODS
+void readDigitalValue()
+{
+  // The OpenPIR's digital output is active high
+  int motionStatus = digitalRead(PIR_DOUT);
+  Serial.print(motionStatus );
+  Serial.println("here ");
+
+  // If motion is detected, turn the onboard LED on:
+  if (motionStatus == HIGH) {
+    digitalWrite(LED_PIN, HIGH);
+    Serial.println("detected motion");
+  }
+  else {
+    digitalWrite(LED_PIN, LOW);
+    Serial.println("no motion");
+  }
+
+}
+
+void printAnalogValue()
+{
+  if ( (lastPrint + PRINT_TIME) < millis() )
+  {
+    lastPrint = millis();
+    // Read in analog value:
+    unsigned int analogPIR = analogRead(PIR_AOUT);
+    // Convert 10-bit analog value to a voltage
+    // (Assume high voltage is 5.0V.)
+    float voltage = (float) analogPIR / 1024.0 * 5.0;
+    // Print the reading from the digital pin.
+    // Mutliply by 5 to maintain scale with AOUT.
+    Serial.print(5 * digitalRead(PIR_DOUT));
+    Serial.print(',');    // Print a comma
+    Serial.print(2.5);    // Print the upper limit
+    Serial.print(',');    // Print a comma
+    Serial.print(1.7);    // Print the lower limit
+    Serial.print(',');    // Print a comma
+    Serial.print(voltage); // Print voltage
+    Serial.println();
+  }
 }
 
 //PIXEL METHODS
@@ -572,6 +632,7 @@ void getHtml( // turn array of strings & set of replacements into a String
       html.concat(boiler[i]);
   }
 }
+
 const char *templatePage[] = {    // we'll use Ex07 templating to build pages
   "<html><head><title>",                                                //  0
   "default title",                                                      //  1
