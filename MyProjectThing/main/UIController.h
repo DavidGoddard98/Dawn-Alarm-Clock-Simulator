@@ -47,7 +47,8 @@ enum ui_modes_t {
   ui_dawn,
   ui_alarm,
   ui_WiFi,
-  ui_config
+  ui_config,
+  ui_boot
 };
 extern char *ui_mode_names[];
 extern uint8_t NUM_UI_ELEMENTS;  // number of UI elements (screens)

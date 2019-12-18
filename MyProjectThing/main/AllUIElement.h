@@ -87,4 +87,15 @@ class ConfigUIElement: public UIElement { ///////////////////////////////////
     void runEachTurn();
 };
 
+class BootUIElement: public UIElement { ///////////////////////////////////
+  private:
+    // long m_timer;
+  public:
+    BootUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
+     : UIElement(tft, ts) { };
+    bool handleTouch(long, long);
+    void draw();
+    void runEachTurn();
+};
+
 #endif
