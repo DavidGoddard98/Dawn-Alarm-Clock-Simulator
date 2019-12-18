@@ -49,5 +49,5 @@ void MenuUIElement::draw(){
 
 //////////////////////////////////////////////////////////////////////////
 void MenuUIElement::runEachTurn(){ // text page UI, run each turn
-  // do nothing
+  draw();
 }

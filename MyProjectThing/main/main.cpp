@@ -64,7 +64,7 @@ uint64_t timeDiff, timeNow; //RTC clock variables
 #include	<esp_log.h>
 
 //constants and instants
-#define	NEOPIXEL_PORT	15 //Pin //15
+#define	NEOPIXEL_PORT	A7 //Pin //15
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
@@ -116,8 +116,8 @@ RTC_DATA_ATTR uint64_t sleepTime;
 RTC_DATA_ATTR uint64_t offset_time;
 RTC_DATA_ATTR bool alarmNotSet = true;
 RTC_DATA_ATTR int am_sec = 0;
-RTC_DATA_ATTR int am_min = 22;
-RTC_DATA_ATTR int am_hour = 2;
+RTC_DATA_ATTR int am_min = 26;
+RTC_DATA_ATTR int am_hour = 21;
 RTC_DATA_ATTR int am_day = 18;
 RTC_DATA_ATTR int am_mon = 11;
 RTC_DATA_ATTR int am_year = 119;
@@ -205,11 +205,17 @@ void setup() {
 void loop() {
   D("\nentering main loop\n")
   unsigned long int timer_2 = micros();
+  long int time_iter = 0;
   while(1) {
-    uiCont->run();
-    readDigitalValue();
-    // Read A pin, print that value to serial port:
-    printAnalogValue();
+
+    //only needs to be run every second
+    if (loopIter % 80 == 0) {
+      uiCont->run();
+    }
+
+    // readDigitalValue();
+    // // Read A pin, print that value to serial port:
+    // printAnalogValue();
 
     //If power switch not on check if usb connected
     if (!powerOn()) powerMode();
@@ -249,8 +255,6 @@ void loop() {
         Serial.println("Time to alarm:" + String(time2Alarm()));
         Serial.println("Time to dawn:" + String(time2Dawn()));
       }
-
-      delay(100); // 100 appears min to allow IDLE task to fire
     }
     loopIter++;
 
@@ -262,7 +266,7 @@ void fetchTime() {
 
   //Connect to saved wifi, if none start AP
   WiFi.begin();
-  delay(1000);
+  delay(3000);
 
   Serial.printf("Starting AP");
   WiFi.mode(WIFI_STA);
@@ -280,6 +284,8 @@ void fetchTime() {
   if (WiFi.status() != WL_CONNECTED) {
     uiCont->showUI(ui_config); //show config UI page
     while(WiFi.status() != WL_CONNECTED) {
+      if (!powerOn()) powerMode();
+
       if (micros() == 300000000) { //4 mins to connect to AP
         ESP.restart();
       }
@@ -293,9 +299,9 @@ void fetchTime() {
     time(&time_now);
     struct tm yearCheck;
     yearCheck = *localtime(&time_now);
-    year = yearCheck.tm_year;
     //stores year - (if < 2019 then time was not retrievied correctly)
     //default is 1970...
+    year = yearCheck.tm_year;
 
   }
 
@@ -412,6 +418,7 @@ void pixelsOff() {
   //let pixels settle
   //re set 1st pixel (often glitches and stays on)
   np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
+  delay(500);
   np_show(&px, NEOPIXEL_RMT_CHANNEL);
 }
 
