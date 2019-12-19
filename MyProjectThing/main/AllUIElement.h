@@ -41,6 +41,7 @@ public:
   void flashDots();
   void drawDawnTime();
   void clearDate();
+  void drawNoAlarm();
 };
 
 class AlarmUIElement: public UIElement { ///////////////////////////////////

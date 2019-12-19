@@ -44,7 +44,9 @@ bool display = true;
 String day_;
 String greeting();
 tm* getTime();
+long int dot_timer = 0;
 std::pair<int, int> timeUntilDawn(double secs);
+bool cleared = false;
 
 // handle touch on this page ////////////////////////////////////////////////
 bool HomeUIElement::handleTouch(long x, long y) {
@@ -56,9 +58,17 @@ void HomeUIElement::draw() {
   drawGreeting();
   drawTime();
   drawDate();
-  if (time2Alarm() >= 0.00)
-    drawDawnTime();
-  flashDots();
+  if (alarm_exist) {
+    if (time2Alarm() >= 0.00)
+      drawDawnTime();
+      cleared = false;
+  } else {
+    drawNoAlarm();
+  }
+  if (millis() - dot_timer >= 1000) {
+    flashDots();
+    dot_timer = millis();
+  }
 }
 
 void HomeUIElement::clearDate() {
@@ -82,10 +92,8 @@ void HomeUIElement::clearAlarm() {
 }
 
 void HomeUIElement::flashDots() {
-  delay(500);
   m_tft->fillRect(  315,   90,  15,  75, BLACK);
   m_tft->fillRect(  150,   90,  15,  75, BLACK);
-  delay(500);
 }
 
 void HomeUIElement::drawGreeting() {
@@ -127,6 +135,19 @@ void HomeUIElement::drawDawnTime() {
   m_tft->print(p.second);m_tft->print("m");
   fir = p.first;
   snd = p.second;
+}
+
+void HomeUIElement::drawNoAlarm() {
+  if (!cleared) {
+    clearAlarm();
+    cleared = true;
+  }
+  m_tft->setFont(&FreeMono9pt7b);
+  m_tft->setTextColor(YELLOW);
+  m_tft->setTextSize(2);
+  m_tft->setCursor(120, 200);
+  m_tft->print("No Alarm set ");
+
 }
 
 std::pair<int, int> timeUntilDawn(double secs)

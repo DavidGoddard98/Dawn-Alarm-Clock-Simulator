@@ -115,12 +115,7 @@ RTC_DATA_ATTR int old_milis;
 RTC_DATA_ATTR uint64_t sleepTime;
 RTC_DATA_ATTR uint64_t offset_time;
 RTC_DATA_ATTR bool alarmNotSet = true;
-RTC_DATA_ATTR int am_sec = 0;
-RTC_DATA_ATTR int am_min = 26;
-RTC_DATA_ATTR int am_hour = 21;
-RTC_DATA_ATTR int am_day = 18;
-RTC_DATA_ATTR int am_mon = 11;
-RTC_DATA_ATTR int am_year = 119;
+RTC_DATA_ATTR bool alarm_exist = true;
 RTC_DATA_ATTR int fade_time = 240000000;
 RTC_DATA_ATTR time_t alarm_time;
 RTC_DATA_ATTR time_t dawn_time;
@@ -192,10 +187,6 @@ void setup() {
     bootCountt =0;
     ESP.restart();
   }
-
-  //show the basic alarm clock UI
-  uiCont->showUI(ui_home);
-
   //print time
   Serial.printf ("%s\n", asctime(timeinfo));
 }
@@ -203,15 +194,23 @@ void setup() {
 //LOOP METHOD
 //==============================================================================
 void loop() {
+  //show the basic alarm clock UI
+  uiCont->showUI(ui_home);
   D("\nentering main loop\n")
-  unsigned long int timer_2 = micros();
-  long int time_iter = 0;
+  long int touchTimer = millis();
   while(1) {
 
     //only needs to be run every second
+
     if (loopIter % 80 == 0) {
       uiCont->run();
     }
+
+    if (unPhone::tsp->touched()) {
+      touchTimer = millis();
+    }
+
+
 
     // readDigitalValue();
     // // Read A pin, print that value to serial port:
@@ -222,21 +221,32 @@ void loop() {
 
     if (alarmNotSet) setAlarmTime();
 
-    if (time2Dawn() == 0.00 ) { //start dawn simulator
-      if (micros() - timer >= (fade_time/255)) {
-        fadePixels();
-        timer = micros();
-      }
-      if (time2Alarm() == 0.00 ) { //start vibrations
-        alarm_on = true;
-        vibrate();
-        if (unPhone::button3()) snoozeAlarm();
-        if (unPhone::button1()) stopAlarm();
+    if (alarm_exist) {
+      if (time2Dawn() == 0.00 ) { //start dawn simulator
+        if (micros() - timer >= (fade_time/255)) {
+          fadePixels();
+          timer = micros();
+        }
+        if (time2Alarm() == 0.00 ) { //start vibrations
+          alarm_on = true;
+          vibrate();
+          uiCont->run();
+
+          if (unPhone::button3()) {
+            touchTimer = millis();
+            snoozeAlarm();
+          }
+          if (unPhone::button1()) {
+            touchTimer = millis();
+            stopAlarm();
+          }
+        }
       }
     }
 
+
     //Sleep the ESP automatically if time 2 alarm is longer than dawn time
-    if (time2Alarm() > (fade_time/1000000) + 5 && (micros() - timer_2 >= 30000000)) {
+    if ((millis() - touchTimer) >= 30000) {
       inActiveSleep();
     }
 
@@ -262,7 +272,6 @@ void loop() {
 }
 
 void fetchTime() {
-  uiCont->showUI(ui_home);
 
   //Connect to saved wifi, if none start AP
   WiFi.begin();
@@ -318,6 +327,16 @@ void fetchTime() {
 }
 
 void inActiveSleep() {
+  if (alarm_exist && time2Alarm() < (fade_time/1000000) + 5) {
+    return;
+  } else if (alarm_exist) {
+    //wake up when dawn simulator is about to start
+    esp_sleep_enable_timer_wakeup((time2Dawn() - 20) * uS_TO_S_FACTOR);
+
+    Serial.println("Setup ESP32 to sleep for:");
+    Serial.println(time2Dawn()-20);
+
+  }
   //wake up with button one
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
 
@@ -328,11 +347,6 @@ void inActiveSleep() {
   pixelsOff();
   delay(1000); //let them settle
 
-  //wake up when dawn simulator is about to start
-  esp_sleep_enable_timer_wakeup((time2Dawn() - 20) * uS_TO_S_FACTOR);
-
-  Serial.println("Setup ESP32 to sleep for:");
-  Serial.println(time2Dawn()-20);
 
   //Keep track of time before sleep
   sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
@@ -470,7 +484,12 @@ void printLocalTime() {
   Serial.printf ("%s\n", asctime(timeinfo));
 }
 
-
+int am_sec = 0;
+int am_min = 36;
+int am_hour = 0;
+int am_day = 19;
+int am_mon = 11;
+int am_year = 119;
 void setAlarmTime() {
   time(&time_now);
   alarmTime = localtime(&time_now);
@@ -537,10 +556,9 @@ void vibrate() {
   unPhone::vibe(false); delay(150);
 }
 
+
 void stopAlarm() {
-  alarm_on = false;
-  am_year += 50;
-  setAlarmTime();
+  alarm_exist = false;
   pixelsOff();
   delay(500);
 }
