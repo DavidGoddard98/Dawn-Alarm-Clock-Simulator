@@ -35,16 +35,16 @@ int mn;
 int hr;
 int fir;
 int snd;
+int temp_sec;
 char time_str[50];
 char date_str[50];
 char date_str_day[50];
 char date_str_month[50];
 char date_str_year[50];
 bool display = true;
+long int dot_timer = 0;
 String day_;
 String greeting();
-tm* getTime();
-long int dot_timer = 0;
 std::pair<int, int> timeUntilDawn(double secs);
 bool cleared = false;
 
@@ -60,15 +60,9 @@ void HomeUIElement::draw() {
   drawDate();
   if (alarm_exist) {
     if (time2Alarm() >= 0.00)
-      drawDawnTime();
+      drawAlarmTime();
       cleared = false;
-  } else {
-    drawNoAlarm();
-  }
-  if (millis() - dot_timer >= 1000) {
-    flashDots();
-    dot_timer = millis();
-  }
+  } else drawNoAlarm();
 }
 
 void HomeUIElement::clearDate() {
@@ -91,6 +85,11 @@ void HomeUIElement::clearAlarm() {
   m_tft->fillRect(  100,   170,  380,  50, BLACK);
 }
 
+void HomeUIElement::clearAlarmSec() {
+  m_tft->fillRect(  320,   170,  380,  50, BLACK);
+
+}
+
 void HomeUIElement::flashDots() {
   m_tft->fillRect(  315,   90,  15,  75, BLACK);
   m_tft->fillRect(  150,   90,  15,  75, BLACK);
@@ -105,24 +104,29 @@ void HomeUIElement::drawGreeting() {
 }
 
 void HomeUIElement::drawTime() {
-  if (sc != getTime()->tm_sec)
+  if (sc != timeinfo->tm_sec){
     clearSec();
-  if (mn != getTime()->tm_min)
+  }
+  if (mn != timeinfo->tm_min)
     clearMin();
-  if (hr != getTime()->tm_hour)
+  if (hr != timeinfo->tm_hour)
     clearHour();
   m_tft->setFont(&FreeMonoBold9pt7b);
   m_tft->setTextColor(GREEN);
   m_tft->setTextSize(5);
   m_tft->setCursor(25, 150);
-  strftime(time_str, sizeof(time_str), "%H:%M:%S", getTime());
-  sc = getTime()->tm_sec;
-  mn = getTime()->tm_min;
-  hr = getTime()->tm_hour;
+  strftime(time_str, sizeof(time_str), "%H:%M:%S", timeinfo);
+  sc = timeinfo->tm_sec;
+  mn = timeinfo->tm_min;
+  hr = timeinfo->tm_hour;
   m_tft->print(time_str);
+  if (millis() - dot_timer >= 1000) {
+    flashDots();
+    dot_timer = millis();
+  }
 }
 
-void HomeUIElement::drawDawnTime() {
+void HomeUIElement::drawAlarmTime() {
   pair<int, int> p = timeUntilDawn(time2Alarm());
   if (fir != p.first || snd != p.second)
     clearAlarm();
@@ -131,8 +135,16 @@ void HomeUIElement::drawDawnTime() {
   m_tft->setTextSize(2);
   m_tft->setCursor(120, 200);
   m_tft->print("Alarm in: ");
-  m_tft->print(p.first);m_tft->print("h ");
-  m_tft->print(p.second);m_tft->print("m");
+  if (time2Alarm() > 60) {
+    m_tft->print(p.first);m_tft->print("h ");
+    m_tft->print(p.second);m_tft->print("m");
+  } else {
+    if (time2Alarm() != temp_sec) {
+      clearAlarmSec();
+    }
+    m_tft->print(time2Alarm());m_tft->print("s");
+    temp_sec = time2Alarm();
+  }
   fir = p.first;
   snd = p.second;
 }
@@ -153,39 +165,36 @@ void HomeUIElement::drawNoAlarm() {
 std::pair<int, int> timeUntilDawn(double secs)
 {
     int hours = floor(secs/3600);
-    int mins = floor((secs - (hours*3600))/60);
+    int mins = ceil((secs - (hours*3600))/60) ;
+    if (mins == 60) {
+      hours = 1;
+      mins = 0;
+    }
     return std::make_pair(hours, mins);
 }
 
 void HomeUIElement::drawDate() {
-  strftime(date_str_day, sizeof(date_str_day), "%A", getTime());
+  strftime(date_str_day, sizeof(date_str_day), "%A", timeinfo);
   if (day_ != date_str_day)
     clearDate();
-  strftime(date_str_month, sizeof(date_str_month), "%B", getTime());
-  strftime(date_str_year, sizeof(date_str_year), "%Y", getTime());
+  strftime(date_str_month, sizeof(date_str_month), "%B", timeinfo);
+  strftime(date_str_year, sizeof(date_str_year), "%Y", timeinfo);
   m_tft->setFont(&FreeSans9pt7b);
   m_tft->setTextColor(MAGENTA);
   m_tft->setTextSize(2);
   m_tft->setCursor(5, 250);
   m_tft->print(date_str_day);m_tft->print(",");
   m_tft->setCursor(5,300);
-  m_tft->print(getTime()->tm_mday);m_tft->print(" ");
+  m_tft->print(timeinfo->tm_mday);m_tft->print(" ");
   m_tft->print(date_str_month);m_tft->print(" ");
   m_tft->print(date_str_year);
   day_ = date_str_day;
 }
 
-tm* getTime() {
-  time_t rawtime;
-  struct tm *info;
-  time( &rawtime );
-  info = localtime( &rawtime );
-  return info;
-}
 
 String greeting() {
   String greet;
-  int hour = getTime()->tm_hour;
+  int hour = timeinfo->tm_hour;
   if (hour >= 6 && hour < 12) { // morning 6am to 11.59am
     greet = "Good morning";
   }
