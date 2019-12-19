@@ -19,31 +19,31 @@ bool MenuUIElement::handleTouch(long x, long y) {
 
 // returns menu item number //////////////////////////////////////////////
 uint8_t MenuUIElement::mapTextTouch(long xInput, long yInput) {
-  for(int y = 30, i = 1; y < 480; y += 48, i++)
-    if(xInput > 270 && yInput > y && yInput < y + 48)
+  for(int y = 35, i = 1; y < 320; y += 48, i++)
+    if(yInput > y && yInput < y + 48)
       return i;
   return -1;
 }
 
 // draw a textual menu ///////////////////////////////////////////////////
 void MenuUIElement::draw(){
-  m_tft->setTextSize(1);
-  m_tft->setTextColor(BLUE);
-
-  m_tft->setCursor(230, 15);
+  m_tft->setTextSize(2);
+  m_tft->setTextColor(RED);
+  m_tft->setCursor(230, 25);
   m_tft->print("MENU");
 
   uint16_t yCursor = 35;
   m_tft->drawFastHLine(0, yCursor, 480, MAGENTA);
-  yCursor += 16;
+  yCursor += 33;
 
   for(int i = 1; i < NUM_UI_ELEMENTS; i++) {
+    m_tft->setTextColor(BLUE);
     m_tft->setCursor(0, yCursor);
     m_tft->print(ui_mode_names[i]);
-    drawSwitcher(448, yCursor - 12);
-    yCursor += 32;
+    drawSwitcher(448, yCursor - 30);
+    yCursor += 15;
     m_tft->drawFastHLine(0, yCursor, 480, MAGENTA);
-    yCursor += 16;
+    yCursor += 33;
   }
 }
 
