@@ -116,7 +116,7 @@ void HomeUIElement::drawTime() {
   m_tft->setFont(&FreeMonoBold9pt7b);
   m_tft->setTextColor(GREEN);
   m_tft->setTextSize(5);
-  m_tft->setCursor(25, 150);
+  m_tft->setCursor(90, 150);
   strftime(time_str, sizeof(time_str), "%H:%M:%S", getTime());
   sc = getTime()->tm_sec;
   mn = getTime()->tm_min;

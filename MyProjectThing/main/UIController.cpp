@@ -211,7 +211,6 @@ void UIController::showUI(ui_modes_t newMode) {
 /////////////////////////////////////////////////////////////////////////////
 void UIController::handleTouch() {
   int16_t nTmpX = p.x; // temp p.x so that p.y updates
-
   p.x =
     map(p.y, unPhone::TS_MINY, unPhone::TS_MAXY, 0, unPhone::tftp->width());
   p.y =
@@ -224,7 +223,6 @@ void UIController::handleTouch() {
       modeChangeRequests = 0;
     }
   }
-  unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX8357_GREEN); // DEBUG touch feedback
 }
 
 /////////////////////////////////////////////////////////////////////////////

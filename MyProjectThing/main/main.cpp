@@ -114,7 +114,7 @@ RTC_DATA_ATTR int old_milis;
 RTC_DATA_ATTR uint64_t sleepTime;
 RTC_DATA_ATTR uint64_t offset_time;
 RTC_DATA_ATTR bool alarmNotSet = true;
-RTC_DATA_ATTR bool alarm_exist = true;
+RTC_DATA_ATTR bool alarm_exist = false;
 RTC_DATA_ATTR int fade_time = 240000000;
 RTC_DATA_ATTR time_t alarm_time;
 RTC_DATA_ATTR time_t dawn_time;
@@ -122,6 +122,7 @@ RTC_DATA_ATTR tuple <int,int,int> rgb;
 
 
 // define methods//////////////////////////////////////////////////////
+//ordered
 void fetchTime();
 void inActiveSleep();
 void forcedSleep();
@@ -199,7 +200,11 @@ void setup() {
 //==============================================================================
 void loop() {
   //show the basic alarm clock UI
+<<<<<<< HEAD
+  uiCont->showUI(ui_alarm);
+=======
   uiCont->showUI(ui_home);
+>>>>>>> 29b087fe15911e387f85ab5326a81284ab6c2898
   D("\nentering main loop\n")
   long int touchTimer = millis();
   while(1) {
@@ -220,13 +225,20 @@ void loop() {
 
 
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 29b087fe15911e387f85ab5326a81284ab6c2898
     //If power switch not on check if usb connected
     if (!powerOn()) powerMode();
 
-    if (alarmNotSet) setAlarmTime();
+
 
     if (alarm_exist) {
+      if (alarmNotSet) {
+        setAlarmTime();
+
+      }
       if (time2Dawn() == 0.00 ) { //start dawn simulator
         if (micros() - timer >= (fade_time/255)) {
           //rgb = make_tuple(255,0,0);
@@ -237,7 +249,11 @@ void loop() {
           alarm_on = true;
           vibrate();
           uiCont->run();
+          if (digitalRead(PIR_DOUT) == 1 ){
+            touchTimer = millis();
 
+            snoozeAlarm();
+          }
           if (unPhone::button3()) {
             touchTimer = millis();
             snoozeAlarm();
@@ -267,9 +283,10 @@ void loop() {
 
       if(loopIter % 25000 == 0) {
         D("completed loop %d, yielding 1000th time since last\n", loopIter);
-        printf("%.f seconds from alarm.\n", seconds);
-        Serial.println("Time to alarm:" + String(time2Alarm()));
-        Serial.println("Time to dawn:" + String(time2Dawn()));
+        if (alarm_exist) {
+          Serial.println("Time to alarm:" + String(time2Alarm()));
+          Serial.println("Time to dawn:" + String(time2Dawn()));
+        }
       }
     }
     loopIter++;
@@ -366,10 +383,12 @@ void forcedSleep() {
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
 
   //or before dawn simulator starts
-  if(time2Dawn() > 0) {
-    esp_sleep_enable_timer_wakeup(time2Dawn() * uS_TO_S_FACTOR);
-    Serial.println("Setup ESP32 to sleep for:");
-    Serial.println(time2Dawn());
+  if (alarm_exist){
+    if(time2Dawn() > 0) {
+      esp_sleep_enable_timer_wakeup(time2Dawn() * uS_TO_S_FACTOR);
+      Serial.println("Setup ESP32 to sleep for:");
+      Serial.println(time2Dawn());
+    }
   }
 
   //Turn peripherals off to save power
@@ -494,6 +513,8 @@ void printLocalTime() {
   Serial.printf ("%s\n", asctime(timeinfo));
 }
 
+<<<<<<< HEAD
+=======
 int am_sec = 0;
 int am_min = 10;
 int am_hour = 13;
@@ -510,8 +531,14 @@ void setAlarmTime() {
   alarmTime->tm_mday = am_day;
   alarmTime->tm_year = am_year;
   alarm_time = mktime (alarmTime);
+>>>>>>> 29b087fe15911e387f85ab5326a81284ab6c2898
 
+void setAlarmTime() {
+  alarmTime = localtime(&alarm_time);
   dawn_time = alarm_time - 240;//(fade_time/1000000);
+  Serial.print("Alarm set:");
+  Serial.printf ("%s\n", asctime(alarmTime));
+
   alarmNotSet = false;
 }
 
@@ -558,6 +585,7 @@ double time2Dawn() {
   if (dawn_seconds <= 0) {
     dawn_seconds = 0;
   }
+
   return dawn_seconds;
 }
 
