@@ -1,21 +1,26 @@
 // MenuUIElement.cpp
 
 #include "AllUIElement.h"
-
+extern bool m_first_touch;
 // handle touch on this page
 // @returns true if the touch is a menu item
 bool MenuUIElement::handleTouch(long x, long y) {
-  Serial.print("x: "); Serial.println(x);
-  Serial.print("y: "); Serial.println(y);
-  // D("text mode: responding to touch @ %d/%d/%d: ", x, y,-1)
-  m_tft->setTextColor(WHITE, BLACK);
-  uint8_t menuItem = mapTextTouch(x, y);
-  D("menuItem=%d, ", menuItem)
+  if (!m_first_touch) { // ignore first touch
+    Serial.print("x: "); Serial.println(x);
+    Serial.print("y: "); Serial.println(y);
+    // D("text mode: responding to touch @ %d/%d/%d: ", x, y,-1)
+    m_tft->setTextColor(WHITE, BLACK);
+    uint8_t menuItem = mapTextTouch(x, y);
+    D("menuItem=%d, ", menuItem)
 
-  // if(menuItem > 0 && menuItem <= NUM_UI_ELEMENTS) {
-  //   menuItemSelected = menuItem;
-  //   return true;
-  // }
+    if(menuItem > 0 && menuItem <= NUM_UI_ELEMENTS) {
+      menuItemSelected = menuItem;
+      return true;
+    }
+
+  } else {
+    m_first_touch = false;
+  }
   return false;
 }
 
@@ -38,7 +43,7 @@ void MenuUIElement::draw(){
   m_tft->drawFastHLine(0, yCursor, 480, MAGENTA);
   yCursor += 33;
 
-  for(int i = 1; i < NUM_UI_ELEMENTS; i++) {
+  for(int i = 1; i <= NUM_UI_ELEMENTS; i++) {
     m_tft->setTextColor(BLUE);
     m_tft->setCursor(0, yCursor);
     m_tft->print(ui_mode_names[i]);

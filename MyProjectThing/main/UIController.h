@@ -44,8 +44,8 @@ class UIElement { ///////////////////////////////////////////////////////////
 enum ui_modes_t {
   ui_menu = 0,          //  0
   ui_home,
-  ui_dawn,
   ui_alarm,
+  ui_dawn,
   ui_WiFi,
   ui_config,
   ui_boot

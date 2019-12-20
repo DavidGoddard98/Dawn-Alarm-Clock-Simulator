@@ -52,7 +52,7 @@ bool cleared = false;
 bool HomeUIElement::handleTouch(long x, long y) {
 
   //
-  return false;
+  return true;
 }
 
 // writes various things including mac address and wifi ssid ///////////////

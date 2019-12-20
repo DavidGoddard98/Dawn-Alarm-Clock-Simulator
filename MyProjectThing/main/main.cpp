@@ -192,7 +192,7 @@ void setup() {
 //==============================================================================
 void loop() {
   //show the basic alarm clock UI
-  uiCont->showUI(ui_dawn);
+  uiCont->showUI(ui_home);
   D("\nentering main loop\n")
   long int touchTimer = millis();
   while(1) {
@@ -202,7 +202,7 @@ void loop() {
     uiCont->handleTouch();
 
 
-    
+
     if (loopIter % 80 == 0) {
       uiCont->run();
     }
@@ -214,7 +214,7 @@ void loop() {
 
 
 
-    If power switch not on check if usb connected
+    //If power switch not on check if usb connected
     if (!powerOn()) powerMode();
 
     if (alarmNotSet) setAlarmTime();
