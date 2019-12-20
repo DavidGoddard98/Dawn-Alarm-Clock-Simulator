@@ -138,6 +138,7 @@ void printLocalTime();
 void setAlarmTime() ;
 void printLocalTime() ;
 void updateTime();
+void setTime();
 int hourCheck();
 double time2Alarm();
 double time2Dawn();
@@ -215,6 +216,7 @@ void loop() {
     if (uiCont->gotTouch())
     uiCont->handleTouch();
 
+    setTime();
 
 
     if (loopIter % 80 == 0) {
@@ -230,7 +232,9 @@ void loop() {
     if (!powerOn()) powerMode();
 
 
-
+    if(time2Alarm() > 420) {
+      pixelsOff();
+    }
     if (alarm_exist) {
       if (alarmNotSet) {
         setAlarmTime();
@@ -508,9 +512,12 @@ void fadePixels() {
 //gets and print local time, returns failed if no time found.
 //also fill date_string and time_string with relevant info
 void printLocalTime() {
+  Serial.printf ("%s\n", asctime(timeinfo));
+}
+
+void setTime() {
   time(&time_now);
   timeinfo = localtime (&time_now);
-  Serial.printf ("%s\n", asctime(timeinfo));
 }
 
 
