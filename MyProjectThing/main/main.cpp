@@ -2,6 +2,7 @@
 
 // a library or two... ///////////////////////////////////////////////////////
 #include <stdio.h>
+#include <tuple>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_system.h>
@@ -31,6 +32,7 @@ extern "C" {
   #include <esp_clk.h>
 }
 
+using namespace std;
 
 //CONSTANTS AND INSTANTS////////////////////////////////////////////////
 int loopIter = 0;        // loop slices
@@ -64,13 +66,13 @@ uint64_t timeDiff, timeNow; //RTC clock variables
 #include	<esp_log.h>
 
 //constants and instants
-#define	NEOPIXEL_PORT	A7 //Pin //15
+#define	NEOPIXEL_PORT	15 //Pin //15
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
 uint32_t	 pixels[NR_LED];
 int rc;
-int pixelBrightness = 0;
+float pixBr = 0;
 
 // IR SENSOR stuff
 #define PIR_DOUT 27   // PIR digital output on D2
@@ -116,6 +118,7 @@ RTC_DATA_ATTR bool alarm_exist = true;
 RTC_DATA_ATTR int fade_time = 240000000;
 RTC_DATA_ATTR time_t alarm_time;
 RTC_DATA_ATTR time_t dawn_time;
+RTC_DATA_ATTR tuple <int,int,int> rgb;
 
 
 // define methods//////////////////////////////////////////////////////
@@ -186,6 +189,10 @@ void setup() {
   }
   //print time
   Serial.printf ("%s\n", asctime(timeinfo));
+  Serial.print(get<0>(rgb)); Serial.print(", ");
+  Serial.print(get<1>(rgb)); Serial.print(", ");
+  Serial.println(get<2>(rgb));
+
 }
 
 //LOOP METHOD
@@ -222,6 +229,7 @@ void loop() {
     if (alarm_exist) {
       if (time2Dawn() == 0.00 ) { //start dawn simulator
         if (micros() - timer >= (fade_time/255)) {
+          //rgb = make_tuple(255,0,0);
           fadePixels();
           timer = micros();
         }
@@ -441,14 +449,41 @@ void setupPixels() {
 
 }
 
+void setDawnColour(uint16_t col) {
+  if (col == HX8357_BLUE) {
+    rgb = make_tuple(0,0,255);
+  }
+  else if (col == HX8357_YELLOW) {
+    rgb = make_tuple(255,255,0);
+  }
+  else if (col == HX8357_RED) {
+    rgb = make_tuple(255,0,0);
+  }
+  else if (col == HX8357_GREEN) {
+    rgb = make_tuple(0,255,0);
+  }
+  else if (col == HX8357_CYAN) {
+    rgb = make_tuple(0,255,255);
+  }
+  else if (col == HX8357_PURPLE) {
+    rgb = make_tuple(128,0,128);
+  }
+  else if (col == HX8357_ORANGE) {
+    rgb = make_tuple(255,165,0);
+  }
+  else if (col == HX8357_PINK) {
+    rgb = make_tuple(255,20,147);
+  }
+}
+
 void fadePixels() {
-  pixelBrightness++;
+  pixBr += 0.003921569f;
 
   for	( int j = 0 ; j < NR_LED ; j ++ )	{
-    np_set_pixel_rgbw(&px, j , pixelBrightness, 0, 0, pixelBrightness);
+    np_set_pixel_rgbw(&px, j , get<0>(rgb)*pixBr, get<1>(rgb)*pixBr, get<2>(rgb)*pixBr, pixBr*255);
   }
   np_show(&px, NEOPIXEL_RMT_CHANNEL);
-
+  Serial.println(pixBr);
 }
 
 //gets and print local time, returns failed if no time found.
@@ -460,9 +495,9 @@ void printLocalTime() {
 }
 
 int am_sec = 0;
-int am_min = 36;
-int am_hour = 0;
-int am_day = 19;
+int am_min = 10;
+int am_hour = 13;
+int am_day = 20;
 int am_mon = 11;
 int am_year = 119;
 void setAlarmTime() {

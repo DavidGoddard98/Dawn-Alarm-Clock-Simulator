@@ -1,6 +1,8 @@
 // MenuUIElement.cpp
 
 #include "AllUIElement.h"
+#include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeSansBoldOblique9pt7b.h>
 extern bool m_first_touch;
 // handle touch on this page
 // @returns true if the touch is a menu item
@@ -34,6 +36,7 @@ uint8_t MenuUIElement::mapTextTouch(long xInput, long yInput) {
 
 // draw a textual menu ///////////////////////////////////////////////////
 void MenuUIElement::draw(){
+  m_tft->setFont(&FreeMono9pt7b);
   m_tft->setTextSize(2);
   m_tft->setTextColor(RED);
   m_tft->setCursor(230, 25);
