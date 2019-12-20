@@ -11,7 +11,7 @@ void setDawnColour(uint16_t col);
 
 // handle touch on this page ////////////////////////////////////////////////
 bool DawnUIElement::handleTouch(long x, long y) {
-  if (x >= 80 && x <= (80 + BOXSIZE*8) && y >= 105 && y <= 265) {
+  if (x >= 80 && x <= (80 + BOXSIZE*8) && y >= 105 && y <= 265 || (x>= 430 && y  <=25)) {
     Serial.print("x: "); Serial.println(x);
     Serial.print("y: "); Serial.println(y);
     getDawnColour(x,y);
@@ -22,13 +22,13 @@ bool DawnUIElement::handleTouch(long x, long y) {
 
 // writes various things including mac address and wifi ssid ///////////////
 void DawnUIElement::draw(){
+  drawSwitcher(440,10);
   m_tft->setFont(&FreeSans9pt7b);
-  m_tft->setTextSize(2);
   drawDawnColour();
   m_tft->setTextColor(WHITE);
-  m_tft->setTextSize(3);
+  m_tft->setTextSize(2.5);
   m_tft->setCursor(10, 60);
-  m_tft->println("Select dawn colour");
+  m_tft->println("Select Dawn Colour");
 }
 
 void DawnUIElement::drawDawnColour() {

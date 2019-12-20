@@ -30,11 +30,13 @@ using namespace std;
 extern int firmwareVersion;
 extern String apSSID;
 
+int f_sec;
 int sc;
 int mn;
 int hr;
 int fir;
 int snd;
+String tmp;
 char time_str[50];
 char date_str[50];
 char date_str_day[50];
@@ -89,8 +91,8 @@ void HomeUIElement::clearHour() {
   m_tft->fillRect(  30,   90,  100,  75, BLACK);
 }
 
-void HomeUIElement::clearAlarm() {
-  m_tft->fillRect(  100,   170,  380,  50, BLACK);
+void HomeUIElement::clearAlarm(int x) {
+  m_tft->fillRect(  x,   170,  380,  50, BLACK);
 }
 
 void HomeUIElement::flashDots() {
@@ -98,12 +100,19 @@ void HomeUIElement::flashDots() {
   m_tft->fillRect(  150,   90,  15,  75, BLACK);
 }
 
+void HomeUIElement::clearGreeting() {
+  m_tft->fillRect(  0, 0,  480,  75, BLACK);
+}
+
 void HomeUIElement::drawGreeting() {
+  if (tmp != greeting())
+    clearGreeting();
   m_tft->setFont(&FreeMonoBoldOblique9pt7b);
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(2);
   m_tft->setCursor(30,30);
   m_tft->println(greeting());
+  tmp = greeting();
 }
 
 void HomeUIElement::drawTime() {
@@ -126,29 +135,38 @@ void HomeUIElement::drawTime() {
 
 
 void HomeUIElement::drawAlarmTime() {
-  pair<int, int> p = timeUntilDawn(time2Alarm());
-  if (fir != p.first || snd != p.second)
-    clearAlarm();
-  m_tft->setFont(&FreeMono9pt7b);
+  m_tft->setFont(&FreeSans9pt7b);
   m_tft->setTextColor(YELLOW);
   m_tft->setTextSize(2);
-  m_tft->setCursor(120, 200);
+  m_tft->setCursor(150, 200);
   m_tft->print("Alarm in: ");
-  m_tft->print(p.first);m_tft->print("h ");
-  m_tft->print(p.second);m_tft->print("m");
-  fir = p.first;
-  snd = p.second;
+  if (time2Alarm() < 60) {
+    if (f_sec != time2Alarm())
+      clearAlarm(300);
+    m_tft->print((int)time2Alarm());
+    m_tft->print("s");
+    f_sec = time2Alarm();
+  }
+  else {
+    pair<int, int> p = timeUntilDawn(time2Alarm());
+    if (fir != p.first || snd != p.second)
+    clearAlarm(300);
+    m_tft->print(p.first);m_tft->print("h ");
+    m_tft->print(p.second);m_tft->print("m");
+    fir = p.first;
+    snd = p.second;
+  }
 }
 
 void HomeUIElement::drawNoAlarm() {
   if (!cleared) {
-    clearAlarm();
+    clearAlarm(100);
     cleared = true;
   }
-  m_tft->setFont(&FreeMono9pt7b);
+  m_tft->setFont(&FreeSans9pt7b);
   m_tft->setTextColor(YELLOW);
   m_tft->setTextSize(2);
-  m_tft->setCursor(120, 200);
+  m_tft->setCursor(150, 200);
   m_tft->print("No Alarm set ");
 
 }

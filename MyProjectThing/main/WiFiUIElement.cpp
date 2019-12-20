@@ -13,7 +13,6 @@ bool WiFiUIElement::handleTouch(long x, long y) {
 
 // writes various things including mac address and wifi ssid ///////////////
 void WiFiUIElement::draw(){
-
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(3);
   m_tft->setCursor(5, 5);

@@ -36,9 +36,10 @@ public:
   void drawTime();
   void clearMin();
   void clearHour();
-  void clearAlarm();
+  void clearAlarm(int x);
   void clearAlarmSec();
   void drawDate();
+  void clearGreeting();
   void flashDots();
   void drawAlarmTime();
   void clearDate();
