@@ -1,6 +1,7 @@
 // UIController.cpp
 
 #include "AllUIElement.h"
+extern int toggle;
 
 // initialisation flag, not complete until parent has finished config
 bool UIController::provisioned = false;
@@ -88,7 +89,7 @@ uint16_t fromPrevSig = 0;        // distance from previous signal
 unsigned long now = 0;           // millis
 unsigned long prevSigMillis = 0; // previous signal acceptance time
 unsigned long sincePrevSig = 0;  // time since previous signal acceptance
-uint16_t DEFAULT_TIME_SENSITIVITY = 12; // min millis between touches
+uint16_t DEFAULT_TIME_SENSITIVITY = 125; // min millis between touches
 uint16_t TIME_SENSITIVITY = DEFAULT_TIME_SENSITIVITY;
 uint16_t DEFAULT_DIST_SENSITIVITY = 200; // min distance between touches
 uint16_t DIST_SENSITIVITY = DEFAULT_DIST_SENSITIVITY;
@@ -196,6 +197,7 @@ void UIController::changeMode() {
 
     m_mode =   ui_menu;
     m_element = m_menu;
+
   }
 
   redraw();
@@ -215,7 +217,7 @@ void UIController::handleTouch() {
     map(p.y, unPhone::TS_MINY, unPhone::TS_MAXY, 0, unPhone::tftp->width());
   p.y =
     map(nTmpX, unPhone::TS_MINX, unPhone::TS_MAXX, 0, unPhone::tftp->height());
-
+  // unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX835 7_GREEN); // DEBUG touch feedback
   // TODO dump old modeChangeRequests?
   if(m_element->handleTouch(p.x, p.y)) {
     if(++modeChangeRequests >= MODE_CHANGE_TOUCHES) {
