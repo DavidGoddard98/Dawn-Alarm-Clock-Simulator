@@ -145,9 +145,6 @@ bool AlarmUIElement::confirm(long x, long y){
 }
 
 
-
-
-
 char date1_str_day[50];
 
 String AlarmUIElement::convertToString(char* a, int size) {
@@ -212,18 +209,11 @@ void AlarmUIElement::calcTime2Alarm() {
 
       addedSeconds =  ((hours-tmHour-1)*60*60) + (((60-(tmMin-mins)))*60);
     }
-  } else {
-    Serial.println("the_day");
-
-    Serial.println(the_day);
-
-    Serial.println("currentday");
-    Serial.println(currentDay);
+    else {
     while(the_day!=currentDay) {
       currentDay = getNextDay(currentDay);
       counter ++;
     }
-    Serial.println("counter");
 
     Serial.println(counter);
 
@@ -244,6 +234,7 @@ void AlarmUIElement::calcTime2Alarm() {
 
       addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-hours))*60*60) + (59-(tmMin-mins)) *60;
     }
+  }
   }
   Serial.print("seconds added on");
   Serial.print(addedSeconds );
