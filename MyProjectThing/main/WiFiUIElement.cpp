@@ -14,9 +14,9 @@ bool WiFiUIElement::handleTouch(long x, long y) {
 // writes various things including mac address and wifi ssid ///////////////
 void WiFiUIElement::draw(){
   m_tft->setTextColor(CYAN);
-  m_tft->setTextSize(3);
+  m_tft->setTextSize(2);
   m_tft->setCursor(5, 5);
-  m_tft->println("Attmepting to connect " );
+  m_tft->println("Attmepting to connect");
   m_tft->println("to last known WIFI:");
   m_tft->println(apSSID);
 
