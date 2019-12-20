@@ -50,7 +50,10 @@ bool cleared = false;
 
 // handle touch on this page ////////////////////////////////////////////////
 bool HomeUIElement::handleTouch(long x, long y) {
-  return true;
+  Serial.print("x: "); Serial.println(x);
+  Serial.print("y: "); Serial.println(y);
+  //
+  return false;
 }
 
 // writes various things including mac address and wifi ssid ///////////////

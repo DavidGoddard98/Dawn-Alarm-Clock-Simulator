@@ -186,7 +186,7 @@ void UIController::changeMode() {
     D("...%d (menu)\n", ui_menu)
 
     modeCounter = ++modeCounter % NUM_UI_ELEMENTS; // calculate next mode
-    if(modeCounter == 0) modeCounter++; // wrap through to config at end
+    //if(modeCounter == 0) modeCounter++; // wrap through to config at end
     nextMode = (ui_modes_t) modeCounter;
     dbf(miscDBG, "nextMode=%d, modeCounter=%d\n", nextMode, modeCounter);
 
@@ -207,14 +207,16 @@ void UIController::showUI(ui_modes_t newMode) {
 /////////////////////////////////////////////////////////////////////////////
 void UIController::handleTouch() {
   p.x =
-    map(p.x, unPhone::TS_MAXX, unPhone::TS_MINX, unPhone::tftp->width(), 0);
+    map(p.y, unPhone::TS_MINY, unPhone::TS_MAXY, 0, unPhone::tftp->width());
   p.y =
-    map(p.y, unPhone::TS_MAXY, unPhone::TS_MINY, 0, unPhone::tftp->height());
+    map(p.x, unPhone::TS_MINX, unPhone::TS_MAXX, 0, unPhone::tftp->height());
   // previously, before screen rotation in unphone spin 4, we did it like
   // this (which is probably from the Adafruit example):
   // p.x = map(p.x, TS_MINX, TS_MAXX, unPhone::tftp->width(), 0);
   // p.y = map(p.y, TS_MINY, TS_MAXY, 0, unPhone::tftp->height());
-
+  // p.x = map(p.y, TS_MINY, TS_MAXY, 0, 320);
+  //   p.y = 240-map(nTmpX, TS_MINX, TS_MAXX, 0, 240);
+  unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX8357_GREEN); // DEBUG touch feedback
   // TODO dump old modeChangeRequests?
   if(m_element->handleTouch(p.x, p.y)) {
     if(++modeChangeRequests >= MODE_CHANGE_TOUCHES) {
