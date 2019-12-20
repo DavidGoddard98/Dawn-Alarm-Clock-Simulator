@@ -8,7 +8,7 @@ extern String apSSID;
 
 // handle touch on this page ////////////////////////////////////////////////
 bool DawnUIElement::handleTouch(long x, long y) {
-  return true;
+  return false;
 }
 
 // writes various things including mac address and wifi ssid ///////////////

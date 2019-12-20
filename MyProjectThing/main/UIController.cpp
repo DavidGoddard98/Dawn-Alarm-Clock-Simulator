@@ -88,7 +88,7 @@ uint16_t fromPrevSig = 0;        // distance from previous signal
 unsigned long now = 0;           // millis
 unsigned long prevSigMillis = 0; // previous signal acceptance time
 unsigned long sincePrevSig = 0;  // time since previous signal acceptance
-uint16_t DEFAULT_TIME_SENSITIVITY = 150; // min millis between touches
+uint16_t DEFAULT_TIME_SENSITIVITY = 12; // min millis between touches
 uint16_t TIME_SENSITIVITY = DEFAULT_TIME_SENSITIVITY;
 uint16_t DEFAULT_DIST_SENSITIVITY = 200; // min distance between touches
 uint16_t DIST_SENSITIVITY = DEFAULT_DIST_SENSITIVITY;
@@ -132,10 +132,12 @@ bool UIController::gotTouch() {
 
   // retrieve a point
   p = unPhone::tsp->getPoint();
-  // TODO should we read the rest of the buffer?
-  //  while (! touch.bufferEmpty())
+  //weird readings from touch at point z~16300 , y~-12500, z~025
+  //dont read these and continue
+  if (p.x > 10000) {
+    return false;
+  }
 
-  // if it is at 0,0,0 and we've just started then ignore it
   if(p == firstTouch && firstTimeThrough) {
     dbgTouch();
     if(touchDBG) D(", rejecting (0)\n\n")
@@ -151,14 +153,13 @@ bool UIController::gotTouch() {
     D(", sincePrevSig<TIME_SENS.: %d...  ", sincePrevSig<TIME_SENSITIVITY)
   if(sincePrevSig < TIME_SENSITIVITY) { // ignore touches too recent
     if(touchDBG) D("rejecting (2)\n")
-  } else if(
-    fromPrevSig < DIST_SENSITIVITY && sincePrevSig < TREAT_AS_NEW
-  ) {
+  } else if(fromPrevSig < DIST_SENSITIVITY && sincePrevSig < TREAT_AS_NEW) {
     if(touchDBG) D("rejecting (3)\n")
   } else {
     prevSig = p;
     prevSigMillis = now;
     D("decided this is a new touch\n")
+    firstTimeThrough=true;
     return true;
   }
   return false;
@@ -210,6 +211,7 @@ void UIController::showUI(ui_modes_t newMode) {
 /////////////////////////////////////////////////////////////////////////////
 void UIController::handleTouch() {
   int16_t nTmpX = p.x; // temp p.x so that p.y updates
+
   p.x =
     map(p.y, unPhone::TS_MINY, unPhone::TS_MAXY, 0, unPhone::tftp->width());
   p.y =

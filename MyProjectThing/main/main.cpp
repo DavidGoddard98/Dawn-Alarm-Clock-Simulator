@@ -192,20 +192,20 @@ void setup() {
 //==============================================================================
 void loop() {
   //show the basic alarm clock UI
-  uiCont->showUI(ui_home);
+  uiCont->showUI(ui_dawn);
   D("\nentering main loop\n")
   long int touchTimer = millis();
   while(1) {
 
     // readDigitalValue();
+    if (uiCont->gotTouch())
+    uiCont->handleTouch();
 
-    //only needs to be run every second
 
+    
     if (loopIter % 80 == 0) {
       uiCont->run();
     }
-    if (uiCont->gotTouch())
-      uiCont->handleTouch();
 
     if (unPhone::tsp->touched()) {
       touchTimer = millis();
@@ -213,11 +213,8 @@ void loop() {
 
 
 
-    // readDigitalValue();
-    // // Read A pin, print that value to serial port:
-    // printAnalogValue();
 
-    //If power switch not on check if usb connected
+    If power switch not on check if usb connected
     if (!powerOn()) powerMode();
 
     if (alarmNotSet) setAlarmTime();
@@ -254,9 +251,9 @@ void loop() {
     //If button 2 pressed deep_sleep
     if(unPhone::button2()) {
       forcedSleep();
-    }
+     }
 
-    // allow the protocol CPU IDLE task to run periodically
+    // // allow the protocol CPU IDLE task to run periodically
     if(loopIter % 2500 == 0) {
       printLocalTime();
 
