@@ -54,6 +54,20 @@ class AlarmUIElement: public UIElement { ///////////////////////////////////
     bool handleTouch(long, long);
     void draw();
     void runEachTurn();
+      void drawUpArrow(uint16_t xOrigin, uint16_t yOrigin);
+    void drawDownArrow(uint16_t xOrigin, uint16_t yOrigin);
+    void drawLeftArrow(uint16_t xOrigin, uint16_t yOrigin);
+    void drawRightArrow(uint16_t xOrigin, uint16_t yOrigin);
+    void changeTimeUR(long x, long y);
+    void changeTimeDL (long x, long y);
+    void clearMins();
+    void clearHours();
+    void clearDay();
+    void calcTime2Alarm();
+    String getNextDay(String a_day);
+    String convertToString(char* a, int size);
+    bool confirm(long x, long y);
+
 };
 
 class DawnUIElement: public UIElement { ///////////////////////////////////
