@@ -117,8 +117,9 @@ RTC_DATA_ATTR int fade_time = 240000000;
 RTC_DATA_ATTR time_t alarm_time;
 RTC_DATA_ATTR time_t dawn_time;
 
-
 // define methods//////////////////////////////////////////////////////
+void setTime();
+
 void fetchTime();
 void inActiveSleep();
 void forcedSleep();
@@ -235,6 +236,10 @@ void loop() {
             touchTimer = millis();
             snoozeAlarm();
           }
+          if ( digitalRead(PIR_DOUT) == 1) {
+            touchTimer = millis();
+            snoozeAlarm();
+          }
           if (unPhone::button1()) {
             touchTimer = millis();
             stopAlarm();
@@ -243,6 +248,7 @@ void loop() {
       }
     }
 
+    setTime();
 
     //Sleep the ESP automatically if time 2 alarm is longer than dawn time
     if ((millis() - touchTimer) >= 30000) {
@@ -260,7 +266,6 @@ void loop() {
 
       if(loopIter % 25000 == 0) {
         D("completed loop %d, yielding 1000th time since last\n", loopIter);
-        printf("%.f seconds from alarm.\n", seconds);
         Serial.println("Time to alarm:" + String(time2Alarm()));
         Serial.println("Time to dawn:" + String(time2Dawn()));
       }
@@ -271,6 +276,7 @@ void loop() {
 }
 
 void fetchTime() {
+  uiCont->showUI(ui_WiFi); //show config UI page
 
   //Connect to saved wifi, if none start AP
   WiFi.begin();
@@ -334,8 +340,8 @@ void inActiveSleep() {
 
     Serial.println("Setup ESP32 to sleep for:");
     Serial.println(time2Dawn()-20);
-
   }
+
   //wake up with button one
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
 
@@ -352,6 +358,8 @@ void inActiveSleep() {
 
   //start deep sleep
   esp_deep_sleep_start();
+
+
 }
 
 void forcedSleep() {
@@ -373,6 +381,7 @@ void forcedSleep() {
   Serial.println("User chose to sleep device with button 2");
   //Keep track of time before sleep
   sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+
   //start deep sleep
   esp_deep_sleep_start();
 }
@@ -408,7 +417,7 @@ void pixelsOff() {
   //let pixels settle
   //re set 1st pixel (often glitches and stays on)
   np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
-  delay(500);
+  delay(1000);
   np_show(&px, NEOPIXEL_RMT_CHANNEL);
 }
 
@@ -455,14 +464,17 @@ void fadePixels() {
 //gets and print local time, returns failed if no time found.
 //also fill date_string and time_string with relevant info
 void printLocalTime() {
-  time(&time_now);
-  timeinfo = localtime (&time_now);
   Serial.printf ("%s\n", asctime(timeinfo));
 }
 
+void setTime() {
+  time(&time_now);
+  timeinfo = localtime (&time_now);
+}
+
 int am_sec = 0;
-int am_min = 36;
-int am_hour = 0;
+int am_min = 47;
+int am_hour = 23;
 int am_day = 19;
 int am_mon = 11;
 int am_year = 119;
@@ -563,12 +575,11 @@ bool powerOn() {
 //the original method
 void powerMode(){
   //set bootcountt to 0 so that time is fetched next time device turned on
-
   bool usbConnected = bitRead(unPhone::getRegister(BM_I2Cadd, BM_Status), 2);
   if (!usbConnected) {
     pixelsOff();
     delay(1000);
-    bootCountt = 0;
+    //bootCountt = 0;
     sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
 
     unPhone::setShipping(true);
