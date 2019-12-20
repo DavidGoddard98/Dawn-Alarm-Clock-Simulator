@@ -36,7 +36,7 @@ bool AlarmUIElement::handleTouch(long x, long y) {
 
   changeTimeUR(x, y);
   changeTimeDL(x, y);
-  if (confirm(x,y)) {
+  if (confirm(x,y) || x>= 430 && y  <=15) {
     return true;
   }
   return false;
@@ -114,16 +114,7 @@ void AlarmUIElement::draw(){
   yCor = m_tft->getCursorY();
   drawRightArrow(xCor+ 25, 265);
 
-  // Serial.println("Up hours x:" + String(x_u_r[0]) + "Up mins x" + String(x_u_r[1]) + "Up days x" + String(x_u_r[2]));
-  // Serial.println("Up hours y:" + String(y_u_r[0]) + "Up mins y" + String(y_u_r[1]) + "Up days y" + String(y_u_r[2]));
-  // Serial.println("");
-  // Serial.print("Down hours x:" + String(x_d_l[0]) + "Down mins x" + String(x_d_l[1]) + "Down days x" + String(x_d_l[2]));
-  // Serial.print("Down hours y:" + String(y_d_l[0]) + "Down mins y" + String(y_d_l[1]) + "Down days y" + String(y_d_l[2]));
-  // delay(30000);
   m_tft->fillRect(390, 245, 65, 40, WHITE);
-
-
-
 
 }
 
@@ -215,11 +206,11 @@ void AlarmUIElement::calcTime2Alarm() {
   if (the_day == currentDay) {
     if (hours >= tmHour && mins >= tmMin) {
       Serial.print("1");
-      addedSeconds += (((hours-tmHour)*60*60) + ((mins-tmMin))*60);
+      addedSeconds = (((hours-tmHour)*60*60) + ((mins-tmMin))*60);
     } else if (hours >= tmHour && mins < tmMin) {
       Serial.print("2");
 
-      addedSeconds +=  ((hours-tmHour-1)*60*60) + (((60-(tmMin-mins)))*60);
+      addedSeconds =  ((hours-tmHour-1)*60*60) + (((60-(tmMin-mins)))*60);
     }
   } else {
     Serial.println("the_day");
@@ -253,11 +244,11 @@ void AlarmUIElement::calcTime2Alarm() {
 
       addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-hours))*60*60) + (59-(tmMin-mins)) *60;
     }
-    Serial.print("seconds added on");
-    Serial.print(addedSeconds );
-    alarm_time = time_t(time_now) + addedSeconds;
-    // alarmTime = localtime(&alarm_time);
   }
+  Serial.print("seconds added on");
+  Serial.print(addedSeconds );
+  alarm_time = time_t(time_now) + addedSeconds;
+  alarmTime = localtime(&alarm_time);
 }
 // Tuesday
 // counter

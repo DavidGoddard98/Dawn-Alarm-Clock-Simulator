@@ -66,7 +66,7 @@ uint64_t timeDiff, timeNow; //RTC clock variables
 #include	<esp_log.h>
 
 //constants and instants
-#define	NEOPIXEL_PORT	15 //Pin //15
+#define	NEOPIXEL_PORT	A7 //Pin //15
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
@@ -129,6 +129,7 @@ void forcedSleep();
 void setupPixels();
 void pixelsOff();
 void fadePixels();
+void setDawnColour(uint16_t col);
 void printLocalTime();
 void setAlarmTime() ;
 void printLocalTime() ;
@@ -200,11 +201,8 @@ void setup() {
 //==============================================================================
 void loop() {
   //show the basic alarm clock UI
-<<<<<<< HEAD
-  uiCont->showUI(ui_alarm);
-=======
+
   uiCont->showUI(ui_home);
->>>>>>> 29b087fe15911e387f85ab5326a81284ab6c2898
   D("\nentering main loop\n")
   long int touchTimer = millis();
   while(1) {
@@ -224,11 +222,6 @@ void loop() {
     }
 
 
-
-<<<<<<< HEAD
-=======
-
->>>>>>> 29b087fe15911e387f85ab5326a81284ab6c2898
     //If power switch not on check if usb connected
     if (!powerOn()) powerMode();
 
@@ -513,32 +506,13 @@ void printLocalTime() {
   Serial.printf ("%s\n", asctime(timeinfo));
 }
 
-<<<<<<< HEAD
-=======
-int am_sec = 0;
-int am_min = 10;
-int am_hour = 13;
-int am_day = 20;
-int am_mon = 11;
-int am_year = 119;
-void setAlarmTime() {
-  time(&time_now);
-  alarmTime = localtime(&time_now);
-  alarmTime->tm_sec = am_sec;
-  alarmTime->tm_hour = am_hour;
-  alarmTime->tm_min = am_min;
-  alarmTime->tm_mon  = am_mon;
-  alarmTime->tm_mday = am_day;
-  alarmTime->tm_year = am_year;
-  alarm_time = mktime (alarmTime);
->>>>>>> 29b087fe15911e387f85ab5326a81284ab6c2898
 
 void setAlarmTime() {
-  alarmTime = localtime(&alarm_time);
+  alarm_time = mktime ( alarmTime );
+
   dawn_time = alarm_time - 240;//(fade_time/1000000);
   Serial.print("Alarm set:");
   Serial.printf ("%s\n", asctime(alarmTime));
-
   alarmNotSet = false;
 }
 

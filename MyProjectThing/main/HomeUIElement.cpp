@@ -116,13 +116,14 @@ void HomeUIElement::drawTime() {
   m_tft->setFont(&FreeMonoBold9pt7b);
   m_tft->setTextColor(GREEN);
   m_tft->setTextSize(5);
-  m_tft->setCursor(90, 150);
+  m_tft->setCursor(25, 150);
   strftime(time_str, sizeof(time_str), "%H:%M:%S", getTime());
   sc = getTime()->tm_sec;
   mn = getTime()->tm_min;
   hr = getTime()->tm_hour;
   m_tft->print(time_str);
 }
+
 
 void HomeUIElement::drawAlarmTime() {
   pair<int, int> p = timeUntilDawn(time2Alarm());
