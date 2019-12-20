@@ -249,10 +249,6 @@ void AlarmUIElement::calcTime2Alarm() {
   alarm_time = time_t(time_now) + addedSeconds;
   alarmTime = localtime(&alarm_time);
 }
-// Tuesday
-// counter
-// 3
-// 6seconds added on205740Alarm is set for: 1577007900
 
 //up and right
 void AlarmUIElement::changeTimeUR(long x, long y) {

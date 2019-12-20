@@ -29,7 +29,7 @@ using namespace std;
 
 extern int firmwareVersion;
 extern String apSSID;
-
+extern tm * timeinfo;
 int f_sec;
 int sc;
 int mn;
@@ -45,7 +45,6 @@ char date_str_year[50];
 bool display = true;
 String day_;
 String greeting();
-tm* getTime();
 long int dot_timer = 0;
 std::pair<int, int> timeUntilDawn(double secs);
 bool cleared = false;
@@ -116,20 +115,20 @@ void HomeUIElement::drawGreeting() {
 }
 
 void HomeUIElement::drawTime() {
-  if (sc != getTime()->tm_sec)
+  if (sc != timeinfo->tm_sec)
     clearSec();
-  if (mn != getTime()->tm_min)
+  if (mn != timeinfo->tm_min)
     clearMin();
-  if (hr != getTime()->tm_hour)
+  if (hr != timeinfo->tm_hour)
     clearHour();
   m_tft->setFont(&FreeMonoBold9pt7b);
   m_tft->setTextColor(GREEN);
   m_tft->setTextSize(5);
   m_tft->setCursor(25, 150);
-  strftime(time_str, sizeof(time_str), "%H:%M:%S", getTime());
-  sc = getTime()->tm_sec;
-  mn = getTime()->tm_min;
-  hr = getTime()->tm_hour;
+  strftime(time_str, sizeof(time_str), "%H:%M:%S", timeinfo);
+  sc = timeinfo->tm_sec;
+  mn = timeinfo->tm_min;
+  hr = timeinfo->tm_hour;
   m_tft->print(time_str);
 }
 
@@ -179,34 +178,27 @@ std::pair<int, int> timeUntilDawn(double secs)
 }
 
 void HomeUIElement::drawDate() {
-  strftime(date_str_day, sizeof(date_str_day), "%A", getTime());
+  strftime(date_str_day, sizeof(date_str_day), "%A", timeinfo);
   if (day_ != date_str_day)
     clearDate();
-  strftime(date_str_month, sizeof(date_str_month), "%B", getTime());
-  strftime(date_str_year, sizeof(date_str_year), "%Y", getTime());
+  strftime(date_str_month, sizeof(date_str_month), "%B", timeinfo);
+  strftime(date_str_year, sizeof(date_str_year), "%Y", timeinfo);
   m_tft->setFont(&FreeSans9pt7b);
   m_tft->setTextColor(MAGENTA);
   m_tft->setTextSize(2);
   m_tft->setCursor(5, 250);
   m_tft->print(date_str_day);m_tft->print(",");
   m_tft->setCursor(5,300);
-  m_tft->print(getTime()->tm_mday);m_tft->print(" ");
+  m_tft->print(timeinfo->tm_mday);m_tft->print(" ");
   m_tft->print(date_str_month);m_tft->print(" ");
   m_tft->print(date_str_year);
   day_ = date_str_day;
 }
 
-tm* getTime() {
-  time_t rawtime;
-  struct tm *info;
-  time( &rawtime );
-  info = localtime( &rawtime );
-  return info;
-}
 
 String greeting() {
   String greet;
-  int hour = getTime()->tm_hour;
+  int hour = timeinfo->tm_hour;
   if (hour >= 6 && hour < 12) { // morning 6am to 11.59am
     greet = "Good morning";
   }

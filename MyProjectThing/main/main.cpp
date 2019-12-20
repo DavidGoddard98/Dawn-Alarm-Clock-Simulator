@@ -135,8 +135,8 @@ void pixelsOff();
 void fadePixels();
 void setDawnColour(uint16_t col);
 void printLocalTime();
+void setTime();
 void setAlarmTime() ;
-void printLocalTime() ;
 void updateTime();
 void setTime();
 int hourCheck();
@@ -211,12 +211,11 @@ void loop() {
   D("\nentering main loop\n")
   long int touchTimer = millis();
   while(1) {
-
+    setTime();
     // readDigitalValue();
     if (uiCont->gotTouch())
     uiCont->handleTouch();
 
-    setTime();
 
 
     if (loopIter % 80 == 0) {
@@ -232,9 +231,8 @@ void loop() {
     if (!powerOn()) powerMode();
 
 
-    if(time2Alarm() > 420) {
-      pixelsOff();
-    }
+
+
     if (alarm_exist) {
       if (alarmNotSet) {
         setAlarmTime();
@@ -512,18 +510,18 @@ void fadePixels() {
 //gets and print local time, returns failed if no time found.
 //also fill date_string and time_string with relevant info
 void printLocalTime() {
+
   Serial.printf ("%s\n", asctime(timeinfo));
 }
-
 void setTime() {
   time(&time_now);
   timeinfo = localtime (&time_now);
 }
 
 
+
 void setAlarmTime() {
   alarm_time = mktime ( alarmTime );
-
   dawn_time = alarm_time - 240;//(fade_time/1000000);
   Serial.print("Alarm set:");
   Serial.printf ("%s\n", asctime(alarmTime));
