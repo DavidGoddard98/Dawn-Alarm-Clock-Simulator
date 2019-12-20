@@ -17,6 +17,9 @@ class UIElement { ///////////////////////////////////////////////////////////
     const uint16_t RED =     HX8357_RED;
     const uint16_t GREEN =   HX8357_GREEN;
     const uint16_t CYAN =    HX8357_CYAN;
+    const uint16_t ORANGE =  HX8357_ORANGE;
+    const uint16_t PURPLE =  HX8357_PURPLE;
+    const uint16_t PINK =    HX8357_PINK;
     const uint16_t MAGENTA = HX8357_MAGENTA;
     const uint16_t YELLOW =  HX8357_YELLOW;
     const uint16_t WHITE =   HX8357_WHITE;
@@ -24,9 +27,9 @@ class UIElement { ///////////////////////////////////////////////////////////
     const uint8_t  HALFBOX = (BOXSIZE / 2);
     const uint8_t  QUARTBOX = (BOXSIZE / 4);
     const uint8_t  PENRADIUS = 9; // orig: 3
-    static const uint8_t NUM_BOXES = 7;
+    static const uint8_t NUM_BOXES = 8;
     const uint16_t colour2box[NUM_BOXES] = {
-      RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA, WHITE,
+      RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, PINK,
     };
     const uint8_t SWITCHER = 7; // index of the switcher
     void drawSwitcher(uint16_t xOrigin = 0, uint16_t yOrigin = 0);
@@ -44,8 +47,8 @@ class UIElement { ///////////////////////////////////////////////////////////
 enum ui_modes_t {
   ui_menu = 0,          //  0
   ui_home,
-  ui_dawn,
   ui_alarm,
+  ui_dawn,
   ui_WiFi,
   ui_config,
   ui_boot

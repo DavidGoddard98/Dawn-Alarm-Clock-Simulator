@@ -54,7 +54,7 @@ void AlarmUIElement::draw(){
   //m_tft->setRotation(3);
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(3);
-  m_tft->setCursor(5, 5);
+  m_tft->setCursor(5, 50);
   m_tft->println("Set alarm here");
   //set time
   m_tft->setFont(&FreeMonoBold9pt7b);

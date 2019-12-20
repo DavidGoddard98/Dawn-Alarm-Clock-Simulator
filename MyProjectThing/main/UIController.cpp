@@ -15,7 +15,7 @@ char *ui_mode_names[] = {
   "AP config",
   "Boot"
 };
-uint8_t NUM_UI_ELEMENTS = 7;  // number of UI elements
+uint8_t NUM_UI_ELEMENTS = 3;  // number of UI elements
 
 // keep Arduino IDE compiler happy /////////////////////////////////////////
 UIElement::UIElement(Adafruit_HX8357* tftp, Adafruit_STMPE610* tsp) {
@@ -95,7 +95,7 @@ uint16_t DIST_SENSITIVITY = DEFAULT_DIST_SENSITIVITY;
 uint16_t TREAT_AS_NEW = 600;     // if no signal in this period treat as new
 uint8_t MODE_CHANGE_TOUCHES = 1; // number of requests needed to switch mode
 uint8_t modeChangeRequests = 0;  // number of current requests to switch mode
-
+bool m_first_touch = true;
 void setTimeSensitivity(uint16_t s = DEFAULT_TIME_SENSITIVITY) { ////////////
   TIME_SENSITIVITY = s;
 }
@@ -177,9 +177,9 @@ void UIController::changeMode() {
     int8_t menuSelection = ((MenuUIElement *)m_menu)->getMenuItemSelected();
     if(menuSelection != -1)     // if user selected an item use it
       nextMode = (ui_modes_t) menuSelection; // (else use current nextMode)
-
-    if(nextMode == ui_menu)
-      setTimeSensitivity(5);
+    //
+    // if(nextMode == ui_menu)
+    //   setTimeSensitivity(5);
 
     // if(nextMode == ui_home)
     //setTimeSensitivity(25);   // ? make class member and move to TPUIE
@@ -188,7 +188,7 @@ void UIController::changeMode() {
     m_element = allocateUIElement(nextMode);
   } else {                      // going INTO menu
     D("...%d (menu)\n", ui_menu)
-
+    m_first_touch = true;
     modeCounter = ++modeCounter % NUM_UI_ELEMENTS; // calculate next mode
     if(modeCounter == 0) modeCounter++; // wrap through to config at end
     nextMode = (ui_modes_t) modeCounter;

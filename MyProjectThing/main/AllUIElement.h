@@ -78,6 +78,8 @@ class DawnUIElement: public UIElement { ///////////////////////////////////
      : UIElement(tft, ts) { };
     bool handleTouch(long, long);
     void draw();
+    void getDawnColour(long x, long y);
+    void drawDawnColour();
     void runEachTurn();
 };
 
