@@ -177,6 +177,9 @@ void UIController::changeMode() {
     if(menuSelection != -1)     // if user selected an item use it
       nextMode = (ui_modes_t) menuSelection; // (else use current nextMode)
 
+    if(nextMode == ui_menu)
+      setTimeSensitivity(5);
+
     // if(nextMode == ui_home)
     //setTimeSensitivity(25);   // ? make class member and move to TPUIE
 
@@ -186,7 +189,7 @@ void UIController::changeMode() {
     D("...%d (menu)\n", ui_menu)
 
     modeCounter = ++modeCounter % NUM_UI_ELEMENTS; // calculate next mode
-    //if(modeCounter == 0) modeCounter++; // wrap through to config at end
+    if(modeCounter == 0) modeCounter++; // wrap through to config at end
     nextMode = (ui_modes_t) modeCounter;
     dbf(miscDBG, "nextMode=%d, modeCounter=%d\n", nextMode, modeCounter);
 
@@ -206,17 +209,12 @@ void UIController::showUI(ui_modes_t newMode) {
 
 /////////////////////////////////////////////////////////////////////////////
 void UIController::handleTouch() {
+  int16_t nTmpX = p.x; // temp p.x so that p.y updates
   p.x =
     map(p.y, unPhone::TS_MINY, unPhone::TS_MAXY, 0, unPhone::tftp->width());
   p.y =
-    map(p.x, unPhone::TS_MINX, unPhone::TS_MAXX, 0, unPhone::tftp->height());
-  // previously, before screen rotation in unphone spin 4, we did it like
-  // this (which is probably from the Adafruit example):
-  // p.x = map(p.x, TS_MINX, TS_MAXX, unPhone::tftp->width(), 0);
-  // p.y = map(p.y, TS_MINY, TS_MAXY, 0, unPhone::tftp->height());
-  // p.x = map(p.y, TS_MINY, TS_MAXY, 0, 320);
-  //   p.y = 240-map(nTmpX, TS_MINX, TS_MAXX, 0, 240);
-  unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX8357_GREEN); // DEBUG touch feedback
+    map(nTmpX, unPhone::TS_MINX, unPhone::TS_MAXX, 0, unPhone::tftp->height());
+
   // TODO dump old modeChangeRequests?
   if(m_element->handleTouch(p.x, p.y)) {
     if(++modeChangeRequests >= MODE_CHANGE_TOUCHES) {
@@ -224,12 +222,13 @@ void UIController::handleTouch() {
       modeChangeRequests = 0;
     }
   }
+  unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX8357_GREEN); // DEBUG touch feedback
 }
 
 /////////////////////////////////////////////////////////////////////////////
 void UIController::run() {
-  if(gotTouch())
-    handleTouch();
+  // if(gotTouch())
+  //   handleTouch();
   m_element->runEachTurn();
 }
 

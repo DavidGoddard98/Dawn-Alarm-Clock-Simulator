@@ -35,16 +35,16 @@ int mn;
 int hr;
 int fir;
 int snd;
-int temp_sec;
 char time_str[50];
 char date_str[50];
 char date_str_day[50];
 char date_str_month[50];
 char date_str_year[50];
 bool display = true;
-long int dot_timer = 0;
 String day_;
 String greeting();
+tm* getTime();
+long int dot_timer = 0;
 std::pair<int, int> timeUntilDawn(double secs);
 bool cleared = false;
 
@@ -53,7 +53,7 @@ bool HomeUIElement::handleTouch(long x, long y) {
   Serial.print("x: "); Serial.println(x);
   Serial.print("y: "); Serial.println(y);
   //
-  return false;
+  return true;
 }
 
 // writes various things including mac address and wifi ssid ///////////////
@@ -65,7 +65,13 @@ void HomeUIElement::draw() {
     if (time2Alarm() >= 0.00)
       drawAlarmTime();
       cleared = false;
-  } else drawNoAlarm();
+  } else {
+    drawNoAlarm();
+  }
+  if (millis() - dot_timer >= 1000) {
+    flashDots();
+    dot_timer = millis();
+  }
 }
 
 void HomeUIElement::clearDate() {
@@ -88,11 +94,6 @@ void HomeUIElement::clearAlarm() {
   m_tft->fillRect(  100,   170,  380,  50, BLACK);
 }
 
-void HomeUIElement::clearAlarmSec() {
-  m_tft->fillRect(  320,   170,  380,  50, BLACK);
-
-}
-
 void HomeUIElement::flashDots() {
   m_tft->fillRect(  315,   90,  15,  75, BLACK);
   m_tft->fillRect(  150,   90,  15,  75, BLACK);
@@ -107,26 +108,21 @@ void HomeUIElement::drawGreeting() {
 }
 
 void HomeUIElement::drawTime() {
-  if (sc != timeinfo->tm_sec){
+  if (sc != getTime()->tm_sec)
     clearSec();
-  }
-  if (mn != timeinfo->tm_min)
+  if (mn != getTime()->tm_min)
     clearMin();
-  if (hr != timeinfo->tm_hour)
+  if (hr != getTime()->tm_hour)
     clearHour();
   m_tft->setFont(&FreeMonoBold9pt7b);
   m_tft->setTextColor(GREEN);
   m_tft->setTextSize(5);
   m_tft->setCursor(25, 150);
-  strftime(time_str, sizeof(time_str), "%H:%M:%S", timeinfo);
-  sc = timeinfo->tm_sec;
-  mn = timeinfo->tm_min;
-  hr = timeinfo->tm_hour;
+  strftime(time_str, sizeof(time_str), "%H:%M:%S", getTime());
+  sc = getTime()->tm_sec;
+  mn = getTime()->tm_min;
+  hr = getTime()->tm_hour;
   m_tft->print(time_str);
-  if (millis() - dot_timer >= 1000) {
-    flashDots();
-    dot_timer = millis();
-  }
 }
 
 void HomeUIElement::drawAlarmTime() {
@@ -138,16 +134,8 @@ void HomeUIElement::drawAlarmTime() {
   m_tft->setTextSize(2);
   m_tft->setCursor(120, 200);
   m_tft->print("Alarm in: ");
-  if (time2Alarm() > 60) {
-    m_tft->print(p.first);m_tft->print("h ");
-    m_tft->print(p.second);m_tft->print("m");
-  } else {
-    if (time2Alarm() != temp_sec) {
-      clearAlarmSec();
-    }
-    m_tft->print(time2Alarm());m_tft->print("s");
-    temp_sec = time2Alarm();
-  }
+  m_tft->print(p.first);m_tft->print("h ");
+  m_tft->print(p.second);m_tft->print("m");
   fir = p.first;
   snd = p.second;
 }
@@ -168,36 +156,39 @@ void HomeUIElement::drawNoAlarm() {
 std::pair<int, int> timeUntilDawn(double secs)
 {
     int hours = floor(secs/3600);
-    int mins = ceil((secs - (hours*3600))/60) ;
-    if (mins == 60) {
-      hours = 1;
-      mins = 0;
-    }
+    int mins = floor((secs - (hours*3600))/60);
     return std::make_pair(hours, mins);
 }
 
 void HomeUIElement::drawDate() {
-  strftime(date_str_day, sizeof(date_str_day), "%A", timeinfo);
+  strftime(date_str_day, sizeof(date_str_day), "%A", getTime());
   if (day_ != date_str_day)
     clearDate();
-  strftime(date_str_month, sizeof(date_str_month), "%B", timeinfo);
-  strftime(date_str_year, sizeof(date_str_year), "%Y", timeinfo);
+  strftime(date_str_month, sizeof(date_str_month), "%B", getTime());
+  strftime(date_str_year, sizeof(date_str_year), "%Y", getTime());
   m_tft->setFont(&FreeSans9pt7b);
   m_tft->setTextColor(MAGENTA);
   m_tft->setTextSize(2);
   m_tft->setCursor(5, 250);
   m_tft->print(date_str_day);m_tft->print(",");
   m_tft->setCursor(5,300);
-  m_tft->print(timeinfo->tm_mday);m_tft->print(" ");
+  m_tft->print(getTime()->tm_mday);m_tft->print(" ");
   m_tft->print(date_str_month);m_tft->print(" ");
   m_tft->print(date_str_year);
   day_ = date_str_day;
 }
 
+tm* getTime() {
+  time_t rawtime;
+  struct tm *info;
+  time( &rawtime );
+  info = localtime( &rawtime );
+  return info;
+}
 
 String greeting() {
   String greet;
-  int hour = timeinfo->tm_hour;
+  int hour = getTime()->tm_hour;
   if (hour >= 6 && hour < 12) { // morning 6am to 11.59am
     greet = "Good morning";
   }

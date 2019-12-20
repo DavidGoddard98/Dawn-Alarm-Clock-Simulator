@@ -9,6 +9,9 @@ extern String apSSID;
 
 // handle touch on this page ////////////////////////////////////////////////
 bool AlarmUIElement::handleTouch(long x, long y) {
+  Serial.print("x: "); Serial.println(x);
+  Serial.print("y: "); Serial.println(y);
+  //
   return true;
 }
 

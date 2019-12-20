@@ -57,8 +57,6 @@ class UIController { ////////////////////////////////////////////////////////
   private:
     UIElement* m_element = 0;
     UIElement* m_menu;
-    bool gotTouch();
-    void handleTouch();
     void changeMode();
     ui_modes_t m_mode;
     ui_modes_t nextMode = ui_home; // starting mode
@@ -70,6 +68,8 @@ class UIController { ////////////////////////////////////////////////////////
     UIElement* allocateUIElement(ui_modes_t);
     void run();
     void redraw();
+    bool gotTouch();
+    void handleTouch();
     void message(char *s);
     static bool provisioned;
 };
