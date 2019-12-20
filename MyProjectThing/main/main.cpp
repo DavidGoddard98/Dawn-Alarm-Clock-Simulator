@@ -1,5 +1,9 @@
 // main.cpp / sketch.ino
-
+//*********************************************************************8
+//CHANGE SCREEN ROTATION METHOD
+//cHANGED SCREEN GETPOINT METHOD
+//PAZ SET SOME CONSTANT COLOURS IN UNPHONE
+//***********************************************************************
 // a library or two... ///////////////////////////////////////////////////////
 #include <stdio.h>
 #include <tuple>
@@ -288,6 +292,7 @@ void loop() {
 }
 
 void fetchTime() {
+  uiCont->showUI(ui_WiFi);
 
   //Connect to saved wifi, if none start AP
   WiFi.begin();
@@ -424,10 +429,12 @@ void pixelsOff() {
     np_set_pixel_rgbw(&px, i , 0, 0, 0, 0);
   }
   delay(1000);
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+
   //let pixels settle
   //re set 1st pixel (often glitches and stays on)
   np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
-  delay(500);
+  delay(100);
   np_show(&px, NEOPIXEL_RMT_CHANNEL);
 }
 

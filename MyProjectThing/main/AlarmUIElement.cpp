@@ -27,16 +27,16 @@ std::vector<double> y_d_l;
 String days [7] = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 int hours = 0;
 int mins = 0;
+int toggle = 0;
+char date1_str_day[50];
+
 String the_day = "Monday";
 
 // handle touch on this page ////////////////////////////////////////////////
 bool AlarmUIElement::handleTouch(long x, long y) {
-
-
-
   changeTimeUR(x, y);
   changeTimeDL(x, y);
-  if (confirm(x,y) || x>= 430 && y  <=15) {
+  if (confirm(x,y) || x>= 430 && y  <=25) {
     return true;
   }
   return false;
@@ -46,19 +46,26 @@ bool AlarmUIElement::handleTouch(long x, long y) {
 
 // writes various things including mac address and wifi ssid ///////////////
 void AlarmUIElement::draw(){
-  //clear vectors
+  if (!alarm_exist && toggle == 0) {
+    hours = timeinfo->tm_hour;
+    mins = timeinfo->tm_min;
+    (strftime(date1_str_day, sizeof(date1_str_day), "%A", timeinfo));
+    int a_size = sizeof(date1_str_day) / sizeof(char);
+    the_day = convertToString(date1_str_day, a_size);
+    toggle ++;
+  }
   x_u_r.clear();
   y_u_r.clear();
   x_d_l.clear();
   y_d_l.clear();
-  //m_tft->setRotation(3);
-  m_tft->setTextColor(CYAN);
-  m_tft->setTextSize(3);
-  m_tft->setCursor(5, 50);
-  m_tft->println("Set alarm here");
+  m_tft->setFont(&FreeSans9pt7b);
+  m_tft->setTextSize(3.5);
+  m_tft->setTextColor(RED);
+  m_tft->setCursor(5, 42);
+  m_tft->println("Set Alarm Here");
   //set time
   m_tft->setFont(&FreeMonoBold9pt7b);
-  m_tft->setTextColor(GREEN);
+  m_tft->setTextColor(RED);
   m_tft->setTextSize(7);
   m_tft->setCursor(130, 175);
 
@@ -106,16 +113,18 @@ void AlarmUIElement::draw(){
   //DAY///////////////////////////////////////////////
   drawLeftArrow(20, 265);
   m_tft->setFont(&FreeSans9pt7b);
-  m_tft->setTextColor(MAGENTA);
+  m_tft->setTextColor(RED);
   m_tft->setTextSize(3.5);
   m_tft->setCursor(48, 280);
   m_tft->print(the_day);
   xCor = m_tft->getCursorX();
   yCor = m_tft->getCursorY();
   drawRightArrow(xCor+ 25, 265);
+  m_tft->setTextSize(2);
 
-  m_tft->fillRect(390, 245, 65, 40, WHITE);
-
+  m_tft->fillRect(390, 245, 65, 40, ORANGE);
+  m_tft->setCursor(390, 277);
+  m_tft->print("SET");
 }
 
 void AlarmUIElement::clearMins() {
@@ -127,7 +136,12 @@ void AlarmUIElement::clearHours() {
 }
 
 void AlarmUIElement::clearDay() {
-  m_tft->fillRect(  0,   230,  400,  80, HX8357_BLACK);
+  m_tft->fillRect(  0,   230,  380,  80, HX8357_BLACK);
+}
+
+void AlarmUIElement::clearMessage() {
+  m_tft->fillRect(  0,   0,  450,  60, HX8357_BLACK);
+
 }
 
 int test = 0;
@@ -143,9 +157,6 @@ bool AlarmUIElement::confirm(long x, long y){
   }
   return false;
 }
-
-
-char date1_str_day[50];
 
 String AlarmUIElement::convertToString(char* a, int size) {
     int i;
@@ -200,16 +211,13 @@ void AlarmUIElement::calcTime2Alarm() {
   int tmHour = timeinfo->tm_hour;
   int tmMin = timeinfo->tm_min;
   int addedSeconds;
-  if (the_day == currentDay) {
-    if (hours >= tmHour && mins >= tmMin) {
-      Serial.print("1");
-      addedSeconds = (((hours-tmHour)*60*60) + ((mins-tmMin))*60);
-    } else if (hours >= tmHour && mins < tmMin) {
-      Serial.print("2");
-
-      addedSeconds =  ((hours-tmHour-1)*60*60) + (((60-(tmMin-mins)))*60);
+  if (the_day == currentDay && hours >= tmHour && mins >= tmMin) {
+    Serial.print("1");
+    addedSeconds = (((hours-tmHour)*60*60) + ((mins-tmMin))*60);
+  } else {
+    if (the_day == currentDay) {
+      counter = 7;
     }
-    else {
     while(the_day!=currentDay) {
       currentDay = getNextDay(currentDay);
       counter ++;
@@ -235,7 +243,7 @@ void AlarmUIElement::calcTime2Alarm() {
       addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-hours))*60*60) + (59-(tmMin-mins)) *60;
     }
   }
-  }
+
   Serial.print("seconds added on");
   Serial.print(addedSeconds );
   alarm_time = time_t(time_now) + addedSeconds;
@@ -316,7 +324,7 @@ void AlarmUIElement::drawUpArrow(uint16_t xOrigin, uint16_t yOrigin) {
     xOrigin - 25,    yOrigin + 12.5,
     xOrigin,         yOrigin - 12.5,
     xOrigin + 25,    yOrigin   + 12.5,
-    WHITE
+    ORANGE
   );
 }
 
@@ -337,7 +345,7 @@ void AlarmUIElement::drawDownArrow(uint16_t xOrigin, uint16_t yOrigin) {
     xOrigin + 25,    yOrigin - 12.5,
     xOrigin,         yOrigin + 12.5,
     xOrigin - 25,    yOrigin - 12.5,
-    WHITE
+    ORANGE
   );
 }
 
@@ -349,7 +357,7 @@ void AlarmUIElement::drawRightArrow(uint16_t xOrigin, uint16_t yOrigin) {
     xOrigin - 12.5,   yOrigin + 25,
     xOrigin + 12.5,   yOrigin,
     xOrigin - 12.5,   yOrigin - 25,
-    WHITE
+    ORANGE
   );
 }
 
@@ -361,7 +369,7 @@ void AlarmUIElement::drawLeftArrow(uint16_t xOrigin, uint16_t yOrigin) {
     xOrigin + 12.5,   yOrigin - 25,
     xOrigin - 12.5,   yOrigin,
     xOrigin + 12.5,   yOrigin + 25,
-    WHITE
+    ORANGE
   );
 }
 
