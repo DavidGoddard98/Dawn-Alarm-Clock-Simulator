@@ -1,8 +1,12 @@
 // main.cpp / sketch.ino
 //*********************************************************************8
 //CHANGE SCREEN ROTATION METHOD
+//from - https://github.com/Bodmer/TFT_HX8357/blob/master/TFT_HX8357.cpp
 //cHANGED SCREEN GETPOINT METHOD
+//from - https://github.com/adafruit/Adafruit_STMPE610/blob/master/Adafruit_STMPE610.cpp
 //PAZ SET SOME CONSTANT COLOURS IN UNPHONE
+//from - https://github.com/adafruit/Adafruit_HX8357_Library/blob/master/examples/gfxbuttontest_featherwing/gfxbuttontest_featherwing.ino
+
 //***********************************************************************
 // a library or two... ///////////////////////////////////////////////////////
 #include <stdio.h>
@@ -859,7 +863,9 @@ void apListForm(String& f) { // utility to create a form for choosing AP
     }
     f += "<br/> <br/>";
     // custom option to choose uos other network
-    f += "UOS-other<input type='radio' name='ssid' value='uos-other' uos-other <br/><br/>";
+    // f += "UOS-other<input type='radio' name='ssid' value='uos-other' uos-other <br/><br/>";
+    f += "TALKTALK<input type='radio' name='ssid' value='BTWHOLEHOME-98F' BTWHOLEHOME-98F <br/><br/>";
+
     f += "<br/>Pass key: <input type='textarea' name='key'><br/><br/> ";
     f += "<input type='submit' value='Submit'></form></p>";
 
