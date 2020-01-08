@@ -1,0 +1,115 @@
+Dear Theo Koorehpaz,
+
+Here are your preliminary marks for the COM3505 assessment, based on your Git repo at
+https://gitlab.com/dgoddard3/com3505-2019-student/tree/8a73335ec9dd9d7d6343cfc4512daf502bd08609
+and your lab assessment demo.
+
+Data indicates that your partner (if any) for this work was: David Goddard.
+
+Below details of what we found in your docs and code, followed by a summary of some of the data points we have for your work.
+
+We have preliminarily evaluated your work to be first class (approx. 80%): that's really excellent work, well done!
+
+If you find anything factually incorrect (especially in relation to the Git commit number I've used, or who you were partnering with, please let me know ASAP.
+
+All the best,
+Hamish
+
+
+Excellent work, with a particularly useful discussion of power requirements. Well done!
+
+
+We found strong evidence of many of:
+
+- correct functionality and extensions
+  - OTA configured properly
+  - touch-based security
+  - access point cache
+  - use of IDF APIs
+- testing
+  - documentation of appropriate testing
+  - implementation of testing
+  - data collection routines
+- documentation
+  - exhibits understanding of the field
+  - exhibits understanding of provisioning and OTA
+  - clarity
+  - comprehesive
+  - concise
+  - illustrations
+  - references
+  - enhancements made
+  - possible future enhancements
+    - power
+    - security
+    - accelerometer
+  - specifics covered:
+    - what is the purpose of provisioning? and (over-the-air) updating?
+    - how has `MyPro+UpdThingIDF` chosen to implement these functions?
+    - how secure is the implementation?
+    - how efficient is the implementation?
+    - are there [m]any bugs?!
+    - how might it be improved?
+    - what is the dominant programming style? what are its advantages and
+      disadvantages?
+    - pseudocode for the main algorithm
+- good code quality
+  - structure, readability, maintainability
+  - commenting and style
+  - interfaces minimal, simplicity maximal
+- process
+  - gitlab records
+  - GTA demo positive
+  - code and docs in the right places
+- teamwork
+
+
+
+Git data point summary:
+
+
+* b719581 -  Upload New File (2019-11-11 06:19:58 +0000) <David Goddard>
+* 6c13b1f -  Upload New File (2019-11-11 06:19:30 +0000) <David Goddard>
+* 08af8d0 -  Upload New File (2019-11-11 06:19:13 +0000) <David Goddard>
+* 9e12641 -  Upload New File (2019-11-11 06:18:57 +0000) <David Goddard>
+* c9418e3 -  Add new directory (2019-11-11 06:18:30 +0000) <David Goddard>
+* d3a14bd -  Delete README.mkd (2019-11-11 06:18:07 +0000) <David Goddard>
+* cb40471 -  Project finished (2019-11-11 06:15:11 +0000) <David goddard>
+* 4b621ba -  added OTA firmware version 63 (2019-11-11 06:11:44 +0000) <David goddard>
+* a46c351 -  Completed touch security implementation + AP cache list (2019-11-09 17:49:20 +0000) <David goddard>
+* a46df78 -  added OTA firmware version 62 (2019-11-09 14:43:36 +0000) <David goddard>
+* c1c2434 -  added OTA firmware version 61 (2019-11-09 14:29:40 +0000) <David goddard>
+* 826c585 -  added OTA firmware version 60 (2019-11-09 14:16:17 +0000) <David goddard>
+* 2810d2a -  added OTA firmware version 59 (2019-11-09 00:01:46 +0000) <David goddard>
+* c60e3aa -  added OTA firmware version 58 (2019-11-08 22:07:12 +0000) <David goddard>
+* 187767b -  added OTA firmware version 57 (2019-11-08 21:56:55 +0000) <David goddard>
+* 1a016b1 -  added OTA firmware version 56 (2019-11-08 21:16:07 +0000) <David goddard>
+* 14317ea -  added OTA firmware version 55 (2019-11-08 21:12:45 +0000) <David goddard>
+* 379beb1 -  added OTA firmware version 54 (2019-11-08 21:09:05 +0000) <David goddard>
+* a4d5d96 -  added OTA firmware version 53 (2019-11-08 21:08:40 +0000) <David goddard>
+* 648ee8b -  added OTA firmware version 53 (2019-11-08 21:03:30 +0000) <David goddard>
+* 8395177 -  added OTA firmware version 52 (2019-11-08 21:03:04 +0000) <David goddard>
+* 6869082 -  added OTA firmware version 52 (2019-11-08 20:54:49 +0000) <David goddard>
+* 27aeea2 -  added OTA firmware version 51 (2019-11-08 20:28:27 +0000) <David goddard>
+* bf3bffb -  added OTA firmware version 50 (2019-11-08 19:20:35 +0000) <David goddard>
+* e312d7d -  Started work on touch sensor capibaitlies (2019-11-08 19:19:36 +0000) <David goddard>
+*   3d898ea -  Merge branch 'master' of https://gitlab.com/dgoddard3/com3505-2019-student (2019-11-08 19:15:59 +0000) <David goddard>
+|\  
+* | d286cd2 -  added OTA firmware version 49 (2019-11-08 19:15:16 +0000) <David goddard>
+|/  
+* d6bd9c5 -  Began documentation, diagrams drawn (need to import) (2019-10-30 19:01:18 +0000) <David goddard>
+* 5d99007 -  added OTA firmware version 48 (2019-10-30 13:36:30 +0000) <David goddard>
+* e394f57 -  added OTA firmware version 47 (2019-10-30 13:27:18 +0000) <David goddard>
+* 952383a -  added OTA firmware version 46 (2019-10-30 12:59:45 +0000) <David goddard>
+* a89ec55 -  New version update (2019-10-30 12:40:18 +0000) <David goddard>
+* 24fa03e -  New version update (2019-10-30 12:33:56 +0000) <David goddard>
+* b2f76c7 -  added OTA firmware version 45 (2019-10-29 15:49:32 +0000) <David goddard>
+* 3190e0f -  added OTA firmware version 44 (2019-10-29 15:37:45 +0000) <David goddard>
+* 7f07a11 -  minor version update (2019-10-29 15:34:40 +0000) <David goddard>
+* 756ea81 -  Build a basic web server and added a page (2019-10-22 15:44:08 +0100) <David goddard>
+* c969491 -  Exercises 1/2/3 done (2019-10-15 15:52:13 +0100) <David goddard>
+* ed0badc -  Upload New File (2019-10-07 13:18:56 +0000) <David Goddard>
+|\  
+| * 7994ae6 -  Add README.md (2019-10-01 13:28:48 +0000) <David Goddard>
+|/  
+
