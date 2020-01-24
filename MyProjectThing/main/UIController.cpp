@@ -172,6 +172,7 @@ void UIController::changeMode() {
   unPhone::tftp->fillScreen(HX8357_BLACK);
   setTimeSensitivity(); // set TIME_SENS to the default
   // allocate an element according to nextMode and
+  toggle = 0;
   if(m_mode == ui_menu) {       // coming OUT of menu
     D("...%d\n", nextMode)
     int8_t menuSelection = ((MenuUIElement *)m_menu)->getMenuItemSelected();
