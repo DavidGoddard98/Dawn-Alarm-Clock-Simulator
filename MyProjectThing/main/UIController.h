@@ -17,9 +17,9 @@ class UIElement { ///////////////////////////////////////////////////////////
     const uint16_t RED =     HX8357_RED;
     const uint16_t GREEN =   HX8357_GREEN;
     const uint16_t CYAN =    HX8357_CYAN;
-    const uint16_t ORANGE =  HX8357_ORANGE;
-    const uint16_t PURPLE =  HX8357_PURPLE;
-    const uint16_t PINK =    HX8357_PINK;
+    const uint16_t ORANGE =  HX8357_ORANGE; // new colour
+    const uint16_t PURPLE =  HX8357_PURPLE; // new colour
+    const uint16_t PINK =    HX8357_PINK;   // new colour
     const uint16_t MAGENTA = HX8357_MAGENTA;
     const uint16_t YELLOW =  HX8357_YELLOW;
     const uint16_t WHITE =   HX8357_WHITE;
@@ -45,7 +45,7 @@ class UIElement { ///////////////////////////////////////////////////////////
 
 // the UI elements types (screens) /////////////////////////////////////////
 enum ui_modes_t {
-  ui_menu = 0,          //  0
+  ui_menu = 0,
   ui_home,
   ui_alarm,
   ui_dawn,
