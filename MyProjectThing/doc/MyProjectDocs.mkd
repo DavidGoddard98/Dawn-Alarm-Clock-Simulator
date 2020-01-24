@@ -1,4 +1,14 @@
-MyProjectDocs.mkd: COM3505 project documentation
+Dawn Alarm Clock Documentation
 ===
 
-put your docs here!
+For our project we decided to implement a Dawn simulator alarm clock. Simply put, it has all of the functionality of an alarm clock with a few bonus features. Some of those features worth noting are; 
+
+- LEDS that begin simulating dawn 5 minutes before the alarm (inc. 8 customizable colours)
+- An IR sensor giving the option to snooze the alarm with movement
+- Sophisticated power management to save battery life
+- Extremely user friendly interface
+- An alarm that can be set up to 7 days into the future
+- Accurate time management
+- Landscape mode...
+
+See below an indepth examination detailing the implementation of the system.
