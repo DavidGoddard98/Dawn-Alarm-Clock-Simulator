@@ -13,7 +13,7 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 
 See below an indepth examination detailing the implementation of the system.
 
-## Overview of pages
+## Overview of features
 Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. Sketches have been included to help illustrate initial concepts and ideas. 
 
 ### Home Display
