@@ -36,6 +36,7 @@ std::vector<double> y_d_l;
 //variables used to display time and day...
 String days [7] = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 String the_day;
+int dayAsNum;
 int hours = 0;
 int mins = 0;
 int toggle = 0;
@@ -65,6 +66,7 @@ void AlarmUIElement::draw(){
     (strftime(date1_str_day, sizeof(date1_str_day), "%A", timeinfo));
     the_day = convertToString(date1_str_day);
     toggle = 1;
+    dayAsNum = convertDayToNum(the_day); //used for string array of days
   }
   //clear vectors
   x_u_r.clear();
@@ -155,8 +157,6 @@ void AlarmUIElement::clearMessage() {
 
 }
 
-int test = 0;
-
 //When confirm button pressed set alarm to time that has been toggled by user
 bool AlarmUIElement::confirm(long x, long y){
   if (x>=390 && y >= 245 && y <= 285) { //position of confirm box
@@ -207,6 +207,16 @@ String AlarmUIElement::getNextDay(String a_day){
     else if (a_day == "Friday") return "Saturday";
     else if (a_day == "Saturday") return "Sunday";
     else return "Monday";
+}
+
+int AlarmUIElement::convertDayToNum(String a_day){
+  if (a_day == "Monday") return 0;
+  else if (a_day == "Tuesday")  return 1;
+  else if (a_day == "Wednesday") return 2;
+  else if (a_day == "Thursday") return 3;
+  else if (a_day == "Friday") return 4;
+  else if (a_day == "Saturday") return 5;
+  else return 6;
 }
 
 //Used in confirm() method
@@ -285,13 +295,13 @@ void AlarmUIElement::changeTimeUR(long x, long y) {
         }
         if (i ==2) { // if 2 then right arrow (days)
           clearDay();
-          if (test ==6) {
-            test = 0;
-            the_day = days[test];
+          if (dayAsNum ==6) {
+            dayAsNum = 0;
+            the_day = days[dayAsNum];
           }
           else {
-            test++;
-            the_day = days[test];
+            dayAsNum++;
+            the_day = days[dayAsNum];
           }
         }
       }
@@ -318,13 +328,13 @@ void AlarmUIElement::changeTimeDL(long x, long y) {
         }
         if (i ==2) {
           clearDay();
-          if (test ==0) {
-            test = 6;
-            the_day = days[test];
+          if (dayAsNum ==0) {
+            dayAsNum = 6;
+            the_day = days[dayAsNum];
           }
           else {
-            test--;
-            the_day = days[test];
+            dayAsNum--;
+            the_day = days[dayAsNum];
           }
         }
 

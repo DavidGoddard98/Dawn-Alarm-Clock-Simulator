@@ -4,6 +4,7 @@ UNPHONE_INC_DIR=../../../../unphone/src
 UNPHONE_PARENT_DIR=../../../..
 UNPHONE_SRC_DIR=../../../unphone/src
 UNPHONE_LIB_DIR=../../../unphone/lib
+COM3505_2019-STUDENT_LIB=../lib
 CPPFLAGS += -D_GLIBCXX_USE_C99
 CPPFLAGS += -I$(UNPHONE_INC_DIR) -I$(UNPHONE_PARENT_DIR) \
   -Wno-all -Wno-extra \
@@ -14,13 +15,13 @@ CPPFLAGS += -I$(UNPHONE_INC_DIR) -I$(UNPHONE_PARENT_DIR) \
 # library sources
 BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
   $(UNPHONE_LIB_DIR)/Adafruit-GFX-Library \
-  $(UNPHONE_LIB_DIR)/Adafruit_HX8357_Library \
+  $(COM3505_2019-STUDENT_LIB)/Adafruit_HX8357_Library \
   $(UNPHONE_LIB_DIR)/ESPAsyncWebServer/src \
   $(UNPHONE_LIB_DIR)/AsyncTCP/src/ \
   $(UNPHONE_LIB_DIR)/OneWire \
   $(UNPHONE_LIB_DIR)/ArduinoJson/src \
   $(UNPHONE_LIB_DIR)/WiFiManager \
-  $(UNPHONE_LIB_DIR)/Adafruit_STMPE610 \
+  $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
   $(UNPHONE_LIB_DIR)/Adafruit_LSM303DLHC \
   $(UNPHONE_LIB_DIR)/SD/src \
   $(UNPHONE_LIB_DIR)/Adafruit_Sensor \
