@@ -11,7 +11,7 @@ bool ConfigUIElement::handleTouch(long x, long y) {
   return true;
 }
 
-// writes various things including mac address and wifi ssid ///////////////
+// display provisioning message ////////////////////////////////////////////
 void ConfigUIElement::draw(){
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(2);

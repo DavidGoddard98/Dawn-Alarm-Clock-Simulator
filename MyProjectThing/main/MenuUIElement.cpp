@@ -21,7 +21,7 @@ bool MenuUIElement::handleTouch(long x, long y) {
     }
 
   } else {
-    m_first_touch = false;
+    m_first_touch = false; // proceed normally 
   }
   return false;
 }

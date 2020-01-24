@@ -11,7 +11,7 @@ bool WiFiUIElement::handleTouch(long x, long y) {
   return true;
 }
 
-// writes various things including mac address and wifi ssid ///////////////
+// display autoconnect message //////////////////////////////////////////////
 void WiFiUIElement::draw(){
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(2);
