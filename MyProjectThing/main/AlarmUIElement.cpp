@@ -35,6 +35,7 @@ std::vector<double> y_d_l;
 
 //variables used to display time and day...
 String days [7] = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+String the_day;
 int hours = 0;
 int mins = 0;
 int toggle = 0;

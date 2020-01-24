@@ -11,7 +11,7 @@ bool BootUIElement::handleTouch(long x, long y) {
   return true;
 }
 
-// writes various things including mac address and wifi ssid ///////////////
+// display boot message /////////////////////////////////////////////////////
 void BootUIElement::draw(){
 
   m_tft->setTextColor(CYAN);
