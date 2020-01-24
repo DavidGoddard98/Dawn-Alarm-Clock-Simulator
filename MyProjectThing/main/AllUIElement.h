@@ -47,8 +47,6 @@ public:
 };
 
 class AlarmUIElement: public UIElement { ///////////////////////////////////
-  // private:
-  //   long m_timer;
   public:
     AlarmUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
      : UIElement(tft, ts) { };
@@ -74,7 +72,6 @@ class AlarmUIElement: public UIElement { ///////////////////////////////////
 
 class DawnUIElement: public UIElement { ///////////////////////////////////
   private:
-    // long m_timer;
   public:
     DawnUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
      : UIElement(tft, ts) { };
@@ -87,7 +84,6 @@ class DawnUIElement: public UIElement { ///////////////////////////////////
 
 class WiFiUIElement: public UIElement { ///////////////////////////////////
   private:
-    // long m_timer;
   public:
     WiFiUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
      : UIElement(tft, ts) { };
@@ -98,7 +94,6 @@ class WiFiUIElement: public UIElement { ///////////////////////////////////
 
 class ConfigUIElement: public UIElement { ///////////////////////////////////
   private:
-    // long m_timer;
   public:
     ConfigUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
      : UIElement(tft, ts) { };
@@ -109,7 +104,6 @@ class ConfigUIElement: public UIElement { ///////////////////////////////////
 
 class BootUIElement: public UIElement { ///////////////////////////////////
   private:
-    // long m_timer;
   public:
     BootUIElement (Adafruit_HX8357* tft, Adafruit_STMPE610* ts)
      : UIElement(tft, ts) { };

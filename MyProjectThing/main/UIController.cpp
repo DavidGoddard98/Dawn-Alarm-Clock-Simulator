@@ -96,7 +96,7 @@ uint16_t DIST_SENSITIVITY = DEFAULT_DIST_SENSITIVITY;
 uint16_t TREAT_AS_NEW = 600;     // if no signal in this period treat as new
 uint8_t MODE_CHANGE_TOUCHES = 1; // number of requests needed to switch mode
 uint8_t modeChangeRequests = 0;  // number of current requests to switch mode
-bool m_first_touch = true;
+bool m_first_touch = true; // extern bool used in menu UI to ignore first touch
 void setTimeSensitivity(uint16_t s = DEFAULT_TIME_SENSITIVITY) { ////////////
   TIME_SENSITIVITY = s;
 }
@@ -171,39 +171,29 @@ void UIController::changeMode() {
   D("changing mode from %d to...", m_mode)
   unPhone::tftp->fillScreen(HX8357_BLACK);
   setTimeSensitivity(); // set TIME_SENS to the default
-
   // allocate an element according to nextMode and
   if(m_mode == ui_menu) {       // coming OUT of menu
     D("...%d\n", nextMode)
     int8_t menuSelection = ((MenuUIElement *)m_menu)->getMenuItemSelected();
     if(menuSelection != -1)     // if user selected an item use it
       nextMode = (ui_modes_t) menuSelection; // (else use current nextMode)
-    //
-    // if(nextMode == ui_menu)
-    //   setTimeSensitivity(5);
-
-    // if(nextMode == ui_home)
-    //setTimeSensitivity(25);   // ? make class member and move to TPUIE
-
     m_mode =    nextMode;
     m_element = allocateUIElement(nextMode);
   } else {                      // going INTO menu
     D("...%d (menu)\n", ui_menu)
-    m_first_touch = true;
+    m_first_touch = true; // set first touch bool to true entering menu UI
     modeCounter = ++modeCounter % NUM_UI_ELEMENTS; // calculate next mode
-    if(modeCounter == 0) modeCounter++; // wrap through to config at end
+    if(modeCounter == 0) modeCounter++; // wrap through
     nextMode = (ui_modes_t) modeCounter;
     dbf(miscDBG, "nextMode=%d, modeCounter=%d\n", nextMode, modeCounter);
-
     m_mode =   ui_menu;
     m_element = m_menu;
-
   }
-
   redraw();
   return;
 }
 
+/////////////////////////////////////////////////////////////////////////////
 void UIController::showUI(ui_modes_t newMode) {
   m_mode = newMode;
   m_element = allocateUIElement(newMode);
@@ -212,13 +202,13 @@ void UIController::showUI(ui_modes_t newMode) {
 
 /////////////////////////////////////////////////////////////////////////////
 void UIController::handleTouch() {
+  // adjust mapping for landscape orientation
   int16_t nTmpX = p.x; // temp p.x so that p.y updates
   p.x =
     map(p.y, unPhone::TS_MINY, unPhone::TS_MAXY, 0, unPhone::tftp->width());
   p.y =
     map(nTmpX, unPhone::TS_MINX, unPhone::TS_MAXX, 0, unPhone::tftp->height());
   // unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX835 7_GREEN); // DEBUG touch feedback
-  // TODO dump old modeChangeRequests?
   if(m_element->handleTouch(p.x, p.y)) {
     if(++modeChangeRequests >= MODE_CHANGE_TOUCHES) {
       changeMode();
@@ -229,8 +219,6 @@ void UIController::handleTouch() {
 
 /////////////////////////////////////////////////////////////////////////////
 void UIController::run() {
-  // if(gotTouch())
-  //   handleTouch();
   m_element->runEachTurn();
 }
 
