@@ -204,6 +204,14 @@ void setup() {
   Serial.print(get<1>(rgb)); Serial.print(", ");
   Serial.println(get<2>(rgb));
 
+  //Testing alarm time
+
+  Serial.println();
+  Serial.println();
+  Serial.println();
+  Serial.print("Alarm time in seconds:");
+  Serial.println(alarm_time);
+
 }
 
 //LOOP METHOD
@@ -303,17 +311,15 @@ void fetchTime() {
   //Connect to saved wifi, if none start AP
   WiFi.begin();
   delay(3000);
-
   Serial.printf("Starting AP");
   WiFi.mode(WIFI_STA);
-
   //create access point and set up its credentials
   WiFi.softAP(apSSID.c_str(), apPassword.c_str());
   vTaskDelay(400); //settle
 
   // init the web server
-  webServer = new AsyncWebServer(80);
-  initWebServer();
+  // webServer = new AsyncWebServer(80);
+  // initWebServer();
   vTaskDelay(400); //settle
 
   //let wifi AP settle
@@ -322,7 +328,7 @@ void fetchTime() {
     while(WiFi.status() != WL_CONNECTED) {
       if (!powerOn()) powerMode();
 
-      if (micros() == 300000000) { //4 mins to connect to AP
+      if (micros() >= 300000000) { //4 mins to connect to AP
         ESP.restart();
       }
     }
@@ -525,7 +531,7 @@ void setTime() {
 
 
 void setAlarmTime() {
-  alarm_time = mktime ( alarmTime );
+  //alarm_time = mktime ( alarmTime );///////////////////////////////////////////////////////////////////////////////////////////////////////
   dawn_time = alarm_time - 240;//(fade_time/1000000);
   Serial.print("Alarm set:");
   Serial.printf ("%s\n", asctime(alarmTime));
@@ -863,9 +869,7 @@ void apListForm(String& f) { // utility to create a form for choosing AP
     }
     f += "<br/> <br/>";
     // custom option to choose uos other network
-    // f += "UOS-other<input type='radio' name='ssid' value='uos-other' uos-other <br/><br/>";
-    f += "TALKTALK<input type='radio' name='ssid' value='BTWHOLEHOME-98F' BTWHOLEHOME-98F <br/><br/>";
-
+    f += "UOS-other<input type='radio' name='ssid' value='uos-other' uos-other <br/><br/>";
     f += "<br/>Pass key: <input type='textarea' name='key'><br/><br/> ";
     f += "<input type='submit' value='Submit'></form></p>";
 

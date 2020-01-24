@@ -46,13 +46,12 @@ bool AlarmUIElement::handleTouch(long x, long y) {
 
 // writes various things including mac address and wifi ssid ///////////////
 void AlarmUIElement::draw(){
-  if (!alarm_exist && toggle == 0) {
+  if (toggle == 0) {
     hours = timeinfo->tm_hour;
     mins = timeinfo->tm_min;
     (strftime(date1_str_day, sizeof(date1_str_day), "%A", timeinfo));
-    int a_size = sizeof(date1_str_day) / sizeof(char);
-    the_day = convertToString(date1_str_day, a_size);
-    toggle ++;
+    the_day = convertToString(date1_str_day);
+    toggle = 1;
   }
   x_u_r.clear();
   y_u_r.clear();
@@ -158,19 +157,13 @@ bool AlarmUIElement::confirm(long x, long y){
   return false;
 }
 
-String AlarmUIElement::convertToString(char* a, int size) {
+String AlarmUIElement::convertToString(char* a) {
     int i;
     string s = "";
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < 3; i++) {
       s = s + a[i];
     }
     string TwoLetters = s.substr(0, 2);
-
-    Serial.println(TwoLetters.length( ));
-    Serial.println(sizeof(TwoLetters));
-
-    Serial.println(sizeof(TwoLetters));
-
 
 
     if (TwoLetters == "Mo"){
@@ -204,8 +197,7 @@ String AlarmUIElement::getNextDay(String a_day){
 
 void AlarmUIElement::calcTime2Alarm() {
   (strftime(date1_str_day, sizeof(date1_str_day), "%A", timeinfo));
-  int a_size = sizeof(date1_str_day) / sizeof(char);
-  String currentDay = convertToString(date1_str_day, a_size);
+  String currentDay = convertToString(date1_str_day);
   Serial.print(currentDay);
   int counter = 0;
   int tmHour = timeinfo->tm_hour;
@@ -268,7 +260,10 @@ void AlarmUIElement::changeTimeUR(long x, long y) {
         }
         if (i ==2) {
           clearDay();
-          if (test ==6) test = 0;
+          if (test ==6) {
+            test = 0;
+            the_day = days[test];
+          }
           else {
             test++;
             the_day = days[test];
@@ -299,7 +294,10 @@ void AlarmUIElement::changeTimeDL(long x, long y) {
         }
         if (i ==2) {
           clearDay();
-          if (test ==0) test = 6;
+          if (test ==0) {
+            test = 6;
+            the_day = days[test];
+          }
           else {
             test--;
             the_day = days[test];
