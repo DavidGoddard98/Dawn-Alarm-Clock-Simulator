@@ -12,3 +12,5 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 - Landscape mode...
 
 See below an indepth examination detailing the implementation of the system.
+
+![](https://gitlab.com/tkoorehpaz1/com3505-2019-student/blob/master/MyProjectThing/doc/images/alarm_sketch.png)
