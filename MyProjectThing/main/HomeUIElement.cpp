@@ -116,6 +116,7 @@ void HomeUIElement::drawGreeting() {
   tmp = greeting();
 }
 
+// draw time HH:MM:SS
 void HomeUIElement::drawTime() {
   if (sc != timeinfo->tm_sec) // clear sec if changed
     clearSec();
@@ -134,6 +135,7 @@ void HomeUIElement::drawTime() {
   m_tft->print(time_str);
 }
 
+// draw time until alarm
 void HomeUIElement::drawAlarmTime() {
   m_tft->setFont(&FreeSans9pt7b);
   m_tft->setTextColor(YELLOW);
@@ -177,6 +179,7 @@ std::pair<int, int> timeUntilDawn(double secs) {
     return std::make_pair(hours, mins);
 }
 
+// draw day & date
 void HomeUIElement::drawDate() {
   strftime(date_str_day, sizeof(date_str_day), "%A", timeinfo);
   if (day_ != date_str_day) // clear date if changed
@@ -195,6 +198,7 @@ void HomeUIElement::drawDate() {
   day_ = date_str_day;
 }
 
+// draw greeting depending on
 String greeting() {
   String greet;
   int hour = timeinfo->tm_hour;
