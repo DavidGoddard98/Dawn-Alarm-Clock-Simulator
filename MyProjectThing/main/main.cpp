@@ -42,7 +42,7 @@ extern "C" {
 
 using namespace std;
 
-//CONSTANTS AND INSTANTS////////////////////////////////////////////////
+//GENERAL CONSTANTS AND INSTANTS////////////////////////////////////////////////
 int loopIter = 0;        // loop slices
 const byte BM_I2Cadd   = 0x6b; // the chip lives here on I²C
 const byte BM_Status   = 0x08; // system status register
@@ -50,7 +50,7 @@ bool snooze = false;
 int time_check_hour =0; //hours since last wifi grab
 double seconds; //used for time2alarm
 bool alarm_on = false;
-int year;
+int year; // individual year variable - used to ensure correct time is grabbed from ntp server
 char MAC_ADDRESS[13];    // MAC addresses are 12 chars, plus the NULL
 double dawn_seconds; //used for time2dawn
 unsigned long timer = micros(); // timer to fade in pixels over set time
@@ -65,7 +65,7 @@ String apPassword = _DEFAULT_AP_KEY;     // passkey for the AP
 uint64_t timeDiff, timeNow; //RTC clock variables
 
 
-//NEOPIXEL ESPIDF variant
+//NEOPIXEL ESPIDF variant/////////////////////////////////////////////////////
 //imports
 #include	<string.h>
 #include	"esp_event_loop.h"	//	for usleep
@@ -81,14 +81,14 @@ pixel_settings_t px;
 uint32_t	 pixels[NR_LED];
 int rc;
 float pixBr = 0;
-
-// IR SENSOR stuff
+////////////////////////////////////////////////////////////////////////////////
+// IR SENSOR stuff//////////////////////////////////////////////////////////////
 #define PIR_DOUT 27   // PIR digital output on D2
 #define LED_PIN  13  // LED to illuminate on motion
 
-/////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-//Connect to Wifi stuff/////////////////////
+//PROVISIONING//////////////////////////////////////////////////////////////////
 #include <ESPAsyncWebServer.h>
 
 //instants
@@ -111,9 +111,9 @@ void getWiFiNetworks();
 #define ALEN(a) ((int) (sizeof(a) / sizeof(a[0]))) // only in definition scope!
 #define GET_HTML(strout, boiler, repls) \
 getHtml(strout, boiler, ALEN(boiler), repls, ALEN(repls));
+////////////////////////////////////////////////////////////////////////////////
 
-
-//SAVE DATA OVER BOOT IN RCU MEMORY
+//SAVE DATA OVER BOOT IN RCU MEMORY/////////////////////////////////////////////
 RTC_DATA_ATTR byte bootCountt = 0;
 RTC_DATA_ATTR time_t time_now;
 RTC_DATA_ATTR struct tm * timeinfo;
@@ -127,38 +127,32 @@ RTC_DATA_ATTR int fade_time = 240000000;
 RTC_DATA_ATTR time_t alarm_time;
 RTC_DATA_ATTR time_t dawn_time;
 RTC_DATA_ATTR tuple <int,int,int> rgb;
+////////////////////////////////////////////////////////////////////////////////
 
-
-// define methods//////////////////////////////////////////////////////
+//DEFINE METHODS////////////////////////////////////////////////////////////////
 //ordered
 void fetchTime();
-void inActiveSleep();
-void forcedSleep();
-void setupPixels();
 void pixelsOff();
+void setupPixels();
 void fadePixels();
 void setDawnColour(uint16_t col);
 void printLocalTime();
 void setTime();
-void setAlarmTime() ;
 void updateTime();
-void setTime();
 int hourCheck();
 double time2Alarm();
 double time2Dawn();
-void vibrate();
 void stopAlarm();
 void snoozeAlarm();
+void vibrate();
 bool powerOn();
 void powerMode();
-void lcdMessage(char *); // message on screen
+void inActiveSleep();
+void forcedSleep();
 char *getMAC(char *);    // read the address into buffer
-void readDigitalValue();
-void printAnalogValue();
 
-/////////////////////////////////////////////////////////////////////////////////
-
-//SETUP METHOD
+//==============================================================================
+/////////////////////////////SETUP METHOD///////////////////////////////////////
 //==============================================================================
 void setup() {
   UNPHONE_DBG = true;
@@ -166,6 +160,7 @@ void setup() {
   getMAC(MAC_ADDRESS);          // store the MAC address
   apSSID.concat(MAC_ADDRESS);   // add the MAC to the AP SSID
 
+  //Configure IR pin to read values
   pinMode(PIR_DOUT, INPUT);
   // Configure the motion indicator LED pin as an output
   pinMode(LED_PIN, OUTPUT);
@@ -181,7 +176,7 @@ void setup() {
   unPhone::printWakeupReason(); // what woke us up?
   unPhone::checkPowerSwitch();  // if power switch is off, shutdown
 
-  //Initialise and setup pixels up. Also clears them
+  //Initialise and setup pixels. Also clears them
   setupPixels();
 
   //first boot so connect to wifi to get time
@@ -189,101 +184,102 @@ void setup() {
     fetchTime(); //connects to wifi and gets time
   }
 
-  //add time esp has been asleep for to current time
+  //add time esp has been asleep for to current time (using RTC offset from fetchTime method)
   updateTime();
 
   //check if its been two hours since last timefetch (from internet)
-  //if it has restart and fetch again (keep accuraate)
+  //if it has restart and fetch again (keep accurate)
   if(hourCheck() >= 2) {
     bootCountt =0;
     ESP.restart();
   }
-  //print time
+
+  //print time to console
   Serial.printf ("%s\n", asctime(timeinfo));
+
+  //print dawn colour to console
   Serial.print(get<0>(rgb)); Serial.print(", ");
   Serial.print(get<1>(rgb)); Serial.print(", ");
   Serial.println(get<2>(rgb));
 
-  //Testing alarm time
-
-  Serial.println();
-  Serial.println();
-  Serial.println();
-  Serial.print("Alarm time in seconds:");
-  Serial.println(alarm_time);
-
 }
 
-//LOOP METHOD
+//==============================================================================
+/////////////////////////////LOOP METHOD////////////////////////////////////////
 //==============================================================================
 void loop() {
   //show the basic alarm clock UI
-
   uiCont->showUI(ui_home);
+
   D("\nentering main loop\n")
-  long int touchTimer = millis();
+
+  long int touchTimer = millis(); //counter to determine how long since user touched screen
   while(1) {
-    setTime();
-    // readDigitalValue();
-    if (uiCont->gotTouch())
-    uiCont->handleTouch();
+    setTime(); //update time each iteration
 
-
-
+    //handles touch
+    //uiCont->run() was used to handle touch but this draws the screen
+    //and there is no need to draw screen every iteration (impacts responsivness)
+    //so just handle touch
+    if (uiCont->gotTouch()) {
+      uiCont->handleTouch();
+      touchTimer = millis();
+    }
+    //then, after 80 iterations, draw screen.
     if (loopIter % 80 == 0) {
       uiCont->run();
     }
 
-    if (unPhone::tsp->touched()) {
-      touchTimer = millis();
-    }
 
 
-    //If power switch not on check if usb connected
+    //If power switch not on turn unphone off (see powerMode function)
     if (!powerOn()) powerMode();
 
-
-
-
+    //Functionality for actual ALARM///////////////////////////////////////////
     if (alarm_exist) {
-      if (alarmNotSet) {
-        setAlarmTime();
-
-      }
-      if (time2Dawn() == 0.00 ) { //start dawn simulator
-        if (micros() - timer >= (fade_time/255)) {
-          //rgb = make_tuple(255,0,0);
+      //start dawn simulator
+      if (time2Dawn() == 0.00 ) {
+        if (micros() - timer >= (fade_time/255)) { //proportion fade time in
           fadePixels();
           timer = micros();
         }
-        if (time2Alarm() == 0.00 ) { //start vibrations
+        //start alarm (vibe motor)
+        if (time2Alarm() == 0.00 ) {
           alarm_on = true;
           vibrate();
           uiCont->run();
+          //Any motion measured from IR snoozes for 5 mins
           if (digitalRead(PIR_DOUT) == 1 ){
-            touchTimer = millis();
-
+            touchTimer = millis(); //keep screen on for another 30 secs
             snoozeAlarm();
           }
+          //button3 snoozes for 5 mins
           if (unPhone::button3()) {
-            touchTimer = millis();
+            touchTimer = millis(); //keep screen on for another 30 secs
             snoozeAlarm();
           }
+          //button 1 cancels alarm
           if (unPhone::button1()) {
-            touchTimer = millis();
+            touchTimer = millis(); //keep screen on for another 30 secs
             stopAlarm();
           }
         }
       }
     }
 
-
-    //Sleep the ESP automatically if time 2 alarm is longer than dawn time
+    //Auto deep sleeps esp if;
+    //Time to dawn > 5 mins
+    //OR screen has not be pressed in 30 seconds
+    //Wakes up if;
+    //Button 3 pressed
+    //Time to dawn is <= 5 mins (just before LEDS begin fading)
     if ((millis() - touchTimer) >= 30000) {
       inActiveSleep();
     }
 
-    //If button 2 pressed deep_sleep
+    //If button 2 pressed deep_sleep - will wake up if;
+    //Button 3 pressed
+    //Time to dawn is <= 5 mins (just before LEDS begin fading)
     if(unPhone::button2()) {
       forcedSleep();
      }
@@ -301,12 +297,18 @@ void loop() {
       }
     }
     loopIter++;
-
   }
 }
 
+//==============================================================================
+//////////////////////FUNCTION IMPLEMENTATION////////////////////////////////////
+//==============================================================================
+
+//==============================================================================
+//////////////////////TIME MANAGEMENT///////////////////////////////////////////
+//==============================================================================
 void fetchTime() {
-  uiCont->showUI(ui_WiFi);
+  uiCont->showUI(ui_WiFi); //show connecting to wifi UI
 
   //Connect to saved wifi, if none start AP
   WiFi.begin();
@@ -326,7 +328,7 @@ void fetchTime() {
   if (WiFi.status() != WL_CONNECTED) {
     uiCont->showUI(ui_config); //show config UI page
     while(WiFi.status() != WL_CONNECTED) {
-      if (!powerOn()) powerMode();
+      if (!powerOn()) powerMode(); //turn off if switch off
 
       if (micros() >= 300000000) { //4 mins to connect to AP
         ESP.restart();
@@ -335,106 +337,33 @@ void fetchTime() {
   }
 
   //GET current time and print to serial line
-  while( year < 118) {
+  while( year < 118) { // if time returned is a year <2018 then incorrect so fetch again
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer); //gets current time
     delay(1000);
     time(&time_now);
-    struct tm yearCheck;
+    struct tm yearCheck; //store time in tm struct
     yearCheck = *localtime(&time_now);
-    //stores year - (if < 2019 then time was not retrievied correctly)
+    //stores year - (if < 2018 then time was not retrievied correctly)
     //default is 1970...
     year = yearCheck.tm_year;
-
   }
 
-  //disconnect WiFi as it's no longer needed
+  //disconnect WiFi/stop AP as it's no longer needed (SAVE BATTERY)
   WiFi.disconnect(true);
   WiFi.softAPdisconnect (true);
   WiFi.mode(WIFI_OFF);
 
-  //increment boot count so wifi isnt connected to again
-  bootCountt++;
+  //increment boot count so wifi isnt connected to for another 2 hours
+  bootCountt = 1;
 
-  //initialise offset to take off time taken to get here.
+  //initialise offset  = RTC clock time right now
+  //is used back in setup method to determine how long clock been sleep 4...
   offset_time = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get());
 }
 
-void inActiveSleep() {
-  if (alarm_exist && time2Alarm() < (fade_time/1000000) + 5) {
-    return;
-  } else if (alarm_exist) {
-    //wake up when dawn simulator is about to start
-    esp_sleep_enable_timer_wakeup((time2Dawn() - 20) * uS_TO_S_FACTOR);
-
-    Serial.println("Setup ESP32 to sleep for:");
-    Serial.println(time2Dawn()-20);
-
-  }
-  //wake up with button one
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
-
-  //Turn off screen
-  IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
-
-  //pixels off
-  pixelsOff();
-  delay(1000); //let them settle
-
-
-  //Keep track of time before sleep
-  sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
-
-  //start deep sleep
-  esp_deep_sleep_start();
-}
-
-void forcedSleep() {
-  //wake up with button one
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
-
-  //or before dawn simulator starts
-  if (alarm_exist){
-    if(time2Dawn() > 0) {
-      esp_sleep_enable_timer_wakeup(time2Dawn() * uS_TO_S_FACTOR);
-      Serial.println("Setup ESP32 to sleep for:");
-      Serial.println(time2Dawn());
-    }
-  }
-
-  //Turn peripherals off to save power
-  IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
-  pixelsOff();
-  delay(1000);
-
-  Serial.println("User chose to sleep device with button 2");
-  //Keep track of time before sleep
-  sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
-  //start deep sleep
-  esp_deep_sleep_start();
-}
-
-// IR SENSOR METHODS
-void readDigitalValue()
-{
-  delay(1000);
-  // The OpenPIR's digital output is active high
-  int motionStatus = digitalRead(PIR_DOUT);
-  Serial.print("motion status: ");
-  Serial.println(motionStatus);
-
-  // If motion is detected, turn the onboard LED on:
-  if (motionStatus == HIGH) {
-    digitalWrite(LED_PIN, HIGH);
-    Serial.println("detected motion");
-  }
-  else {
-    digitalWrite(LED_PIN, LOW);
-    Serial.println("no motion");
-  }
-}
-
-//PIXEL METHODS
-//=============================================================================
+//==============================================================================
+//////////////////////PIXEL FUNCTIONALITY///////////////////////////////////////
+//==============================================================================
 void pixelsOff() {
   //set all values to 0
   for	( int i = 0 ; i < NR_LED ; i ++ )	{
@@ -450,8 +379,9 @@ void pixelsOff() {
   np_show(&px, NEOPIXEL_RMT_CHANNEL);
 }
 
+//Setup pixel - library obtained from
+//https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo).
 void setupPixels() {
-
   rc = neopixel_init(NEOPIXEL_PORT, NEOPIXEL_RMT_CHANNEL);
   ESP_LOGE("main", "neopixel_init rc = %d", rc);
   usleep(1000*1000);
@@ -478,6 +408,16 @@ void setupPixels() {
   //brightness of 255
   px.brightness = 0xFF;
 
+}
+
+void fadePixels() {
+  pixBr += 0.003921569f;
+
+  for	( int j = 0 ; j < NR_LED ; j ++ )	{
+    np_set_pixel_rgbw(&px, j , get<0>(rgb)*pixBr, get<1>(rgb)*pixBr, get<2>(rgb)*pixBr, pixBr*255);
+  }
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+  Serial.println(pixBr);
 }
 
 void setDawnColour(uint16_t col) {
@@ -507,44 +447,32 @@ void setDawnColour(uint16_t col) {
   }
 }
 
-void fadePixels() {
-  pixBr += 0.003921569f;
+//==============================================================================
+//////////////////////ALARM & DAWN FUNCTIONALITY////////////////////////////////
+//==============================================================================
 
-  for	( int j = 0 ; j < NR_LED ; j ++ )	{
-    np_set_pixel_rgbw(&px, j , get<0>(rgb)*pixBr, get<1>(rgb)*pixBr, get<2>(rgb)*pixBr, pixBr*255);
-  }
-  np_show(&px, NEOPIXEL_RMT_CHANNEL);
-  Serial.println(pixBr);
-}
 
-//gets and print local time, returns failed if no time found.
-//also fill date_string and time_string with relevant info
-void printLocalTime() {
-
+void printLocalTime() { //....
   Serial.printf ("%s\n", asctime(timeinfo));
 }
+
+//Called every iteration of LOOP function - updates the time.
 void setTime() {
   time(&time_now);
   timeinfo = localtime (&time_now);
 }
 
-
-
-void setAlarmTime() {
-  //alarm_time = mktime ( alarmTime );///////////////////////////////////////////////////////////////////////////////////////////////////////
-  dawn_time = alarm_time - 240;//(fade_time/1000000);
-  Serial.print("Alarm set:");
-  Serial.printf ("%s\n", asctime(alarmTime));
-  alarmNotSet = false;
-}
-
+//Checks how long ESP has been in deep sleep for and adds this to internal clock
+//See documentation for indepth analysis...
 void updateTime() {
-  //rtc keeps track of time its been sleeping for.
-  //Time now - time sleep(time before sleep = time been sleeping for
-  //Add this to time clock tells us correct time.
-  timeNow = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+  //timeNow = RTC clock now - offset ...(essentially RTC clock now)
+  //offset = duration of setup() during initial boot
+  timeNow = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time; //this offset is from fetchTime() method
+  //timeDiff = timeESP has been asleep for
+  //sleepTime is recorded just before ESP goes to sleep - see inActiveSleep()
   timeDiff = timeNow - sleepTime;
 
+  //Must convert this into seconds to add to clock
   //#secs
   int seconds = floor((timeDiff / 1000000));
   //#milis
@@ -558,16 +486,21 @@ void updateTime() {
   } else {
     old_milis += milis;
   }
+
+  //Finally....
+  //add the time ESP has been asleep to clock
   time_now = time_t(time_now) + seconds;
   timeinfo = localtime (&time_now);
-
 }
 
+//Used in setup to verify if it has been >2 hours since last time fetch
 int hourCheck() {
+  //num hours since time fetched
   int num_hours = floor(timeNow/3600000000); //divide by hours
   return num_hours;
 }
 
+//returns seconds 2 alarm
 double time2Alarm() {
   seconds = difftime(alarm_time,time_now);
   if (seconds <= 0) {
@@ -576,6 +509,7 @@ double time2Alarm() {
   return seconds;
 }
 
+//returns seconds till dawn (when leds should begin fading)
 double time2Dawn() {
   dawn_seconds = difftime(dawn_time, time_now);
   if (dawn_seconds <= 0) {
@@ -585,18 +519,14 @@ double time2Dawn() {
   return dawn_seconds;
 }
 
-void vibrate() {
-  unPhone::vibe(true);  delay(150);
-  unPhone::vibe(false); delay(150);
-}
-
-
+//Cancels the alarm - used when button 3 is pressed during alarm
 void stopAlarm() {
   alarm_exist = false;
   pixelsOff();
   delay(500);
 }
 
+//snoozes alarm for 5 minutes
 void snoozeAlarm() {
   alarm_on = false;
   alarm_time += 300;
@@ -604,6 +534,15 @@ void snoozeAlarm() {
   pixelsOff();
   delay(500);
 }
+
+void vibrate() {
+  unPhone::vibe(true);  delay(150);
+  unPhone::vibe(false); delay(150);
+}
+
+//==============================================================================
+//////////////////////POWER MANAGEMENT//////////////////////////////////////////
+//==============================================================================
 
 //check power switch - rewrote method to get switch state as a return
 bool powerOn() {
@@ -620,43 +559,90 @@ bool powerOn() {
 //other part of power switch. - Checks usb connection and then does the same as
 //the original method
 void powerMode(){
-  //set bootcountt to 0 so that time is fetched next time device turned on
 
   bool usbConnected = bitRead(unPhone::getRegister(BM_I2Cadd, BM_Status), 2);
   if (!usbConnected) {
-    pixelsOff();
-    delay(1000);
-    bootCountt = 0;
-    sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
-
-    unPhone::setShipping(true);
-  } else {
     //turn pixels off
     pixelsOff();
     delay(1000);
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_36, 0); // 1 = High, 0 = Low
-    // cludge: LCD (and other peripherals) will still be powered when we're
-    // on USB; the next call turns the LCD backlight off, but would be
-    // preferable if we could cut the 5V to all but the BM (which needs it
-    // for charging)...?
+    bootCountt = 0; //so time is fetched next time device turned on...
+    //If usb not connected then shipping can = true, disconnect battery...
+    unPhone::setShipping(true);
+  } else {
+    //if usb connected cant disconnect battery as might want to charge device..
+    //turn pixels off
+    pixelsOff();
+    delay(1000);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_36, 0); //wakeup if switch switched
+    //Turn screen off
     IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
-    // deep sleep, wait for wakeup on GPIO
+    //store RTC clock at sleep time - needed in updateTime()
     sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+    // deep sleep, wait for wakeup on GPIO pin
     esp_deep_sleep_start();
   }
 }
 
-// message on LCD
-void lcdMessage(char *s) {
-  unPhone::tftp->setCursor(0, 465);
-  unPhone::tftp->setTextSize(2);
-  unPhone::tftp->setTextColor(HX8357_CYAN, HX8357_BLACK);
-  unPhone::tftp->print("                          ");
-  unPhone::tftp->setCursor(0, 465);
-  unPhone::tftp->print(s);
+//Puts ESP to sleep if screen inactive and time2Dawn > 5 mins
+void inActiveSleep() {
+  if (alarm_exist && time2Alarm() < (fade_time/1000000) + 5) {
+    return;
+  } else if (alarm_exist) {
+    //wake up when dawn simulator is about to start
+    esp_sleep_enable_timer_wakeup((time2Dawn() - 20) * uS_TO_S_FACTOR);
+
+    Serial.println("Setup ESP32 to sleep for:");
+    Serial.println(time2Dawn()-20);
+
+  }
+  //wake up with button one
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
+
+  //Turn off screen
+  IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+
+  //pixels off
+  pixelsOff();
+  delay(1000); //let them settle
+
+  Serial.println("Device put to sleep due to inactivity");
+
+  //store RTC clock at sleep time - needed in updateTime()
+  sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+
+  //start deep sleep
+  esp_deep_sleep_start();
 }
 
-// misc utilities ////////////////////////////////////////////////////////////
+void forcedSleep() {
+  //wake up with button one
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
+
+  //or before dawn simulator starts
+  if (alarm_exist){
+    if(time2Dawn() > 0) {
+      esp_sleep_enable_timer_wakeup(time2Dawn() * uS_TO_S_FACTOR);
+      Serial.println("Setup ESP32 to sleep for:");
+      Serial.println(time2Dawn());
+    }
+  }
+
+  //Turn peripherals off to save power
+  IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+  pixelsOff();
+  delay(1000); //let them settle
+
+  Serial.println("User chose to sleep device with button 2");
+  //Keep track of time before sleep
+  sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
+  //start deep sleep
+  esp_deep_sleep_start();
+}
+
+//==============================================================================
+//////////////////////PROVISIONING//////////////////////////////////////////////
+//==============================================================================
+// misc utilities //////////////////////////////////////////////////////////////
 // get the ESP's MAC address
 char *getMAC(char *buf) { // the MAC is 6 bytes; needs careful conversion...
   uint64_t mac = ESP.getEfuseMac(); // ...to string (high 2, low 4):
@@ -671,14 +657,6 @@ char *getMAC(char *buf) { // the MAC is 6 bytes; needs careful conversion...
   buf[12] = '\0';
   return buf;
 }
-
-
-
-
-
-
-
-
 // web server utils //////////////////////////////////////////////////////////
 void getHtml( // turn array of strings & set of replacements into a String
   String& html, const char *boiler[], int boilerLen,

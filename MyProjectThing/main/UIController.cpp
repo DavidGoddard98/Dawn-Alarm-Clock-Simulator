@@ -96,7 +96,6 @@ uint16_t DIST_SENSITIVITY = DEFAULT_DIST_SENSITIVITY;
 uint16_t TREAT_AS_NEW = 600;     // if no signal in this period treat as new
 uint8_t MODE_CHANGE_TOUCHES = 1; // number of requests needed to switch mode
 uint8_t modeChangeRequests = 0;  // number of current requests to switch mode
-bool m_first_touch = true; // extern bool used in menu UI to ignore first touch
 void setTimeSensitivity(uint16_t s = DEFAULT_TIME_SENSITIVITY) { ////////////
   TIME_SENSITIVITY = s;
 }
@@ -133,8 +132,8 @@ bool UIController::gotTouch() {
 
   // retrieve a point
   p = unPhone::tsp->getPoint();
-  //weird readings from touch at point z~16300 , y~-12500, z~025
-  //dont read these and continue
+  //weird readings outputted occasionaly from touch at point x~16300 , y~-12500, z~025
+  //dont read these and continue - means touch is WAY more responsive
   if (p.x > 10000) {
     return false;
   }
@@ -182,7 +181,6 @@ void UIController::changeMode() {
     m_element = allocateUIElement(nextMode);
   } else {                      // going INTO menu
     D("...%d (menu)\n", ui_menu)
-    m_first_touch = true; // set first touch bool to true entering menu UI
     modeCounter = ++modeCounter % NUM_UI_ELEMENTS; // calculate next mode
     if(modeCounter == 0) modeCounter++; // wrap through
     nextMode = (ui_modes_t) modeCounter;
