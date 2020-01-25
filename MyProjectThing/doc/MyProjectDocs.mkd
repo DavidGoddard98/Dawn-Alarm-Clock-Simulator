@@ -13,4 +13,103 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 
 See below an indepth examination detailing the implementation of the system.
 
-![](https://gitlab.com/tkoorehpaz1/com3505-2019-student/blob/master/MyProjectThing/doc/images/alarm_sketch.png)
+## Overview of features
+Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. Sketches have been included to help illustrate initial concepts and ideas. 
+
+### Menu
+------
+<br>
+<div align = "center">
+  <img src="images/menu_sketch.png" width="500"/>
+</div>
+<br>
+
+1. **Page title**
+
+2. **Menu item** – Selecting a menu item will direct the user to that page.
+
+3. **Arrow icon** – Selecting a menu arrow icon will also direct the user to that page.
+
+### Home Display
+------
+<br>
+<div align = "center">
+  <img src="images/home_sketch2.png" width="500"/>
+</div>
+<br>
+
+1. **Greeting message** – A message depending on what time of day it currently is will be displayed at the top of the screen. There are four possible greetings:
+    - Good morning (6am to 11.59am)
+    - Good afternoon (12pm to 4.59pm) 
+    - Good afternoon (5pm to 7:59pm)
+    - Good night (8pm to 5:59am)<br><br>
+
+2. **Digital time display** – This area will display the current time in HH:MM:SS, updated every second.
+
+3. **Date display** – The bottom corner will display the current date and day of the week, updated every 24 hours.
+
+4. **Time to alarm** – The time to alarm will be displayed under the digital time if an alarm has been set. If the time to alarm is greater than a minute it will be formatted in H:M, otherwise a countdown in seconds from a minute will commence. If no alarm has been set, or an alarm has passed, a 'No alarm set' message is shown. 
+
+### Setting an Alarm
+------
+<br>
+<div align = "center">
+  <img src="images/home_sketch4.png" width="500"/>
+</div>
+<br>
+
+1. **Page title**
+2. **Menu icon** – Selecting this icon will direct the user to the Menu page.
+
+3. **Alarm hours** – Displays alarm hour time.
+
+4. **Alarm minutes** – Displays alarm minute time.
+
+5. **Increment/decrement alarm hour** – Selecting the triangle above the hour time will increment the alarm hour, and selecting the triangle below the hour time will decrement the alarm hour.
+
+6. **Increment/decrement alarm minute** – Selecting the triangle above the minute time will increment the alarm minute, and selecting the triangle below the minute time will decrement the alarm minute.
+
+7. **Alarm day** – Displays the day of the alarm.
+
+8. **Increment/decrement alarm day** – Selecting the triangle to the right of the alarm day will increment to the next day of the week, and selecting the triangle to the left of the alarm day will decrement to the previous day of the week.
+
+9. **Set alarm** – Selecting the 'Set' button will create an alarm based on the time inputted by the user. If the alarm is set 'before' the current time, it will assume it is meant for the future (for instance - given the example in the diagram, setting the alarm for Thursday at 13:32 will create an alarm for 144 hours time).
+
+### Setting Dawn Colour
+------
+<br>
+<div align = "center">
+  <img src="images/dawn_sketch.png" width="500"/>
+</div>
+<br>
+
+1. **Page title**
+2. **Menu icon** – Selecting this icon will direct the user to the Menu page.
+
+3. **Colour palette** – This area will display a range of colours to choose from - each box will contain a different colour that the user can pick for the dawn simulation.
+
+### Buttons 
+------
+<br>
+<div align = "center">
+  <img src="images/button_sketch.png" width="500"/>
+</div>
+<br>
+
+1. **Snooze** – This button can be pressed during the alarm to snooze it for 5 minutes (similar functionality to the IR sensor).
+
+2. **Sleep** – This button can be pressed to put the unPhone into deep sleep mode and save power.
+
+3. **Stop alarm** – This button can be pressed during the alarm to stop it completely.
+
+### LEDs & IR Sensor 
+------
+<br>
+<div align = "center">
+  <img src="images/back_sketch.png" width="500"/>
+</div>
+<br>
+
+1. **IR Sensor** – The back of the unPhone has an IR sensor attached to it that will detect any motion from around 2 meters away. It can be used as a snoozing mechanism that will delay the alarm for 5 minutes once it has been activated.
+
+2. **LEDs** – In addition to the IR Sensor, the rear of the unPhone also has powerful LEDs that will gradually increase in brightness in the colour set from the dawn page, 5 minutes before the alarm goes off. 
