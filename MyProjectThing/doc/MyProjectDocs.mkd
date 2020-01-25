@@ -114,8 +114,59 @@ Before exploring the technicalities, presented below is a general overview of th
 
 2. **LEDs** – In addition to the IR Sensor, the rear of the unPhone also has powerful LEDs that will gradually increase in brightness in the colour set from the dawn page, 5 minutes before the alarm goes off. 
 
+### NeoPixel Implementation & Dawn Simulator 
+------
+Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels OFF, there would be times that seemingly arbitrary pixels would appear in random colours. Even cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome. 
+
+The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
+
+Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that manually setting the first pixel to OFF (which is equivalent to setting the RGB value to (0,0,0)) followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them in general appeared to ameliorate the ghosting issue as a whole:   
+
+```c
+void pixelsOff() {
+  //set all values to 0
+  for	( int i = 0 ; i < NR_LED ; i ++ )	{
+    np_set_pixel_rgbw(&px, i , 0, 0, 0, 0);
+  }
+  delay(1000);
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+
+  //let pixels settle
+  //re set 1st pixel (often glitches and stays on)
+  np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
+  delay(100);
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+}
+```
+
+All of the colours used on the Arduino TFT touchscreen are defined in the `Adafruit_HX8357.h file`. In addition to the default colours provided, three more were defined for the customisation of dawn; pink, purple and orange. These colours, however, must be defined in RGB565 format - so the following were appended to the header file:
+```c
+#define HX8357_PINK 0xF815
+#define HX8357_PURPLE 0x91F
+#define HX8357_ORANGE 0xFC40
+```
+The dawn is set to come on exactly 4 minutes before the alarm, with proportionate brightness increments ranging from 0 (min brightness) to 255 (max brightness). This is achieved by increasing the brightness by 1/255 every 240/255 seconds (~0.94). Once a colour has been chosen from the dawn page, a method from the `main.cpp` is called to then set the dawn colour:
+```c
+void setDawnColour(uint16_t col) {
+  if (col == HX8357_BLUE) {
+    rgb = make_tuple(0,0,255); // tuple saved in RTC memory for later retrieval
+  }
+  ...
+```
+In addition to the brightness, the colour must also remain consistent by keeping the RGB ratios the same, which can be done by multiplying them by the same magnitute of brightness:
+```c
+void fadePixels() {
+  pixBr += 0.003921569f; // 1/255
+  for	( int j = 0 ; j < NR_LED ; j ++ )	{ // retrieve RGB values from saved tuple 
+    np_set_pixel_rgbw(&px, j , get<0>(rgb)*pixBr, get<1>(rgb)*pixBr, get<2>(rgb)*pixBr, pixBr*255);
+  }
+  np_show(&px, NEOPIXEL_RMT_CHANNEL); // display on LEDs
+}
+```
+The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).  
 
 ### Time Management
+------
 
 Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
 
