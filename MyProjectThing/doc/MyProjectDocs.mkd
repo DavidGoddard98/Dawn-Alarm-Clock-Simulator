@@ -100,7 +100,7 @@ Before exploring the technicalities, presented below is a general overview of th
 
 2. **Sleep** – This button can be pressed to put the unPhone into deep sleep mode and save power.
 
-3. **Stop alarm** – This button can be pressed during the alarm to stop it completely.
+3. **Multifunctional** – This button has two purposes; It can be pressed during the alarm to stop it completely, and it can wake the unPhone from a deep sleep.
 
 ### LEDs & IR Sensor 
 ------
@@ -113,3 +113,75 @@ Before exploring the technicalities, presented below is a general overview of th
 1. **IR Sensor** – The back of the unPhone has an IR sensor attached to it that will detect any motion from around 2 meters away. It can be used as a snoozing mechanism that will delay the alarm for 5 minutes once it has been activated.
 
 2. **LEDs** – In addition to the IR Sensor, the rear of the unPhone also has powerful LEDs that will gradually increase in brightness in the colour set from the dawn page, 5 minutes before the alarm goes off. 
+
+
+### Time Management
+
+Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
+
+One of the difficulties with using the ESP32 to keep accurate track of time is that the internal RTC quickly drifts leaving inaccurate measurements. Under testing we noted an average drift of about XXX every hour (This was added to the time I.E the RTC ran faster). An easy fix was to incorperate a marginal offset to be deducted from every second counted. 
+The table below shows four experiments: two measuring the RTC time vs real time without the offset implemented and two with it implemented. 
+
+XXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+While this fix worked, it was clear for a magnitute of reasons that it was not a sustainable solution. For instance, if the ESP was reset or the power was lost, this memory would be wiped. Moreover even with the offset, the time would drift. These problems prompted us to implement a function (fetchTime()) which would semi-frequently syncronize the time using a Network Time Protocol (NTP). 
+
+To do this, we firstly needed to provision the ESP so that we could connect it to a network in the first place. After this we would need the ESP to send a request packet to a NTP server, which in turn, would respond with a time stamp packet. This information could then be used to set the internal time of the ESP with pinpoint precision. See code below;
+
+
+```c++
+void fetchTime() {
+  //provisioning...
+  joinmeManageWiFi(apSSID.c_str(), apPassword.c_str());
+
+  //GET current time and print to serial line
+  while( year < 118) { // if time returned is a year <2018 then incorrect so fetch again
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer); //gets current time
+    delay(1000);
+    time(&time_now);
+    struct tm yearCheck; //store time in tm struct
+    yearCheck = *localtime(&time_now);
+    //stores year - (if < 2018 then time was not retrievied correctly)
+    //default is 1970...
+    year = yearCheck.tm_year;
+  }
+
+  //disconnect WiFi/stop AP as it's no longer needed (SAVE BATTERY)
+  WiFi.disconnect(true);
+}
+```
+The while loop ensures the correct time is obtained, as during testing we noticed the time would often be set incorrectly. 
+
+A statement must be made about the frequency of these syncronizations - too many and the drain on battery power due to connectivity would introduce a new issue. We decided that this function would be called every time the device is initially booted (so also after every reset/power outage), and in the instance these events do not occur, every two hours. Therefore the limit to the inaccuracy of our time is totalled at.. (drift time after 1 hour) x (2). A result we are considerably happy with. 
+
+With the frequency implemented above, we quickly ran into another issue; how to track the time during the deep sleeps that will inevitably occur in the two hour period? As is, the ESP refuses to keep track of time during a deep sleep. Clearly an NTP server could be used on every boot, yet, as mentioned, this would require unneccessary battery drainage. The solution to this isuse was to record the duration of any sleep and add this onto the time the ESP had counted to before sleep - contrary to what was said before, this is possible as an internal RTC clock remains in this sleep period. 
+```c++
+void updateTime() {
+  //timeNow = RTC clock now - offset ...(essentially RTC clock now)
+  //offset = duration of setup() during initial boot
+  timeNow = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time; //this offset is from fetchTime() method
+  //timeDiff = timeESP has been asleep for
+  //sleepTime is recorded just before ESP goes to sleep - see inActiveSleep()
+  timeDiff = timeNow - sleepTime;
+
+  //Must convert this into seconds to add to clock
+  //#secs
+  int seconds = floor((timeDiff / 1000000));
+  //#milis
+  int milis = floor(timeDiff % 1000000);
+
+  if (milis+old_milis > 1000) {
+    //if milis more than 1000 add second to time
+    seconds += 1;
+    //make up the difference to save the rest of the milis which didnt make the 1 sec
+    old_milis = (old_milis + milis) -1000 ;
+  } else {
+    old_milis += milis;
+  }
+
+  //Finally....
+  //add the time ESP has been asleep to clock
+  time_now = time_t(time_now) + seconds;
+  timeinfo = localtime (&time_now);
+}
+```
