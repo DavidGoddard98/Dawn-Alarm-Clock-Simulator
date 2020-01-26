@@ -70,6 +70,7 @@ float pixBr = 0;
 
 //SAVE DATA OVER BOOT IN RCU MEMORY/////////////////////////////////////////////
 RTC_DATA_ATTR byte bootCountt = 0;
+RTC_DATA_ATTR byte hourFetched;
 RTC_DATA_ATTR time_t time_now;
 RTC_DATA_ATTR struct tm * timeinfo;
 RTC_DATA_ATTR struct tm *  alarmTime;
@@ -94,7 +95,6 @@ void setDawnColour(uint16_t col);
 void printLocalTime();
 void setTime();
 void updateTime();
-int hourCheck();
 double time2Alarm();
 double time2Dawn();
 void stopAlarm();
@@ -144,9 +144,8 @@ void setup() {
 
   //check if its been two hours since last timefetch (from internet)
   //if it has restart and fetch again (keep accurate)
-  if(hourCheck() >= 2) {
-    bootCountt =0;
-    ESP.restart();
+  if(timeinfo->tm_hour - hourFetched >=2) {
+    bootCountt = 0;
   }
 
   //print time to console
@@ -297,6 +296,7 @@ void fetchTime() {
     //stores year - (if < 2018 then time was not retrievied correctly)
     //default is 1970...
     year = yearCheck.tm_year;
+    hourFetched = yearCheck.tm_hour;
   }
 
   //disconnect WiFi/stop AP as it's no longer needed (SAVE BATTERY)
@@ -442,13 +442,6 @@ void updateTime() {
   //add the time ESP has been asleep to clock
   time_now = time_t(time_now) + seconds;
   timeinfo = localtime (&time_now);
-}
-
-//Used in setup to verify if it has been >2 hours since last time fetch
-int hourCheck() {
-  //num hours since time fetched
-  int num_hours = floor(timeNow/3600000000); //divide by hours
-  return num_hours;
 }
 
 //returns seconds 2 alarm
