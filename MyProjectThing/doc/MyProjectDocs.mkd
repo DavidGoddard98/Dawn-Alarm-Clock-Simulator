@@ -248,7 +248,7 @@ void HomeUIElement::clearSec() {
 </div>
 <br>
 
-The colour of the rectangles would need to match the background to produce a seamless effect. Each element has its own *clear* method that writes over its previous state:
+The colour of the rectangles contrast with the background in this case for illustration purposes - they would normally be the same colour to produce a seamless overlap. Each element has its own *clear* method that writes over its previous state:
 
 <br>
 <div align = "center">
