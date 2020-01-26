@@ -157,16 +157,21 @@ void fadePixels() {
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
 ### Time Management
-------
 
 Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
 
-One of the difficulties with using the ESP32 to keep accurate track of time is that the internal RTC quickly drifts leaving inaccurate measurements. Under testing we noted an average drift of about XXX every hour (This was added to the time I.E the RTC ran faster). An easy fix was to incorperate a marginal offset to be deducted from every second counted. 
-The table below shows four experiments: two measuring the RTC time vs real time without the offset implemented and two with it implemented. 
+Early implementations involved setting the time manually and then using the internal RTC on the ESP (in this case a 150kHz oscillator) to keep track of it. It managed to do a reasonable job, yet due to the fact that all clocks drift, it wasn't long before the time shown was incorrect. After some testing we recorded the results below;
 
-XXXXXXXXXXXXXXXXXXXXXXXXXXX
+| Time Start (H:M:S) | Time End | Time recorded | Length  | Drift (Seconds) |
+|--------------------|----------|---------------|---------|-----------------|
+| 17:42:00           | 18:42:00 | 18:43:30      | 1 hour  | 90s             |
+| 16:40:01           | 17:40:01 | 16:41:26      | 1 hour  | 85s             |
+| 14:30:30           | 15:30:30 | 15:31:58      | 1 hour  | 88s             |
+| 12:24:35           | 14:24:35 | 14:27:44      | 2 hours | 189s            |
+| 15:34:02           | 16:34:02 | 16:38:40      | 3 hours | 278s             |
+*Avg drift p/hour = 27.7s*
 
-While this fix worked, it was clear for a magnitute of reasons that it was not a sustainable solution. For instance, if the ESP was reset or the power was lost, this memory would be wiped. Moreover even with the offset, the time would drift. These problems prompted us to implement a function (fetchTime()) which would semi-frequently syncronize the time using a Network Time Protocol (NTP). 
+Although this early implementation provided a way of tracking the time, it was clearly not an approriate solution by itself to be used for telling the time. For one, there was no way of resetting the time except from manually burning new firmware. This meant the drift would continue to make the time more and more inaccurate. Also, if the ESP was reset or the power was lost, the memory allocated to holding the time would be wiped. These problems prompted us to implement a function (fetchTime()) which would semi-frequently automatically syncronize the time to an atomic clock using a Network Time Protocol (NTP). This solution would ensure that an accurate time could be frequently obtained, avoiding the issue of an inaccurate clock. Also, if the device was ever reset, then the time could be reset automatically.
 
 To do this, we firstly needed to provision the ESP so that we could connect it to a network in the first place. After this we would need the ESP to send a request packet to a NTP server, which in turn, would respond with a time stamp packet. This information could then be used to set the internal time of the ESP with pinpoint precision. See code below;
 
@@ -192,11 +197,22 @@ void fetchTime() {
   WiFi.disconnect(true);
 }
 ```
-The while loop ensures the correct time is obtained, as during testing we noticed the time would often be set incorrectly. 
+*The while loop ensures the correct time is obtained, as during testing we noticed it took a few attempts to recieve the packet.*
 
-A statement must be made about the frequency of these syncronizations - too many and the drain on battery power due to connectivity would introduce a new issue. We decided that this function would be called every time the device is initially booted (so also after every reset/power outage), and in the instance these events do not occur, every two hours. Therefore the limit to the inaccuracy of our time is totalled at.. (drift time after 1 hour) x (2). A result we are considerably happy with. 
+A statement must be made about the frequency of these syncronizations - too many and the drain on battery power due to connectivity would introduce a new issue. We decided that this function would be called every time the device is initially booted (so also after every reset/power outage), and in the instance these events do not occur, every two hours. This limited the inaccuracy of our time to.. 27.7(avg. drift time after 1 hour) x (2) = 55.4s.
 
-With the frequency implemented above, we quickly ran into another issue; how to track the time during the deep sleeps that will inevitably occur in the two hour period? As is, the ESP refuses to keep track of time during a deep sleep. Clearly an NTP server could be used on every boot, yet, as mentioned, this would require unneccessary battery drainage. The solution to this isuse was to record the duration of any sleep and add this onto the time the ESP had counted to before sleep - contrary to what was said before, this is possible as an internal RTC clock remains in this sleep period. 
+Due to our decisions with power management (see power management below), the ESP spends the majourity of its time in a deep sleep. Unfourtunately, this presented us with a further issue - keeping track of the time during deep sleeps. Clearly an NTP server could be used on every boot, yet, as mentioned, this would use unnecessary amounts of power. The solution to this isuse was to;
+##### Before deep sleep
+1) Measure # ticks on RTC 
+2) Measure epoch time
+##### Once woken up 
+3) Calculate number of ticks during sleep
+4) Convert to seconds
+5) Increment epoch time by this amount
+
+*Note: Values from points 1/2 are stored in the RTC memory using RTC_DATA_ATTR and then loaded into RTC fast memory. This enables the information to be saved during deep sleeps.*
+
+See the implementation below;
 ```c++
 void updateTime() {
   //timeNow = RTC clock now - offset ...(essentially RTC clock now)
@@ -211,6 +227,10 @@ void updateTime() {
   int seconds = floor((timeDiff / 1000000));
   //#milis
   int milis = floor(timeDiff % 1000000);
+
+  //Deal with offset.. with a 30 seconds drift after an hour..
+  //30/3600 = 0.0083. Drift of that length p/sec
+  seconds = seconds * 0.9917; //0.9917 = 1-0.0083
 
   if (milis+old_milis > 1000) {
     //if milis more than 1000 add second to time
@@ -227,6 +247,24 @@ void updateTime() {
   timeinfo = localtime (&time_now);
 }
 ```
+Note: even though the inaccuracy due to drift was slight we implemented an offset to make it less significant. 
+
+```c++
+//Deal with offset.. with a 30 seconds drift after an hour..
+//30/3600 = 0.0083. Drift of that length p/sec
+seconds = seconds * 0.9917; //0.9917 = 1-0.0083
+```
+
+New testing to show time keeping improvement;
+
+| Time Start (H:M:S) | Time End | Time recorded | Length      | Drift (Seconds) |
+|--------------------|----------|---------------|-------------|-----------------|
+| 9:04:00            | 10:04:00 | 10:04:05      | 1 hour      | 5s              |
+| 10:10:00           | 11:10:00 | 11:11:04      | 1 hour      | 4s              |
+| 12:05:30           | 13:05:30 | 13:05:37      | 1 hour      | 7s              |
+| 13:10:02           | 15:09:30 | 15:09:42      | Just<2hours | 12s             |
+*Avg drift p/hour: 5.3s*
+
 
 ### Updating UI Elements 
 ------
