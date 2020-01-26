@@ -111,7 +111,7 @@ Immediately after setting up the NeoPixel libraries and testing the functionalit
 
 The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
 
-Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them in general appeared to ameliorate the ghosting issue as a whole:   
+Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them appeared to ameliorate the ghosting issue as a whole:   
 
 ```c
 void pixelsOff() {
