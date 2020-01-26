@@ -102,25 +102,13 @@ Before exploring the technicalities, presented below is a general overview of th
 
 3. **Multifunctional** – This button has two purposes; It can be pressed during the alarm to stop it completely, and it can wake the unPhone from a deep sleep.
 
-### LEDs & IR Sensor 
+### NeoPixel troubleshooting & Dawn Simulator 
 ------
-<br>
-<div align = "center">
-  <img src="images/back_sketch.png" width="500"/>
-</div>
-<br>
-
-1. **IR Sensor** – The back of the unPhone has an IR sensor attached to it that will detect any motion from around 2 meters away. It can be used as a snoozing mechanism that will delay the alarm for 5 minutes once it has been activated.
-
-2. **LEDs** – In addition to the IR Sensor, the rear of the unPhone also has powerful LEDs that will gradually increase in brightness in the colour set from the dawn page, 5 minutes before the alarm goes off. 
-
-### NeoPixel Implementation & Dawn Simulator 
-------
-Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels OFF, there would be times that seemingly arbitrary pixels would appear in random colours. Even cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome. 
+Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
 
 The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
 
-Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that manually setting the first pixel to OFF (which is equivalent to setting the RGB value to (0,0,0)) followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them in general appeared to ameliorate the ghosting issue as a whole:   
+Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them in general appeared to ameliorate the ghosting issue as a whole:   
 
 ```c
 void pixelsOff() {
@@ -139,7 +127,7 @@ void pixelsOff() {
 }
 ```
 
-All of the colours used on the Arduino TFT touchscreen are defined in the `Adafruit_HX8357.h file`. In addition to the default colours provided, three more were defined for the customisation of dawn; pink, purple and orange. These colours, however, must be defined in RGB565 format - so the following were appended to the header file:
+All of the colours used on the Arduino TFT touchscreen are defined in the `Adafruit_HX8357.h` file. In addition to the default colours provided, three more were defined for the customisation of dawn; pink, purple and orange. These colours, however, must be defined in RGB565 format - so the following were appended to the header file:
 ```c
 #define HX8357_PINK 0xF815
 #define HX8357_PURPLE 0x91F
@@ -163,7 +151,7 @@ void fadePixels() {
   np_show(&px, NEOPIXEL_RMT_CHANNEL); // display on LEDs
 }
 ```
-The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).  
+The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
 ### Time Management
 ------
@@ -236,3 +224,41 @@ void updateTime() {
   timeinfo = localtime (&time_now);
 }
 ```
+
+### Updating UI Elements 
+------
+The user interface implementation as a whole proved to be a lot more technical than first anticipated, especially for changing the apperance of elements on the same screen. Initially there was the idea of refreshing the entire screen each time something changed, however this approach exhibited a lot of constant flickering especially on pages that have a lot of elements or high frequency of changes such as the Home Display or Set Alarm. Instead, we devised a much more sophisticated method that involved placing filled-in rectangles over specfic areas just before they require updating:
+```c
+void HomeUIElement::drawTime() {
+  if (sc != timeinfo->tm_sec) // clear sec if changed
+    clearSec();
+...
+    sc = timeinfo->tm_sec; // update temp for checking previous/current value 
+}
+void HomeUIElement::clearSec() {
+  m_tft->fillRect(  360,   90,  100,  75, BLACK);
+}
+```
+<br>
+<div align = "center">
+  <img src="images/update_sketch.png" width="1000"/>
+</div>
+<br>
+
+The colour of the rectangles would need to match the background to produce a seamless effect. Each element has its own *clear* method that writes over its previous state:
+
+<br>
+<div align = "center">
+  <img src="images/element_sketch.png" width="500"/>
+</div>
+<br>
+
+1. **clearGreeting()** – Updates 4 times a day
+2. **clearSec()** – Updates ~1s
+3. **clearMin()** – Updates ~1m
+4. **clearHour()** – Updates ~1h
+5. **flashDots()** – Updates ~1s
+6. **clearAlarm(x)** – Updates ~1m or ~1s depending on time to alarm, parameter x for adjusting clear rectangle size 
+7. **clearDate()** – Updates ~24h
+
+Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately, so the `draw()` method was included in the `runEachTurn()` method in Home Display. 
