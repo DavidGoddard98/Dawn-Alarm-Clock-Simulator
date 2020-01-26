@@ -14,7 +14,7 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 See below an indepth examination detailing the implementation of the system.
 
 ## Overview of features
-Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. Sketches have been included to help illustrate initial concepts and ideas. 
+Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. 
 
 ### Menu
 ------
@@ -101,6 +101,9 @@ Before exploring the technicalities, presented below is a general overview of th
 2. **Sleep** – This button can be pressed to put the unPhone into deep sleep mode and save power.
 
 3. **Multifunctional** – This button has two purposes; It can be pressed during the alarm to stop it completely, and it can wake the unPhone from a deep sleep.
+
+## Technical Documentation
+The following section will elaborate more on the technical features of the Dawn Alarm Clock, as well as describing how challenging problems discovered during development were overcome.
 
 ### NeoPixel troubleshooting & Dawn Simulator 
 ------
@@ -258,7 +261,7 @@ The colour of the rectangles would need to match the background to produce a sea
 3. **clearMin()** – Updates ~1m
 4. **clearHour()** – Updates ~1h
 5. **flashDots()** – Updates ~1s
-6. **clearAlarm(x)** – Updates ~1m or ~1s depending on time to alarm, parameter x for adjusting clear rectangle size 
+6. **clearAlarm()** – Updates ~1m or ~1s depending on time to alarm
 7. **clearDate()** – Updates ~24h
 
 Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. 
