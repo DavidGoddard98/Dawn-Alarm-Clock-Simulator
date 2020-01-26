@@ -465,7 +465,7 @@ unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX835 7_GREEN); // DEBUG touch feedback
 ```
 
 ##### Edited unPhone Library
-In order to implment the above changes to orientation and touch buffer, amendments were made in the unPhone project folder, specifically the `Adafruit_HX8357.cpp` and `Adafruit_STMPE610.cpp` libraries which are not part of `MyProjectThing`. Therefore, the amended versions of these libraries have been imported in the `lib` directory and referenced in the `component.mk` file: 
+In order to implment the above changes to orientation and touch buffer amendments were made in the unPhone project folder, specifically the `Adafruit_HX8357.cpp` and `Adafruit_STMPE610.cpp` libraries which are not part of `MyProjectThing`. Therefore, the amended versions of these libraries have been imported in the `lib` directory and referenced in the `component.mk` file: 
 ```c
 COM3505_2019-STUDENT_LIB=../lib 
 # library sources
