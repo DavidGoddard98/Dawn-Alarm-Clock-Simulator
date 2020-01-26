@@ -226,7 +226,6 @@ void AlarmUIElement::calcTime2Alarm() {
   //currentDay stores what day it is at time of setting alarm
   (strftime(date1_str_day, sizeof(date1_str_day), "%A", timeinfo));
   String currentDay = convertToString(date1_str_day);
-  Serial.print(currentDay);
   int counter = 0;
   //stores what the time is right now in hours and minutes
   int tmHour = timeinfo->tm_hour;
@@ -235,9 +234,13 @@ void AlarmUIElement::calcTime2Alarm() {
 
   //the_day is day toggled by user
   //hours is hours toggled by user, mins is mins toggled by user..
-  if (the_day == currentDay && hours >= tmHour && mins >= tmMin) { //if alarm is for today and time is > time now
+  if (the_day == currentDay && hours >= tmHour && mins >= tmMin) { //if alarm today and both hours and mins are > timenow ...
     Serial.print("1");
     addedSeconds = (((hours-tmHour)*60*60) + ((mins-tmMin))*60);
+
+  } else if (the_day == currentDay && hours >= tmHour && mins < tmMin) {
+    addedSeconds = ((hours-tmHour-1)*60*60) + ((60-tmMin+mins)*60);
+
   } else { //if alarm is for today and time < time now, then must be set for 7 days from now
     if (the_day == currentDay) {
       counter = 7;
@@ -246,8 +249,6 @@ void AlarmUIElement::calcTime2Alarm() {
       currentDay = getNextDay(currentDay);
       counter ++; //amount of days away...
     }
-
-    Serial.println(counter);
 
     if (hours >= tmHour && mins >= tmMin) { // hours and mins toggled are more than current hours and mins .. ect.ect
       Serial.print("3");
@@ -265,7 +266,7 @@ void AlarmUIElement::calcTime2Alarm() {
 
     } else  { //(hours < tmHour && mins < tmMin )
       Serial.print("6");
-      addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-hours))*60*60) + (59-(tmMin-mins)) *60;
+      addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-hours))*60*60) + (60-(tmMin-mins)) *60;
     }
   }
 

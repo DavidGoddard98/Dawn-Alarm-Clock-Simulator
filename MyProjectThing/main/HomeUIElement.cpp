@@ -153,8 +153,16 @@ void HomeUIElement::drawAlarmTime() {
     pair<int, int> p = timeUntilDawn(time2Alarm());
     if (fir != p.first || snd != p.second)
     clearAlarm(300);      // clear time to alarm if changed
-    m_tft->print(p.first);m_tft->print("h ");
-    m_tft->print(p.second);m_tft->print("m");
+    if (p.second == 59 && p.first == 0) {
+      m_tft->print(1);m_tft->print("h "); // so time2 alarm goes 1h 0 min rather than
+      m_tft->print(0);m_tft->print("m"); // 60 mins...
+    } else if (p.second == 59 ){
+      m_tft->print(p.first + 1);m_tft->print("h "); // so time2 alarm goes 1h 0 min rather than
+      m_tft->print(0);m_tft->print("m"); // 60 mins...
+    } else {
+      m_tft->print(p.first);m_tft->print("h ");
+      m_tft->print(p.second+1);m_tft->print("m");
+    }
     fir = p.first;
     snd = p.second;
   }
