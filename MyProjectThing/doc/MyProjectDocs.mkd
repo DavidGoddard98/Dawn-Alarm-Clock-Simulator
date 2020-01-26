@@ -14,7 +14,7 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 See below an indepth examination detailing the implementation of the system.
 
 ## Overview of features
-Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. Sketches have been included to help illustrate initial concepts and ideas. 
+Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. 
 
 ### Menu
 ------
@@ -100,16 +100,206 @@ Before exploring the technicalities, presented below is a general overview of th
 
 2. **Sleep** – This button can be pressed to put the unPhone into deep sleep mode and save power.
 
-3. **Stop alarm** – This button can be pressed during the alarm to stop it completely.
+3. **Multifunctional** – This button has two purposes; It can be pressed during the alarm to stop it completely, and it can wake the unPhone from a deep sleep.
 
-### LEDs & IR Sensor 
+## Technical Documentation
+The following section will elaborate more on the technical features of the Dawn Alarm Clock, as well as describing how challenging problems discovered during development were overcome.
+
+### NeoPixel troubleshooting & Dawn Simulator 
 ------
+Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
+
+The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
+
+Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them in general appeared to ameliorate the ghosting issue as a whole:   
+
+```c
+void pixelsOff() {
+  //set all values to 0
+  for	( int i = 0 ; i < NR_LED ; i ++ )	{
+    np_set_pixel_rgbw(&px, i , 0, 0, 0, 0);
+  }
+  delay(1000);
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+
+  //let pixels settle
+  //re set 1st pixel (often glitches and stays on)
+  np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
+  delay(100);
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+}
+```
+
+All of the colours used on the Arduino TFT touchscreen are defined in the `Adafruit_HX8357.h` file. In addition to the default colours provided, three more were defined for the customisation of dawn; pink, purple and orange. These colours, however, must be defined in RGB565 format - so the following were appended to the header file:
+```c
+#define HX8357_PINK 0xF815
+#define HX8357_PURPLE 0x91F
+#define HX8357_ORANGE 0xFC40
+```
+The dawn is set to come on exactly 4 minutes before the alarm, with proportionate brightness increments ranging from 0 (min brightness) to 255 (max brightness). This is achieved by increasing the brightness by 1/255 every 240/255 seconds (~0.94). Once a colour has been chosen from the dawn page, a method from the `main.cpp` is called to then set the dawn colour:
+```c
+void setDawnColour(uint16_t col) {
+  if (col == HX8357_BLUE) {
+    rgb = make_tuple(0,0,255); // tuple saved in RTC memory for later retrieval
+  }
+  ...
+```
+In addition to the brightness, the colour must also remain consistent by keeping the RGB ratios the same, which can be done by multiplying them by the same magnitute of brightness:
+```c
+void fadePixels() {
+  pixBr += 0.003921569f; // 1/255
+  for	( int j = 0 ; j < NR_LED ; j ++ )	{ // retrieve RGB values from saved tuple 
+    np_set_pixel_rgbw(&px, j , get<0>(rgb)*pixBr, get<1>(rgb)*pixBr, get<2>(rgb)*pixBr, pixBr*255);
+  }
+  np_show(&px, NEOPIXEL_RMT_CHANNEL); // display on LEDs
+}
+```
+The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
+
+### Time Management
+
+Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
+
+Early implementations involved setting the time manually and then using the internal RTC on the ESP (in this case a 150kHz oscillator) to keep track of it. It managed to do a reasonable job, yet due to the fact that all clocks drift, it wasn't long before the time shown was incorrect. After some testing we recorded the results below;
+
+| Time Start (H:M:S) | Time End | Time recorded | Length  | Drift (Seconds) |
+|--------------------|----------|---------------|---------|-----------------|
+| 17:42:00           | 18:42:00 | 18:43:30      | 1 hour  | 90s             |
+| 16:40:01           | 17:40:01 | 16:41:26      | 1 hour  | 85s             |
+| 14:30:30           | 15:30:30 | 15:31:58      | 1 hour  | 88s             |
+| 12:24:35           | 14:24:35 | 14:27:44      | 2 hours | 189s            |
+| 15:34:02           | 16:34:02 | 16:38:40      | 3 hours | 278s             |
+*Avg drift p/hour = 27.7s*
+
+Although this early implementation provided a way of tracking the time, it was clearly not an approriate solution by itself to be used for telling the time. For one, there was no way of resetting the time except from manually burning new firmware. This meant the drift would continue to make the time more and more inaccurate. Also, if the ESP was reset or the power was lost, the memory allocated to holding the time would be wiped. These problems prompted us to implement a function (fetchTime()) which would semi-frequently automatically syncronize the time to an atomic clock using a Network Time Protocol (NTP). This solution would ensure that an accurate time could be frequently obtained, avoiding the issue of an inaccurate clock. Also, if the device was ever reset, then the time could be reset automatically.
+
+To do this, we firstly needed to provision the ESP so that we could connect it to a network in the first place. After this we would need the ESP to send a request packet to a NTP server, which in turn, would respond with a time stamp packet. This information could then be used to set the internal time of the ESP with pinpoint precision. See code below;
+
+
+```c++
+void fetchTime() {
+  //provisioning...
+  joinmeManageWiFi(apSSID.c_str(), apPassword.c_str());
+
+  //GET current time and print to serial line
+  while( year < 118) { // if time returned is a year <2018 then incorrect so fetch again
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer); //gets current time
+    delay(1000);
+    time(&time_now);
+    struct tm yearCheck; //store time in tm struct
+    yearCheck = *localtime(&time_now);
+    //stores year - (if < 2018 then time was not retrievied correctly)
+    //default is 1970...
+    year = yearCheck.tm_year;
+  }
+
+  //disconnect WiFi/stop AP as it's no longer needed (SAVE BATTERY)
+  WiFi.disconnect(true);
+}
+```
+*The while loop ensures the correct time is obtained, as during testing we noticed it took a few attempts to recieve the packet.*
+
+A statement must be made about the frequency of these syncronizations - too many and the drain on battery power due to connectivity would introduce a new issue. We decided that this function would be called every time the device is initially booted (so also after every reset/power outage), and in the instance these events do not occur, every two hours. This limited the inaccuracy of our time to.. 27.7(avg. drift time after 1 hour) x (2) = 55.4s.
+
+Due to our decisions with power management (see power management below), the ESP spends the majourity of its time in a deep sleep. Unfourtunately, this presented us with a further issue - keeping track of the time during deep sleeps. Clearly an NTP server could be used on every boot, yet, as mentioned, this would use unnecessary amounts of power. The solution to this isuse was to;
+##### Before deep sleep
+1) Measure # ticks on RTC 
+2) Measure epoch time
+##### Once woken up 
+3) Calculate number of ticks during sleep
+4) Convert to seconds
+5) Increment epoch time by this amount
+
+*Note: Values from points 1/2 are stored in the RTC memory using RTC_DATA_ATTR and then loaded into RTC fast memory. This enables the information to be saved during deep sleeps.*
+
+See the implementation below;
+```c++
+void updateTime() {
+  //timeNow = RTC clock now - offset ...(essentially RTC clock now)
+  //offset = duration of setup() during initial boot
+  timeNow = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time; //this offset is from fetchTime() method
+  //timeDiff = timeESP has been asleep for
+  //sleepTime is recorded just before ESP goes to sleep - see inActiveSleep()
+  timeDiff = timeNow - sleepTime;
+
+  //Must convert this into seconds to add to clock
+  //#secs
+  int seconds = floor((timeDiff / 1000000));
+  //#milis
+  int milis = floor(timeDiff % 1000000);
+
+  //Deal with offset.. with a 30 seconds drift after an hour..
+  //30/3600 = 0.0083. Drift of that length p/sec
+  seconds = seconds * 0.9917; //0.9917 = 1-0.0083
+
+  if (milis+old_milis > 1000) {
+    //if milis more than 1000 add second to time
+    seconds += 1;
+    //make up the difference to save the rest of the milis which didnt make the 1 sec
+    old_milis = (old_milis + milis) -1000 ;
+  } else {
+    old_milis += milis;
+  }
+
+  //Finally....
+  //add the time ESP has been asleep to clock
+  time_now = time_t(time_now) + seconds;
+  timeinfo = localtime (&time_now);
+}
+```
+Note: even though the inaccuracy due to drift was slight we implemented an offset to make it less significant. 
+
+```c++
+//Deal with offset.. with a 30 seconds drift after an hour..
+//30/3600 = 0.0083. Drift of that length p/sec
+seconds = seconds * 0.9917; //0.9917 = 1-0.0083
+```
+
+New testing to show time keeping improvement;
+
+| Time Start (H:M:S) | Time End | Time recorded | Length      | Drift (Seconds) |
+|--------------------|----------|---------------|-------------|-----------------|
+| 9:04:00            | 10:04:00 | 10:04:05      | 1 hour      | 5s              |
+| 10:10:00           | 11:10:00 | 11:11:04      | 1 hour      | 4s              |
+| 12:05:30           | 13:05:30 | 13:05:37      | 1 hour      | 7s              |
+| 13:10:02           | 15:09:30 | 15:09:42      | Just<2hours | 12s             |
+*Avg drift p/hour: 5.3s*
+
+
+### Updating UI Elements 
+------
+The user interface implementation as a whole proved to be a lot more technical than first anticipated, especially for changing the apperance of elements on the same screen. Initially there was the idea of refreshing the entire screen each time something changed, however this approach exhibited a lot of constant flickering especially on pages that have a lot of elements or high frequency of changes such as the Home Display or Set Alarm. Instead, we devised a much more sophisticated method that involved placing filled-in rectangles over specfic areas just before they require updating:
+```c
+void HomeUIElement::drawTime() {
+  if (sc != timeinfo->tm_sec) // clear sec if changed
+    clearSec();
+...
+    sc = timeinfo->tm_sec; // update temp for checking previous/current value 
+}
+void HomeUIElement::clearSec() {
+  m_tft->fillRect(  360,   90,  100,  75, BLACK);
+}
+```
 <br>
 <div align = "center">
-  <img src="images/back_sketch.png" width="500"/>
+  <img src="images/update_sketch.png" width="1000"/>
 </div>
 <br>
 
-1. **IR Sensor** – The back of the unPhone has an IR sensor attached to it that will detect any motion from around 2 meters away. It can be used as a snoozing mechanism that will delay the alarm for 5 minutes once it has been activated.
+The colour of the rectangles contrast with the background in this case for illustration purposes - they would normally be the same colour to produce a seamless overlap. Each element has its own *clear* method that writes over its previous state:
 
-2. **LEDs** – In addition to the IR Sensor, the rear of the unPhone also has powerful LEDs that will gradually increase in brightness in the colour set from the dawn page, 5 minutes before the alarm goes off. 
+<br>
+<div align = "center">
+  <img src="images/element_sketch.png" width="500"/>
+</div>
+<br>
+
+1. **clearGreeting()** – Updates 4 times a day
+2. **clearSec()** – Updates ~1s
+3. **clearMin()** – Updates ~1m
+4. **clearHour()** – Updates ~1h
+5. **flashDots()** – Updates ~1s
+6. **clearAlarm()** – Updates ~1m or ~1s depending on time to alarm
+7. **clearDate()** – Updates ~24h
+
+Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. 
