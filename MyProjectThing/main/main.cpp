@@ -13,6 +13,7 @@
 #include "unphone.h"
 #include "IOExpander.h"
 #include "UIController.h"
+#include "AllUIElement.h"
 
 //TIME FUNCTIONS
 #include <soc/rtc.h>
@@ -183,12 +184,6 @@ void loop() {
     if (loopIter % 80 == 0) {
       uiCont->run();
     }
-
-
-    if (WiFi.status() != WL_CONNECTED) {
-      Serial.print("Not connected!!");
-    }
-
 
     //If power switch not on turn unphone off (see powerMode function)
     if (!powerOn()) powerMode();
@@ -426,6 +421,7 @@ void updateTime() {
   //Must convert this into seconds to add to clock
   //#secs
   int seconds = floor((timeDiff / 1000000));
+
   //#milis
   int milis = floor(timeDiff % 1000000);
 
@@ -441,7 +437,16 @@ void updateTime() {
   //Finally....
   //add the time ESP has been asleep to clock
   time_now = time_t(time_now) + seconds;
+  struct timeval newTime = {.tv_sec = time_now};
+  struct timezone timeZon = {.tz_minuteswest = 0 };     /* minutes west of Greenwich */
+
+  int  correct = settimeofday(&newTime, &timeZon );
+  Serial.println("CORRECTLY SET?");
+  Serial.print(correct);
+  time(&time_now);
   timeinfo = localtime (&time_now);
+  Serial.printf ("%s\n", asctime(timeinfo));
+
 }
 
 //returns seconds 2 alarm
@@ -520,6 +525,9 @@ void powerMode(){
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_36, 0); //wakeup if switch switched
     //Turn screen off
     IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+
+    //store epoch time
+    time(&time_now);
     //store RTC clock at sleep time - needed in updateTime()
     sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
     // deep sleep, wait for wakeup on GPIO pin
@@ -550,7 +558,8 @@ void inActiveSleep() {
   delay(1000); //let them settle
 
   Serial.println("Device put to sleep due to inactivity");
-
+  //store epoch time
+  time(&time_now);
   //store RTC clock at sleep time - needed in updateTime()
   sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
 
@@ -577,9 +586,13 @@ void forcedSleep() {
   delay(1000); //let them settle
 
   Serial.println("User chose to sleep device with button 2");
+
+  //store epoch time
+  time(&time_now);
   //Keep track of time before sleep
   sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
   //start deep sleep
+  unPhone::setShipping(true);
   esp_deep_sleep_start();
 }
 
