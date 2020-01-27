@@ -156,6 +156,28 @@ void fadePixels() {
 ```
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
+### Power Management
+
+With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
+
+##### Deep sleeps
+The best way of improving efficiency is putting the device into a deep sleep whenever possible. This is because if left in active mode the ESP requires 160-240mA current to operate - with a deep sleep this can be reduced to as little as 10uA. We decided that our alarm clock only needed to be active when the user requested it to be on, or for the 4 minutes between the dawn simulator starting and the actual alarm (plus around 20 seconds so that it can start the fade in). Because of this we implemented a feature to put the the device to sleep after 30 seconds of inactivity (i.e 30 seconds since the last registered touch), or when the used pressed button 2. In either of these cases the device can then be woken up with button 3. 
+
+If an alarm is set however, the ESP will automatically wake itself up 20 seconds before the dawn simulator is about to begin. The ESP will then remain active up until the alarm goes off at which point it depends on user interaction;
+1) If the alarm is cancelled then the device will sleep until manually woken up
+2) If the alarm is snoozed (5 minutes) then the ESP will sleep for 40 seconds then wake itself up and begin the dawn again.
+
+##### Peripherals
+To improve efficiency further the ESP is disconnected from its WiFi connection and access point after the internal clock is synronized with the NTP server.
+
+Sparkfun Open PIR module - 
+
+Neopixel featherwing - 
+
+##### Shipping mode
+If the power switch is used and the ESP is not connected by USB, then the device is put into shipping mode. This tells the BM to stop supplying power and therefore means 0mA are used (the most power efficient option). This does however mean that when the device is switched back on, all the memory has been wiped and therefore any desired alarms must be reset.
+
+
 ### Time Management
 
 Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
@@ -264,6 +286,7 @@ New testing to show time keeping improvement;
 | 12:05:30           | 13:05:30 | 13:05:37      | 1 hour      | 7s              |
 | 13:10:02           | 15:09:30 | 15:09:42      | Just<2hours | 12s             |
 *Avg drift p/hour: 5.3s*
+
 
 
 ### Updating UI Elements 
