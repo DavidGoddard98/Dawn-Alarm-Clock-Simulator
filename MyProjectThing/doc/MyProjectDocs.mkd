@@ -157,7 +157,7 @@ void fadePixels() {
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
 ### Power Management
-
+----
 With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
 
 ##### Deep sleeps
@@ -167,22 +167,77 @@ If an alarm is set however, the ESP will automatically wake itself up 20 seconds
 1) If the alarm is cancelled then the device will sleep until manually woken up
 2) If the alarm is snoozed (5 minutes) then the ESP will sleep for 40 seconds then wake itself up and begin the dawn again.
 
-##### Peripherals
 To improve efficiency further the ESP is disconnected from its WiFi connection and access point after the internal clock is synronized with the NTP server.
 
-Sparkfun Open PIR module - 
+##### Peripherals
+ Below is a list of the components that draw the most power and these should therefore be the focus in our effort to limit consumption. With this in mind, when the device goes into a deep sleep we limit the power they can all individually draw (see specifics below).
 
-Neopixel featherwing - 
+###### Sparkfun Open PIR module  
+*Reference;  https://github.com/sparkfun/OpenPIR*
 
+    Voltage supply range: 3VDC to 5.75VDC
+    Standby average current: 80µA
+    Motion-detected average current: 3mA (LED enabled) 
+    
+The OpenPIR consumes relatively little power. When the sensor isn't triggered --- and the activity LED is not illuminated --- the OpenPIR will consume about 80µA. When active, the onboard LED's current draw dwarfs the PIR's operating current, consuming about 3mA. This LED can however be disabled. 
+
+Due to the insignificant amount of power drawn while active, no limitations are put in place with this component.
+
+Maximum usage a day(1 alarmp/day): Negligible but we'll say 3mA for 1 minute
+
+###### Neopixel featherwing - 
+*Reference: https://cdn-learn.adafruit.com/downloads/pdf/adafruit-neopixel-uberguide.pdf?timestamp=1580149439*
+
+    USB connected: 5v
+    LiPo battery: 3.7-4.2v.
+    Max Current p/pixel: 60 mA at max brightness white (Red + Green + Blue)
+    Avg. Current p/pixel: 20mA p/pixel -> "Rule of thumb"
+
+From this an estimate can be made for battery life while all pixels are on;
+32(pixels) * 20mA / 1000 = 0.64 Amps minimum.
+
+The LEDS are clearly a significant draw of power. A limit could be put onto the max brightness exhibited from the individual bulbs - setting it from 255 to 127 would roughly half consumption). Yet, this save in consumption must be balanced with reducing the effectiveness of the device itself (as a wake up mechanism). For this reason we have decided not to limit its potential. It should also be noted that in our implementation max brightness is only sustained for the final second of the dawn count in. Indeed only 2 mins of the 4 min countin push past this 127 brightness level. 
+
+Maximum usage a day(1 alarm p/day): 4 minutes of 640mA
+
+###### LCD screen
+*Reference: https://github.com/adafruit/Adafruit_HX8357_Library*
+
+    Backlight:	18-22V,
+    Current drawn: 20mA
+
+To limit consumption, the screens backlight is turned off whenever the device is put into a deep sleep mode. Using  *IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW)*
+
+Maximum usage a day(1 alarm p/day): 20mA for 4 minutes + 1 minute (reset alarm) = 20mA for 5 mins
+
+
+###### ESP32 chip
+As stated previously the chip itself consumes alot of power when in active mode;
+
+    Current: 160-240mA
+
+Maximum usage a day(1 alarm p/day): 5 minutes of 240mA
+
+
+
+###### Overall rough estimate for battery life  
+In an attempt to make the calculations easier we'll say all 4 components listed above use their power for 5 minutes a day. 
+
+    240+20+640+3 = 903mA    for 5 minutes p/day. 
+    With a 1200mAH battery this device should therefore last - 1200/903 * 60/5 = 15.95 days
+
+    
+    
 ##### Shipping mode
 If the power switch is used and the ESP is not connected by USB, then the device is put into shipping mode. This tells the BM to stop supplying power and therefore means 0mA are used (the most power efficient option). This does however mean that when the device is switched back on, all the memory has been wiped and therefore any desired alarms must be reset.
 
 
-### Time Management
 
+### Time Management
+----
 Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
 
-Early implementations involved setting the time manually and then using the internal RTC on the ESP (in this case a 150kHz oscillator) to keep track of it. It managed to do a reasonable job, yet due to the fact that all clocks drift, it wasn't long before the time shown was incorrect. After some testing we recorded the results below;
+Early implementations involved setting the time manually and then using the `internal RTC` on the ESP (in this case a 150kHz oscillator) to keep track of it. It managed to do a reasonable job, yet due to the fact that all clocks drift, it wasn't long before the time shown was incorrect. After some testing we recorded the following results;
 
 | Time Start (H:M:S) | Time End | Time recorded | Length  | Drift (Seconds) |
 |--------------------|----------|---------------|---------|-----------------|
@@ -193,9 +248,9 @@ Early implementations involved setting the time manually and then using the inte
 | 15:34:02           | 16:34:02 | 16:38:40      | 3 hours | 278s             |
 *Avg drift p/hour = 27.7s*
 
-Although this early implementation provided a way of tracking the time, it was clearly not an approriate solution by itself to be used for telling the time. For one, there was no way of resetting the time except from manually burning new firmware. This meant the drift would continue to make the time more and more inaccurate. Also, if the ESP was reset or the power was lost, the memory allocated to holding the time would be wiped. These problems prompted us to implement a function (fetchTime()) which would semi-frequently automatically syncronize the time to an atomic clock using a Network Time Protocol (NTP). This solution would ensure that an accurate time could be frequently obtained, avoiding the issue of an inaccurate clock. Also, if the device was ever reset, then the time could be reset automatically.
+Although this early implementation provided a way of tracking the time, it was clearly not an approriate solution by itself to be used for telling the time. For one, there was no way of resetting the time except from manually burning new firmware. This meant the drift would continue to make the time more and more inaccurate. Also, if the ESP was reset or the power was lost, the memory allocated to holding the time would be wiped. These problems prompted us to implement a function `fetchTime()` which would semi-frequently automatically syncronize the time to an atomic clock using a `Network Time Protocol (NTP)`. This solution would ensure that an accurate time could be frequently obtained, avoiding the issue of an inaccurate clock. Also, if the device was ever reset, then the time could be reset automatically.
 
-To do this, we firstly needed to provision the ESP so that we could connect it to a network in the first place. After this we would need the ESP to send a request packet to a NTP server, which in turn, would respond with a time stamp packet. This information could then be used to set the internal time of the ESP with pinpoint precision. See code below;
+To do this, we firstly needed to provision the ESP so that we could connect it to a network in the first place. After this we would need the ESP to send a request packet to a `NTP server`, which in turn, would respond with a time stamp packet. This information could then be used to set the internal time of the ESP with pinpoint precision. See code below;
 
 
 ```c++
@@ -213,6 +268,7 @@ void fetchTime() {
     //stores year - (if < 2018 then time was not retrievied correctly)
     //default is 1970...
     year = yearCheck.tm_year;
+    hourFetched = yearCheck.tm_hour; //record the hour last time fetched
   }
 
   //disconnect WiFi/stop AP as it's no longer needed (SAVE BATTERY)
@@ -221,16 +277,18 @@ void fetchTime() {
 ```
 *The while loop ensures the correct time is obtained, as during testing we noticed it took a few attempts to recieve the packet.*
 
-A statement must be made about the frequency of these syncronizations - too many and the drain on battery power due to connectivity would introduce a new issue. We decided that this function would be called every time the device is initially booted (so also after every reset/power outage), and in the instance these events do not occur, every two hours. This limited the inaccuracy of our time to.. 27.7(avg. drift time after 1 hour) x (2) = 55.4s.
+A statement must be made about the frequency of these syncronizations - too many and the drain on battery power due to connectivity would introduce a new issue. We decided that this function would be called every time the device is initially booted (so also after every reset/power outage), and in the instance these events do not occur, every two hours. This limited the inaccuracy of our time to.. 27.7(avg. drift time after 1 hour) x (2) = 55.4s. It should be noted that the device doesnt automatically turn itself on to re-syncronise. Instead, the next time it is booted (either for an alarm or manually) it will check if it has been over 2 hours and then re-syncronize. 
 
-Due to our decisions with power management (see power management below), the ESP spends the majourity of its time in a deep sleep. Unfourtunately, this presented us with a further issue - keeping track of the time during deep sleeps. Clearly an NTP server could be used on every boot, yet, as mentioned, this would use unnecessary amounts of power. The solution to this isuse was to;
+Although the 55.4s drift above wasnt catastrophic, there was still room for improvement. Due to our decisions with power management (see power management below), the ESP spends the majourity of its time in a `deep sleep`. Unfourtunately, this presented us with a further issue - keeping track of the time during deep sleeps. As stated the inbuilt RTC lacks the necessary accuracy - which only gets worse during sleep cycles. Clearly an `NTP server` could be used on every boot, yet, as mentioned, this would use unnecessary amounts of power. The solution to this isuse was to implement our own time counting function (just during deep sleeps), apply an offset and then reset the internal time manually;
 ##### Before deep sleep
 1) Measure # ticks on RTC 
 2) Measure epoch time
 ##### Once woken up 
 3) Calculate number of ticks during sleep
 4) Convert to seconds
+5) Apply offset (just under 1%)
 5) Increment epoch time by this amount
+6) Reset internal time
 
 *Note: Values from points 1/2 are stored in the RTC memory using RTC_DATA_ATTR and then loaded into RTC fast memory. This enables the information to be saved during deep sleeps.*
 
@@ -247,12 +305,10 @@ void updateTime() {
   //Must convert this into seconds to add to clock
   //#secs
   int seconds = floor((timeDiff / 1000000));
+  seconds = seconds * (1- (seconds * 0.00000214)); //apply calculated offset (the longer it sleeps the larger the offset)
+
   //#milis
   int milis = floor(timeDiff % 1000000);
-
-  //Deal with offset.. with a 30 seconds drift after an hour..
-  //30/3600 = 0.0083. Drift of that length p/sec
-  seconds = seconds * 0.9917; //0.9917 = 1-0.0083
 
   if (milis+old_milis > 1000) {
     //if milis more than 1000 add second to time
@@ -266,18 +322,28 @@ void updateTime() {
   //Finally....
   //add the time ESP has been asleep to clock
   time_now = time_t(time_now) + seconds;
+  struct timeval newTime = {.tv_sec = time_now};
+  struct timezone timeZon = {.tz_minuteswest = 0 };     /* minutes west of Greenwich */
+
+  settimeofday(&newTime, &timeZon );
+  
+  time(&time_now);
   timeinfo = localtime (&time_now);
+  Serial.printf ("%s\n", asctime(timeinfo));
 }
 ```
-Note: even though the inaccuracy due to drift was slight we implemented an offset to make it less significant. 
 
-```c++
-//Deal with offset.. with a 30 seconds drift after an hour..
-//30/3600 = 0.0083. Drift of that length p/sec
-seconds = seconds * 0.9917; //0.9917 = 1-0.0083
-```
+A particular note should be made about how we ended up with this formula for offset. In summary it calculates a proportional offset multiplier depending on how long the ESP has been asleep for. 
 
-New testing to show time keeping improvement;
+    seconds = seconds * (1- (seconds * 0.00000214)); //apply calculated offset (the longer it sleeps the larger the offset)
+
+Due to a 27.7s avg. drift over an hour (see above), the amount to be shaved off every second = 27.7/3600 = 0.00769. However, because the drift is not linear, deducting this from every second would also lead to inaccurate results. By dividing through again i.e 0.00769/3600, you arrive at a result of 0.00000214. This value is then directly multiplied by the number of seconds the device had been asleep and subtracted from 1. By multiplying this by the time it has been asleep for again, you have applied a proportional offset to the sleep  time. 
+
+E.g
+- if slept for 10 minutes (600s), 0.8s will be shaved off the time
+- if slept for 50 minutes (3000s), 19.26s will be shaved off.
+
+### Testing to show improvement
 
 | Time Start (H:M:S) | Time End | Time recorded | Length      | Drift (Seconds) |
 |--------------------|----------|---------------|-------------|-----------------|
@@ -285,9 +351,9 @@ New testing to show time keeping improvement;
 | 10:10:00           | 11:10:00 | 11:11:04      | 1 hour      | 4s              |
 | 12:05:30           | 13:05:30 | 13:05:37      | 1 hour      | 7s              |
 | 13:10:02           | 15:09:30 | 15:09:42      | Just<2hours | 12s             |
-*Avg drift p/hour: 5.3s*
+*Avg drift p/hour: 5.3s...522% improvement!*
 
-
+This improvement influenced us to extend the two hour checking period to every 5 hours. A 26.5 second avg drift (5.3*5) didnt seem like a bad price to pay for extended battery life. 
 
 ### Updating UI Elements 
 ------
