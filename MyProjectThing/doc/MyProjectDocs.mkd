@@ -1,5 +1,8 @@
-Dawn Alarm Clock Documentation
-===
+
+# <div align="center">Dawn Alarm Clock Documentation</div>
+
+<br>
+<br>
 
 For our project we decided to implement a Dawn simulator alarm clock. Simply put, it has all of the functionality of an alarm clock with a few bonus features. Some of those features worth noting are; 
 
@@ -9,26 +12,14 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 - Extremely user friendly interface
 - An alarm that can be set up to 7 days into the future
 - Accurate time management
-- Landscape mode...
+- Local temperature and weather information
+- Landscape mode!
 
-See below an indepth examination detailing the implementation of the system.
 
-## Overview of features
+<br>
+
+## <div align="center">Overview of technical features</div>
 Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. 
-
-### Menu
-------
-<br>
-<div align = "center">
-  <img src="images/menu_sketch.png" width="500"/>
-</div>
-<br>
-
-1. **Page title**
-
-2. **Menu item** – Selecting a menu item will direct the user to that page.
-
-3. **Arrow icon** – Selecting a menu arrow icon will also direct the user to that page.
 
 ### Home Display
 ------
@@ -49,6 +40,21 @@ Before exploring the technicalities, presented below is a general overview of th
 3. **Date display** – The bottom corner will display the current date and day of the week, updated every 24 hours.
 
 4. **Time to alarm** – The time to alarm will be displayed under the digital time if an alarm has been set. If the time to alarm is greater than a minute it will be formatted in H:M, otherwise a countdown in seconds from a minute will commence. If no alarm has been set, or an alarm has passed, a 'No alarm set' message is shown. 
+
+
+### Menu
+------
+<br>
+<div align = "center">
+  <img src="images/menu_sketch.png" width="500"/>
+</div>
+<br>
+
+1. **Page title**
+
+2. **Menu item** – Selecting a menu item will direct the user to that page.
+
+3. **Arrow icon** – Selecting a menu arrow icon will also direct the user to that page.
 
 ### Setting an Alarm
 ------
@@ -75,7 +81,7 @@ Before exploring the technicalities, presented below is a general overview of th
 
 9. **Set alarm** – Selecting the 'Set' button will create an alarm based on the time inputted by the user. If the alarm is set 'before' the current time, it will assume it is meant for the future (for instance - given the example in the diagram, setting the alarm for Thursday at 13:32 will create an alarm for 144 hours time).
 
-### Setting Dawn Colour
+### Setting a Dawn Color
 ------
 <br>
 <div align = "center">
@@ -88,7 +94,7 @@ Before exploring the technicalities, presented below is a general overview of th
 
 3. **Colour palette** – This area will display a range of colours to choose from - each box will contain a different colour that the user can pick for the dawn simulation.
 
-### Buttons 
+### Buttons
 ------
 <br>
 <div align = "center">
@@ -102,139 +108,17 @@ Before exploring the technicalities, presented below is a general overview of th
 
 3. **Multifunctional** – This button has two purposes; It can be pressed during the alarm to stop it completely, and it can wake the unPhone from a deep sleep.
 
-## Technical Documentation
+-----
+<br>
+<br>
+
+# <div align="center">Technical Documentation</div>
 The following section will elaborate more on the technical features of the Dawn Alarm Clock, as well as describing how challenging problems discovered during development were overcome.
 
-### NeoPixel troubleshooting & Dawn Simulator 
-------
-Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
 
-The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
-
-Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them appeared to ameliorate the ghosting issue as a whole:   
-
-```c
-void pixelsOff() {
-  //set all values to 0
-  for	( int i = 0 ; i < NR_LED ; i ++ )	{
-    np_set_pixel_rgbw(&px, i , 0, 0, 0, 0);
-  }
-  delay(1000);
-  np_show(&px, NEOPIXEL_RMT_CHANNEL);
-
-  //let pixels settle
-  //re set 1st pixel (often glitches and stays on)
-  np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
-  delay(100);
-  np_show(&px, NEOPIXEL_RMT_CHANNEL);
-}
-```
-
-All of the colours used on the Arduino TFT touchscreen are defined in the `Adafruit_HX8357.h` file. In addition to the default colours provided, three more were defined for the customisation of dawn; pink, purple and orange. These colours, however, must be defined in RGB565 format - so the following were appended to the header file:
-```c
-#define HX8357_PINK 0xF815
-#define HX8357_PURPLE 0x91F
-#define HX8357_ORANGE 0xFC40
-```
-The dawn is set to come on exactly 4 minutes before the alarm, with proportionate brightness increments ranging from 0 (min brightness) to 255 (max brightness). This is achieved by increasing the brightness by 1/255 every 240/255 seconds (~0.94). Once a colour has been chosen from the dawn page, a method from the `main.cpp` is called to then set the dawn colour:
-```c
-void setDawnColour(uint16_t col) {
-  if (col == HX8357_BLUE) {
-    rgb = make_tuple(0,0,255); // tuple saved in RTC memory for later retrieval
-  }
-  ...
-```
-In addition to the brightness, the colour must also remain consistent by keeping the RGB ratios the same, which can be done by multiplying them by the same magnitute of brightness:
-```c
-void fadePixels() {
-  pixBr += 0.003921569f; // 1/255
-  for	( int j = 0 ; j < NR_LED ; j ++ )	{ // retrieve RGB values from saved tuple 
-    np_set_pixel_rgbw(&px, j , get<0>(rgb)*pixBr, get<1>(rgb)*pixBr, get<2>(rgb)*pixBr, pixBr*255);
-  }
-  np_show(&px, NEOPIXEL_RMT_CHANNEL); // display on LEDs
-}
-```
-The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
-
-### Power Management
+## 1) Time Management
 ----
-With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
 
-##### Deep sleeps
-The best way of improving efficiency is putting the device into a deep sleep whenever possible. This is because if left in active mode the ESP requires 160-240mA current to operate - with a deep sleep this can be reduced to as little as 10uA. We decided that our alarm clock only needed to be active when the user requested it to be on, or for the 4 minutes between the dawn simulator starting and the actual alarm (plus around 20 seconds so that it can start the fade in). Because of this we implemented a feature to put the the device to sleep after 30 seconds of inactivity (i.e 30 seconds since the last registered touch), or when the used pressed button 2. In either of these cases the device can then be woken up with button 3. 
-
-If an alarm is set however, the ESP will automatically wake itself up 20 seconds before the dawn simulator is about to begin. The ESP will then remain active up until the alarm goes off at which point it depends on user interaction;
-1) If the alarm is cancelled then the device will sleep until manually woken up
-2) If the alarm is snoozed (5 minutes) then the ESP will sleep for 40 seconds then wake itself up and begin the dawn again.
-
-To improve efficiency further the ESP is disconnected from its WiFi connection and access point after the internal clock is synronized with the NTP server.
-
-##### Peripherals
- Below is a list of the components that draw the most power and these should therefore be the focus in our effort to limit consumption. With this in mind, when the device goes into a deep sleep we limit the power they can all individually draw (see specifics below).
-
-###### Sparkfun Open PIR module  
-*Reference;  https://github.com/sparkfun/OpenPIR*
-
-    Voltage supply range: 3VDC to 5.75VDC
-    Standby average current: 80µA
-    Motion-detected average current: 3mA (LED enabled) 
-    
-The OpenPIR consumes relatively little power. When the sensor isn't triggered --- and the activity LED is not illuminated --- the OpenPIR will consume about 80µA. When active, the onboard LED's current draw dwarfs the PIR's operating current, consuming about 3mA. This LED can however be disabled. 
-
-Due to the insignificant amount of power drawn while active, no limitations are put in place with this component.
-
-Maximum usage a day(1 alarmp/day): Negligible but we'll say 3mA for 1 minute
-
-###### Neopixel featherwing - 
-*Reference: https://cdn-learn.adafruit.com/downloads/pdf/adafruit-neopixel-uberguide.pdf?timestamp=1580149439*
-
-    USB connected: 5v
-    LiPo battery: 3.7-4.2v.
-    Max Current p/pixel: 60 mA at max brightness white (Red + Green + Blue)
-    Avg. Current p/pixel: 20mA p/pixel -> "Rule of thumb"
-
-From this an estimate can be made for battery life while all pixels are on;
-32(pixels) * 20mA / 1000 = 0.64 Amps minimum.
-
-The LEDS are clearly a significant draw of power. A limit could be put onto the max brightness exhibited from the individual bulbs - setting it from 255 to 127 would roughly half consumption). Yet, this save in consumption must be balanced with reducing the effectiveness of the device itself (as a wake up mechanism). For this reason we have decided not to limit its potential. It should also be noted that in our implementation max brightness is only sustained for the final second of the dawn count in. Indeed only 2 mins of the 4 min countin push past this 127 brightness level. 
-
-Maximum usage a day(1 alarm p/day): 4 minutes of 640mA
-
-###### LCD screen
-*Reference: https://github.com/adafruit/Adafruit_HX8357_Library*
-
-    Backlight:	18-22V,
-    Current drawn: 20mA
-
-To limit consumption, the screens backlight is turned off whenever the device is put into a deep sleep mode. Using  *IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW)*
-
-Maximum usage a day(1 alarm p/day): 20mA for 4 minutes + 1 minute (reset alarm) = 20mA for 5 mins
-
-
-###### ESP32 chip
-As stated previously the chip itself consumes alot of power when in active mode;
-
-    Current: 160-240mA
-
-Maximum usage a day(1 alarm p/day): 5 minutes of 240mA
-
-
-
-###### Overall rough estimate for battery life  
-In an attempt to make the calculations easier we'll say all 4 components listed above use their power for 5 minutes a day. 
-
-    240+20+640+3 = 903mA    for 5 minutes p/day. 
-    With a 1200mAH battery this device should therefore last - 1200/903 * 60/5 = 15.95 days
-
-    
-    
-##### Shipping mode
-If the power switch is used and the ESP is not connected by USB, then the device is put into shipping mode. This tells the BM to stop supplying power and therefore means 0mA are used (the most power efficient option). This does however mean that when the device is switched back on, all the memory has been wiped and therefore any desired alarms must be reset.
-
-
-
-### Time Management
-----
 Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
 
 Early implementations involved setting the time manually and then using the `internal RTC` on the ESP (in this case a 150kHz oscillator) to keep track of it. It managed to do a reasonable job, yet due to the fact that all clocks drift, it wasn't long before the time shown was incorrect. After some testing we recorded the following results;
@@ -245,7 +129,8 @@ Early implementations involved setting the time manually and then using the `int
 | 16:40:01           | 17:40:01 | 16:41:26      | 1 hour  | 85s             |
 | 14:30:30           | 15:30:30 | 15:31:58      | 1 hour  | 88s             |
 | 12:24:35           | 14:24:35 | 14:27:44      | 2 hours | 189s            |
-| 15:34:02           | 16:34:02 | 16:38:40      | 3 hours | 278s             |
+| 15:34:02           | 16:34:02 | 16:38:40      | 3 hours | 278s            |
+
 *Avg drift p/hour = 27.7s*
 
 Although this early implementation provided a way of tracking the time, it was clearly not an approriate solution by itself to be used for telling the time. For one, there was no way of resetting the time except from manually burning new firmware. This meant the drift would continue to make the time more and more inaccurate. Also, if the ESP was reset or the power was lost, the memory allocated to holding the time would be wiped. These problems prompted us to implement a function `fetchTime()` which would semi-frequently automatically syncronize the time to an atomic clock using a `Network Time Protocol (NTP)`. This solution would ensure that an accurate time could be frequently obtained, avoiding the issue of an inaccurate clock. Also, if the device was ever reset, then the time could be reset automatically.
@@ -355,7 +240,220 @@ E.g
 
 This improvement influenced us to extend the two hour checking period to every 5 hours. A 26.5 second avg drift (5.3*5) didnt seem like a bad price to pay for extended battery life. 
 
-### Updating UI Elements 
+<br>
+
+## 2) The Alarm
+----------
+
+With accurate time management already in place, implementing alarm functionality wasn't too technical. Most of the troubles came when coding the UI page, calculating the time until an alarm.
+
+To calculate the time to an alarm, the function `calcTime2Alarm` in the class `AlarmUIElement.cpp` extracts the information entered by the user and then compares this with the current time, returning a value for seconds to alarm. This is then added to the value of the current time in seconds (Epoch time) to generate a future time stamp.; 
+
+```c++
+  if (the_day == currentDay && hours >= tmHour && mins >= tmMin) { //if alarm today and both hours and mins are > timenow ...
+    addedSeconds = (((hours-tmHour)*60*60) + ((mins-tmMin))*60);
+
+  } else if (the_day == currentDay && hours >= tmHour && mins < tmMin) {
+    addedSeconds = ((hours-tmHour-1)*60*60) + ((60-tmMin+mins)*60);
+
+  } else { //if alarm is for today and time < time now, then must be set for 7 days from now
+    if (the_day == currentDay) {
+      counter = 7;
+    }
+    while(the_day!=currentDay) { //if alarm not for today then iterate until we find day
+      currentDay = getNextDay(currentDay);
+      counter ++; //amount of days away...
+    }
+
+    if (hours >= tmHour && mins >= tmMin) { // hours and mins toggled are more than current hours and mins .. ect.ect
+      //the actual calculation to determine time in seconds
+      addedSeconds = (counter*24*60*60 ) +  ((hours-tmHour)*60*60) + ((mins-tmMin)*60);
+
+    } else if (hours >= tmHour && mins < tmMin) {
+      addedSeconds = (counter*24*60*60) + ((hours-tmHour-1)*60*60) + (((60-(tmMin-mins)))*60);
+
+    } else if (hours < tmHour && mins >= tmMin) {
+      addedSeconds = ((counter-1)*24*60*60) + ((24-(tmHour-hours))*60*60) + ((mins-tmMin) *60);
+
+    } else  { //(hours < tmHour && mins < tmMin )
+      addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-hours))*60*60) + (60-(tmMin-mins)) *60;
+    }
+  }
+  alarm_time = time_t(time_now) + addedSeconds; //set global alarm_time variable
+  dawn_time = alarm_time - 240; //dawn time is 4 minutes from alarm time - set global
+  alarmTime = localtime(&alarm_time);
+}
+```
+Alarm_time and dawn_time are then iteraitvly checked against time_now using: `difftime(alarm_time,time_now)` in the `loop()` function in order to check whether or not it is time to start the dawn/alarm.
+
+Below is an overview of the flow of control behind an alarm (situated in `loop()`) which uses the time stamps calculated above;
+
+```c++
+if (alarm_exist) {
+  if (time2Dawn() == 0.00 ) {
+    //start dawn simulator
+    if (micros() - timer >= (fade_time/255)) { //proportion fade time in
+      fadePixels();
+      timer = micros();
+    }
+    if (time2Alarm() == 0.00 ) {
+      //start alarm (vibe motor)
+      alarm_on = true;
+      vibrate();
+      uiCont->run();
+      //Any motion measured from IR snoozes for 5 mins
+      if (digitalRead(PIR_DOUT) == 1 ){
+        touchTimer = millis(); //keep screen on for another 30 secs
+        snoozeAlarm();
+      }
+      //button3 snoozes for 5 mins
+      if (unPhone::button3()) {
+        touchTimer = millis(); //keep screen on for another 30 secs
+        snoozeAlarm();
+      }
+      //button 1 cancels alarm
+      if (unPhone::button1()) {
+        touchTimer = millis(); //keep screen on for another 30 secs
+        stopAlarm();
+      }
+    }
+  }
+}
+```
+
+<br>
+
+## 3) NeoPixel Dawn Simulator 
+------
+Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
+
+The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
+
+Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them appeared to ameliorate the ghosting issue as a whole:   
+
+```c
+void pixelsOff() {
+  //set all values to 0
+  for	( int i = 0 ; i < NR_LED ; i ++ )	{
+    np_set_pixel_rgbw(&px, i , 0, 0, 0, 0);
+  }
+  delay(1000);
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+
+  //let pixels settle
+  //re set 1st pixel (often glitches and stays on)
+  np_set_pixel_rgbw(&px, 0 , 0, 0, 0, 0);
+  delay(100);
+  np_show(&px, NEOPIXEL_RMT_CHANNEL);
+}
+```
+
+All of the colours used on the Arduino TFT touchscreen are defined in the `Adafruit_HX8357.h` file. In addition to the default colours provided, three more were defined for the customisation of dawn; pink, purple and orange. These colours, however, must be defined in RGB565 format - so the following were appended to the header file:
+```c
+#define HX8357_PINK 0xF815
+#define HX8357_PURPLE 0x91F
+#define HX8357_ORANGE 0xFC40
+```
+The dawn is set to come on exactly 4 minutes before the alarm, with proportionate brightness increments ranging from 0 (min brightness) to 255 (max brightness). This is achieved by increasing the brightness by 1/255 every 240/255 seconds (~0.94). Once a colour has been chosen from the dawn page, a method from the `main.cpp` is called to then set the dawn colour:
+```c
+void setDawnColour(uint16_t col) {
+  if (col == HX8357_BLUE) {
+    rgb = make_tuple(0,0,255); // tuple saved in RTC memory for later retrieval
+  }
+  ...
+```
+In addition to the brightness, the colour must also remain consistent by keeping the RGB ratios the same, which can be done by multiplying them by the same magnitute of brightness:
+```c
+void fadePixels() {
+  pixBr += 0.003921569f; // 1/255
+  for	( int j = 0 ; j < NR_LED ; j ++ )	{ // retrieve RGB values from saved tuple 
+    np_set_pixel_rgbw(&px, j , get<0>(rgb)*pixBr, get<1>(rgb)*pixBr, get<2>(rgb)*pixBr, pixBr*255);
+  }
+  np_show(&px, NEOPIXEL_RMT_CHANNEL); // display on LEDs
+}
+```
+The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
+
+<br>
+
+## 4) Power Management
+----
+With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
+
+##### Deep sleeps
+The best way of improving efficiency is putting the device into a deep sleep whenever possible. This is because if left in active mode the ESP requires 160-240mA current to operate - with a deep sleep this can be reduced to as little as 10uA. We decided that our alarm clock only needed to be active when the user requested it to be on, or for the 4 minutes between the dawn simulator starting and the actual alarm (plus around 20 seconds so that it can start the fade in). Because of this we implemented a feature to put the the device to sleep after 30 seconds of inactivity (i.e 30 seconds since the last registered touch), or when the used pressed button 2. In either of these cases the device can then be woken up with button 3. 
+
+If an alarm is set however, the ESP will automatically wake itself up 20 seconds before the dawn simulator is about to begin. The ESP will then remain active up until the alarm goes off at which point it depends on user interaction;
+1) If the alarm is cancelled then the device will sleep until manually woken up
+2) If the alarm is snoozed (5 minutes) then the ESP will sleep for 40 seconds then wake itself up and begin the dawn again.
+
+To improve efficiency further the ESP is disconnected from its WiFi connection and access point after the internal clock is synronized with the NTP server.
+
+##### Peripherals
+ Below is a list of the components that draw the most power and these should therefore be the focus in our effort to limit consumption. With this in mind, when the device goes into a deep sleep we limit the power they can all individually draw (see specifics below).
+
+###### Sparkfun Open PIR module  
+*Reference;  https://github.com/sparkfun/OpenPIR*
+
+    Voltage supply range: 3VDC to 5.75VDC
+    Standby average current: 80µA
+    Motion-detected average current: 3mA (LED enabled) 
+    
+The OpenPIR consumes relatively little power. When the sensor isn't triggered --- and the activity LED is not illuminated --- the OpenPIR will consume about 80µA. When active, the onboard LED's current draw dwarfs the PIR's operating current, consuming about 3mA. This LED can however be disabled. 
+
+Due to the insignificant amount of power drawn while active, no limitations are put in place with this component.
+
+Maximum usage a day(1 alarmp/day): Negligible but we'll say 3mA for 1 minute
+
+###### Neopixel featherwing - 
+*Reference: https://cdn-learn.adafruit.com/downloads/pdf/adafruit-neopixel-uberguide.pdf?timestamp=1580149439*
+
+    USB connected: 5v
+    LiPo battery: 3.7-4.2v.
+    Max Current p/pixel: 60 mA at max brightness white (Red + Green + Blue)
+    Avg. Current p/pixel: 20mA p/pixel -> "Rule of thumb"
+
+From this an estimate can be made for battery life while all pixels are on;
+32(pixels) * 20mA / 1000 = 0.64 Amps minimum.
+
+The LEDS are clearly a significant draw of power. A limit could be put onto the max brightness exhibited from the individual bulbs - setting it from 255 to 127 would roughly half consumption). Yet, this save in consumption must be balanced with reducing the effectiveness of the device itself (as a wake up mechanism). For this reason we have decided not to limit its potential. It should also be noted that in our implementation max brightness is only sustained for the final second of the dawn count in. Indeed only 2 mins of the 4 min countin push past this 127 brightness level. 
+
+Maximum usage a day(1 alarm p/day): 4 minutes of 640mA
+
+###### LCD screen
+*Reference: https://github.com/adafruit/Adafruit_HX8357_Library*
+
+    Backlight:	18-22V,
+    Current drawn: 20mA
+
+To limit consumption, the screens backlight is turned off whenever the device is put into a deep sleep mode. Using  *IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW)*
+
+Maximum usage a day(1 alarm p/day): 20mA for 4 minutes + 1 minute (reset alarm) = 20mA for 5 mins
+
+
+###### ESP32 chip
+As stated previously the chip itself consumes alot of power when in active mode;
+
+    Current: 160-240mA
+
+Maximum usage a day(1 alarm p/day): 5 minutes of 240mA
+
+
+
+###### Overall rough estimate for battery life  
+In an attempt to make the calculations easier we'll say all 4 components listed above use their power for 5 minutes a day. 
+
+    240+20+640+3 = 903mA    for 5 minutes p/day. 
+    With a 1200mAH battery this device should therefore last - 1200/903 * 60/5 = 15.95 days
+
+    
+    
+##### Shipping mode
+If the power switch is used and the ESP is not connected by USB, then the device is put into shipping mode. This tells the BM to stop supplying power and therefore means 0mA are used (the most power efficient option). This does however mean that when the device is switched back on, all the memory has been wiped and therefore any desired alarms must be reset.
+
+<br>
+
+## 5) Updating UI Elements 
 ------
 The user interface implementation as a whole proved to be a lot more technical than first anticipated, especially for changing the apperance of elements on the same screen. Initially there was the idea of refreshing the entire screen each time something changed, however this approach exhibited a lot of constant flickering especially on pages that have a lot of elements or high frequency of changes such as the Home Display or Set Alarm. Instead, we devised a much more sophisticated method that involved placing filled-in rectangles over specfic areas just before they require updating:
 ```c
@@ -394,7 +492,7 @@ The colour of the rectangles contrast with the background in this case for illus
 Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. 
 
 
-### Orientation & Touch Management  
+### 6) Orientation & Touch Management  
 ------
 ##### Orientation
 One of the first things that sprung to mind when designing the user interface was changing the orientation from portrait to landscape, as a longer horzontal axis would be ideal for the type of information the Dawn Alarm Clock would be displaying. Browsing through the `Adafruit_HX8357.cpp` library we discovered 4 different `setRotation()` methods for each orientation; 0 (portrait), 1 (right-landscape), 2 (upside-down portrait), 3 (left-landscape). However, when attempting to change the orientation to either landscapes (1 or 3) the display appeared to be mirrored. Further digging into the library we discovered `#define MADCTL_MV  0x20` which is commented as *Reverse mode*. This definition was also included in the rotation that we wanted:
@@ -562,6 +660,37 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_HX8357_Library \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
 ```
+<br>
+<br> 
+
+### 7) Circuitry
+----------
+
+See below the wiring involved in connecting the Neopixel featherwing and the Open PIR sensor - both of these are attached to the unPhone IOExpander;
+
+<br>
+<div align = "center">
+  <img src="images/expander.jpg" width="500"/>
+</div>
+<br>
+
+###### Sparkfun Open PIR module   (Feather wing slot #3)
+
+<br>
+
+    Ground: GRD
+    OUT: Pin 27
+    VCC (Power input): 5V
+    
+###### Neopixel featherwing
+
+<br>
+    
+    Souldered onto 2.54mm breakway male-female header connectors
+    VCC: VBAT / VUSB ( whichever gives greater V)
+    Control pin: 6
+    
+<br>
 
 ### Future Improvements
 ------
