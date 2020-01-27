@@ -473,3 +473,12 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_HX8357_Library \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
 ```
+
+### Future Improvements
+------
+Had we had more time for the project, there were a number of ideas and features that could have made their way into the Dawn Alarm Clock;
+* **Personal greeting on Home Display page** – The idea behind this was to allow the user to input their name and have it included in the greeting, for example: ***Good afternoon, Hamish***. One of the main reasons why this was not included was due to the complexities arising from text-based user input such as designing a keyboard or rotating through letters of the alphabet (similar mechanic to setting the alarm). We even considered doing it through phone (similar to provisioning) but again this would have added unecessary difficulties. 
+* **Showing weather at current location on Home Display page** – Unfortunately there does not exist a universal weather library like there does for time. We would need to look into weather API's and potentially GPS which would require a lot of time and dedicated work.
+* **Customisable dawn time** – Perhaps the most reasonable improvement that could have been made had we had a bit more time. Currently dawn is set to come on 4 minutes before the alarm and cannot be changed. 
+* **Set alarm longer than 7 days into the future** – One of the most time consuming features of the project was being able to set an alarm ***up to*** 7 days into the future, from just 24 hours into the future. Implementing this feature would not have come without its unforseen technicalities.
+* **Recurring alarms (more than 1 alarm)** – In addition to adapting the core functionality in many areas of code, we would also need to consider changing many UI elements to accomodate more active alarms.   
