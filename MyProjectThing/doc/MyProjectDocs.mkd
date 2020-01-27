@@ -111,7 +111,7 @@ Immediately after setting up the NeoPixel libraries and testing the functionalit
 
 The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
 
-Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them in general appeared to ameliorate the ghosting issue as a whole:   
+Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them appeared to ameliorate the ghosting issue as a whole:   
 
 ```c
 void pixelsOff() {
@@ -155,6 +155,28 @@ void fadePixels() {
 }
 ```
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
+
+### Power Management
+
+With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
+
+##### Deep sleeps
+The best way of improving efficiency is putting the device into a deep sleep whenever possible. This is because if left in active mode the ESP requires 160-240mA current to operate - with a deep sleep this can be reduced to as little as 10uA. We decided that our alarm clock only needed to be active when the user requested it to be on, or for the 4 minutes between the dawn simulator starting and the actual alarm (plus around 20 seconds so that it can start the fade in). Because of this we implemented a feature to put the the device to sleep after 30 seconds of inactivity (i.e 30 seconds since the last registered touch), or when the used pressed button 2. In either of these cases the device can then be woken up with button 3. 
+
+If an alarm is set however, the ESP will automatically wake itself up 20 seconds before the dawn simulator is about to begin. The ESP will then remain active up until the alarm goes off at which point it depends on user interaction;
+1) If the alarm is cancelled then the device will sleep until manually woken up
+2) If the alarm is snoozed (5 minutes) then the ESP will sleep for 40 seconds then wake itself up and begin the dawn again.
+
+##### Peripherals
+To improve efficiency further the ESP is disconnected from its WiFi connection and access point after the internal clock is synronized with the NTP server.
+
+Sparkfun Open PIR module - 
+
+Neopixel featherwing - 
+
+##### Shipping mode
+If the power switch is used and the ESP is not connected by USB, then the device is put into shipping mode. This tells the BM to stop supplying power and therefore means 0mA are used (the most power efficient option). This does however mean that when the device is switched back on, all the memory has been wiped and therefore any desired alarms must be reset.
+
 
 ### Time Management
 
@@ -266,6 +288,7 @@ New testing to show time keeping improvement;
 *Avg drift p/hour: 5.3s*
 
 
+
 ### Updating UI Elements 
 ------
 The user interface implementation as a whole proved to be a lot more technical than first anticipated, especially for changing the apperance of elements on the same screen. Initially there was the idea of refreshing the entire screen each time something changed, however this approach exhibited a lot of constant flickering especially on pages that have a lot of elements or high frequency of changes such as the Home Display or Set Alarm. Instead, we devised a much more sophisticated method that involved placing filled-in rectangles over specfic areas just before they require updating:
@@ -303,3 +326,182 @@ The colour of the rectangles contrast with the background in this case for illus
 7. **clearDate()** – Updates ~24h
 
 Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. 
+
+
+### Orientation & Touch Management  
+------
+##### Orientation
+One of the first things that sprung to mind when designing the user interface was changing the orientation from portrait to landscape, as a longer horzontal axis would be ideal for the type of information the Dawn Alarm Clock would be displaying. Browsing through the `Adafruit_HX8357.cpp` library we discovered 4 different `setRotation()` methods for each orientation; 0 (portrait), 1 (right-landscape), 2 (upside-down portrait), 3 (left-landscape). However, when attempting to change the orientation to either landscapes (1 or 3) the display appeared to be mirrored. Further digging into the library we discovered `#define MADCTL_MV  0x20` which is commented as *Reverse mode*. This definition was also included in the rotation that we wanted:
+```c
+void Adafruit_HX8357::setRotation(uint8_t m) {
+  rotation = m & 3; // can't be higher than 3
+  switch(rotation) {
+    case(0):
+     ...
+    case(3):
+      m = MADCTL_MX | MADCTL_MV | MADCTL_RGB;
+      _width  = HX8357_TFTHEIGHT;
+      _height = HX8357_TFTWIDTH;
+      break;
+  }
+  sendCommand(HX8357_MADCTL, &m, 1);
+}
+``` 
+Clearly, this had something to do with the output we were experiencing. We then found a [TFT HX8357](https://github.com/Bodmer/TFT_HX8357/blob/master/TFT_HX8357.cpp) library that had similar `setRotation()` methods to the ones in the unPhone library: 
+```c
+void TFT_HX8357::setRotation(uint8_t m)
+{
+  writecommand(HX8357_MADCTL);
+  rotation = m % 8;
+  switch (rotation) {
+   case 0: // Portrait
+     writedata(MADCTL_BGR | MADCTL_MX);
+     _width  = HX8357_TFTWIDTH;
+     _height = HX8357_TFTHEIGHT;
+     break;
+   case 1: // Landscape (Portrait + 90)
+     writedata(MADCTL_BGR | MADCTL_MV);
+     _width  = HX8357_TFTHEIGHT;
+     _height = HX8357_TFTWIDTH;
+     break;
+   case 2: // Inverter portrait
+     writedata( MADCTL_BGR | MADCTL_MY);
+     _width  = HX8357_TFTWIDTH;
+     _height = HX8357_TFTHEIGHT;
+    break;
+   case 3: // Inverted landscape
+     writedata(MADCTL_BGR | MADCTL_MV | MADCTL_MX | MADCTL_MY);
+     _width  = HX8357_TFTHEIGHT;
+     _height = HX8357_TFTWIDTH;
+     break;
+   case 4: // Portrait
+     writedata(MADCTL_BGR | MADCTL_MX | MADCTL_MY);
+     _width  = HX8357_TFTWIDTH;
+     _height = HX8357_TFTHEIGHT;
+     break;
+   case 5: // Landscape (Portrait + 90)
+     writedata(MADCTL_BGR | MADCTL_MV | MADCTL_MX);
+     _width  = HX8357_TFTHEIGHT;
+     _height = HX8357_TFTWIDTH;
+     break;
+   case 6: // Inverter portrait
+     writedata( MADCTL_BGR);
+     _width  = HX8357_TFTWIDTH;
+     _height = HX8357_TFTHEIGHT;
+     break;
+   case 7: // Inverted landscape
+     writedata(MADCTL_BGR | MADCTL_MV | MADCTL_MY);
+     _width  = HX8357_TFTHEIGHT;
+     _height = HX8357_TFTWIDTH;
+     break;
+  }
+}
+ ```
+`case 1: // Landscape (Portrait + 90)` then became our new `setRotation(3)` in the `Adafruit_HX8357.cpp` library which produced the desired unmirrored landscape orientation:
+```c
+void Adafruit_HX8357::setRotation(uint8_t m) {
+  rotation = m & 3; // can't be higher than 3
+  switch(rotation) {
+    case 0:
+    ...
+    case 3:
+      m       = MADCTL_BGR | MADCTL_MV;
+      _width  = HX8357_TFTHEIGHT;
+      _height = HX8357_TFTWIDTH;
+      break;
+  }
+  sendCommand(HX8357_MADCTL, &m, 1);
+}
+```
+##### Mapping
+Evidently, changing the orientaion did not come with a free lunch - the TFT screen now had to be re-mapped to correctly register points on the touchscreen. The previous configuration meant that the top right of the screen was the origin and had the x-axis running down the right side of the screen and the y-axis along the top:
+
+<br>
+<div align = "center">
+  <img src="images/rotation_sketch.png" width="500"/>
+</div>
+<br>
+
+The correct configuration after rotating +90° to landscape orientation would need to be mapped like the following:
+
+<br>
+<div align = "center">
+  <img src="images/rotation_sketch2.png" width="500"/>
+</div>
+<br>
+
+The `map()` syntax is as follows: **map(value, fromLow, fromHigh, toLow, toHigh)**. It re-maps a number from one range to another; that is, a value **fromLow** would get mapped **toLow** and a value from **fromHigh** to **toHigh** etc. The parameters are:
+* **value** – the number to map
+* **fromLow** – the lower bound of the value's current range
+* **fromHigh** – the upper bound of the value's current range 
+* **toLow** – the lower bound of the value's target range 
+* **toHigh** – the upper bound of the value's target range 
+
+So, we need to map the raw touch coordinates (**fromLow** | **fromHigh**) to the new screen coordinates (**toLow** | **toHigh**). Additionally, a **temp p.x** value will be needed in the mapping of **p.y** so that **p.y** updates correctly, otherwise only the first touch will be registered correctly and any subsequent touches will assume the initial **x** value:
+
+```c
+// raw touch calibration data 
+#define TS_MINX 3800
+#define TS_MAXX 100
+#define TS_MINY 100
+#define TS_MAXY 3750
+```
+
+```c
+void UIController::handleTouch() {
+  // adjust mapping for landscape orientation
+  // unPhone width & height --> 320 X 480
+  int16_t nTmpX = p.x; // temp p.x so that p.y updates
+  p.x = map(p.y, unPhone::TS_MINY, unPhone::TS_MAXY, 0, unPhone::tftp->width());
+  p.y = map(nTmpX, unPhone::TS_MINX, unPhone::TS_MAXX, 0, unPhone::tftp->height());
+  if(m_element->handleTouch(p.x, p.y)) {
+    if(++modeChangeRequests >= MODE_CHANGE_TOUCHES) {
+      changeMode();
+      modeChangeRequests = 0;
+    }
+  }
+}
+```
+This will position the origin at the top left of the screen and have the x-axis running along the top and y-axis running down the side. 
+
+##### Getting Touch Point
+Something that became very apparent when interacting with elements on the screen was the delayed response between registering touches. For instance, touching anywhere on the Home Display would bring up the Menu, but then selecting a menu item would not normally direct you to that page because it would register the previous point that was touched on the Home Display as the one touched in the Menu. In other words, it was executing touches in a 'queue' that did not correspond correctly to the elements on the current page. This erroneous behaviour was due to not reading all the data in the buffer and resetting all ints when the buffer was empty:
+```c
+TS_Point Adafruit_STMPE610::getPoint() {
+  uint16_t x, y;
+  uint8_t z;
+  while (!bufferEmpty()) {
+    readData(&x, &y, &z);
+  }
+  if (bufferEmpty())
+    writeRegister8(STMPE_INT_STA, 0xFF); // reset all ints
+
+  return TS_Point(x, y, z);
+}
+```
+Furthermore, we also noticed that there would occasionally be very peculiar readings at point x ~ 16300, y ~ -12500, z ~ 25. A simple `if (p.x > 10000) {return false;}` included in the `gotTouch()` method was enough to omit this reading. 
+
+Before implementing the buffer fix, navigation was impossible; combining these two fixes greatly increased touch accuracy and responsiveness. A very effective debugging tool that was used to test the points being registered was included in the `handleTouch()` method that displayed a tiny green box each time the screen was touched:
+
+```c
+unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX835 7_GREEN); // DEBUG touch feedback
+```
+
+##### Edited unPhone Library
+In order to implment the above changes to orientation and touch buffer amendments were made in the unPhone project folder, specifically the `Adafruit_HX8357.cpp` and `Adafruit_STMPE610.cpp` libraries which are not part of `MyProjectThing`. Therefore, the amended versions of these libraries have been imported in the `lib` directory and referenced in the `component.mk` file: 
+```c
+COM3505_2019-STUDENT_LIB=../lib 
+# library sources
+BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
+  $(COM3505_2019-STUDENT_LIB)/Adafruit_HX8357_Library \
+  $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
+```
+
+### Future Improvements
+------
+Had we had more time for the project, there were a number of ideas and features that could have made their way into the Dawn Alarm Clock;
+* **Personal greeting on Home Display page** – The idea behind this was to allow the user to input their name and have it included in the greeting, for example: ***Good afternoon, Hamish***. One of the main reasons why this was not included was due to the complexities arising from text-based user input such as designing a keyboard or rotating through letters of the alphabet (similar mechanic to setting the alarm). We even considered doing it through phone (similar to provisioning) but again this would have added unecessary difficulties. 
+* **Showing weather at current location on Home Display page** – Unfortunately there does not exist a universal weather library like there does for time. We would need to look into weather API's and potentially GPS which would require a lot of time and dedicated work.
+* **Customisable dawn time** – Perhaps the most reasonable improvement that could have been made had we had a bit more time. Currently dawn is set to come on 4 minutes before the alarm and cannot be changed. 
+* **Set alarm longer than 7 days into the future** – One of the most time consuming features of the project was being able to set an alarm ***up to*** 7 days into the future, from just 24 hours into the future. Implementing this feature would not have come without its unforseen technicalities.
+* **Recurring alarms (more than 1 alarm)** – In addition to adapting the core functionality in many areas of code, we would also need to consider changing many UI elements to accomodate more active alarms.   
