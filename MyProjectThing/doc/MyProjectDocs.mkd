@@ -17,7 +17,7 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 
 <br>
 
-## <div align="center">Overview of technical features</div>
+# <div align="center">Overview of features</div>
 Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. 
 
 ### Home Display
