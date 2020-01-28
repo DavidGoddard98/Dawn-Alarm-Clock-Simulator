@@ -49,7 +49,7 @@ Before exploring the technicalities, presented below is a general overview of th
 
 6. **Weather description** – Short explanitory text describing the mood of weather
 
-7. **Wind speed** – Local wind speed in kilometers per hour 
+7. **Wind speed** – Local wind speed in meters per second 
 
 8. **Humidity** – Local humidity %
 
