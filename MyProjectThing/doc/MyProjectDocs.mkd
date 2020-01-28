@@ -40,7 +40,12 @@ Before exploring the technicalities, presented below is a general overview of th
 
 4. **Time to alarm** – The time to alarm will be displayed under the digital time if an alarm has been set. If the time to alarm is greater than a minute it will be formatted in H:M, otherwise a countdown in seconds from a minute will commence. If no alarm has been set, or an alarm has passed, a 'No alarm set' message is shown. 
 
-5. **Temperature** – Displays local temperature in °C
+5. **Temperature** – Displays local temperature in °C and changes colour depending on the value:
+* Less than 0°C ~ White
+* Between 0 and 9.9 ~ Cyan
+* Between 10 and 19.9 ~ Green
+* Between 20 and 29.9 ~ Orange 
+* Over 30 ~ Red
 
 6. **Weather description** – Short explanitory text describing the mood of weather
 
@@ -285,6 +290,62 @@ E.g
 This improvement influenced us to extend the two hour checking period to every 5 hours. A 26.5 second avg drift (5.3*5) didnt seem like a bad price to pay for extended battery life. 
 
 <br>
+
+### 2) Weather API
+----------
+Temperature, weather description, wind speed and humidity shown on the Home Display are pulled from a HTML request made to [Open Weather API](https://openweathermap.org/api). After a free subscription to their API weather service, we could call current weather data for one location using a generated key that came with the subscription: 
+
+<br>
+<div align = "center">
+  <img src="images/API.PNG" width="300"/>
+</div>
+<br>
+
+A request can be made in various ways such as by city name or geographic coordinates, but we chose by city ID so that the API responds with exact results which had to be looked up in a `city.list.json.gz` file provided by OpenWeather. Using the domain name, city ID and the generated key we can construct the URL for the HTTP request:
+
+```c
+String URL = PSTR("http://api.openweathermap.org/data/2.5/weather?id=") + cityId + F("&APPID=") + owKey;
+```
+
+Once the HTTP request returns a valid response code, we can extract the information we need from the API. OpenWeather uses JSON format by default, so `DynamicJsonBuffer` was used to read and extract the data we wanted:
+
+```c
+if (respCode == HTTP_CODE_OK) {
+      payload = http.getString();
+      DynamicJsonBuffer jsonBuffer;
+      JsonObject& root = jsonBuffer.parseObject(payload);
+
+      if (root.success()) {
+        String name = root["name"];
+        JsonObject& main = root["main"];
+        temperature = main["temp"];             // pull temperature value
+        temperature = temperature - 273.15f;    // convert from kelvin
+        humidity = main["humidity"];            // pull humidity value
+
+        JsonObject& weather = root["weather"][0];
+        String des = weather["description"];    // pull description
+
+        JsonObject& wind = root["wind"];
+        speed = wind["speed"];                  // pull wind speed value
+...
+```
+
+#### Flash Memory
+A peculiar issue we ran into when attempting to save the weather data in memory (so that  information can be retrieved and displayed without establishing an internet connection) was that the RTC memory was unable to retain strings or char arrays after wakeup, thus the weather description had to be stored in some other way; **flash** memory. To read and write from the ESP32 flash memory, we need to use the EEPROM library that allows us to write data in specifc memory locations:
+```c
+#include "EEPROM.h"
+...
+#define EEPROM_SIZE 64 // size in bytes ~1 byte per char
+...
+EEPROM.begin(EEPROM_SIZE); // initialize EEPROM with predefined size
+...
+char arrayToStore[50];
+String des = weather["description"]; // pull weather description 
+des.toCharArray(arrayToStore, des.length()+1); // convert description string to char array
+EEPROM.put(0, arrayToStore); // save data in memory address
+EEPROM.commit();
+```
+`arrayToStore` is then used in the Home Display class as an `extern` variable where the string for weather description is fetched from flash memory `EEPROM.get(0, arrayToStore)`. A limitation of saving data in flash memory however, is that there is a limited number of times it can be written to. Most devices are designed for around [100,000 to 1,000,000](https://randomnerdtutorials.com/esp32-flash-memory/) write operations, but can be read an unlimited number times - even with the lower bound of write operations this should not be an issue as the data will only be stored once every 24 hours when the time is resynchronised and an API request is made during a momentary internet connection.
 
 ### 2) The Alarm
 ----------
@@ -702,11 +763,15 @@ TS_Point Adafruit_STMPE610::getPoint() {
 
 Furthermore, we also noticed that there would occasionally be very peculiar readings at point x ~ 16300, y ~ -12500, z ~ 25. A simple `if (p.x > 10000) {return false;}` included in the `gotTouch()` method was enough to omit this reading. 
 
-Before implementing the buffer fix, navigation was impossible; combining these two fixes greatly increased touch accuracy and responsiveness. A very effective debugging tool that was used to test the points being registered was included in the `handleTouch()` method that displayed a tiny green box each time the screen was touched:
+Before implementing the buffer fix, navigation was impossible; combining these two fixes greatly increased touch accuracy and responsiveness. 
+
+###### Testing
+A very effective debugging tool that was used to test the points being registered was included in the `handleTouch()` method that displayed a tiny green box each time the screen was touched that allowed us to observe touch behaviour with ease:
 
 ```c
 unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX835 7_GREEN); // DEBUG touch feedback
 ```
+
 
 ##### Edited unPhone Library
 In order to implment the above changes to orientation and touch buffer amendments were made in the unPhone project folder, specifically the `Adafruit_HX8357.cpp` and `Adafruit_STMPE610.cpp` libraries which are not part of `MyProjectThing`. Therefore, the amended versions of these libraries have been imported in the `lib` directory and referenced in the `component.mk` file: 
@@ -754,7 +819,6 @@ See below the wiring involved in connecting the Neopixel featherwing and the Ope
 ------
 Had we had more time for the project, there were a number of ideas and features that could have made their way into the Dawn Alarm Clock;
 * **Personal greeting on Home Display page** – The idea behind this was to allow the user to input their name and have it included in the greeting, for example: ***Good afternoon, Hamish***. One of the main reasons why this was not included was due to the complexities arising from text-based user input such as designing a keyboard or rotating through letters of the alphabet (similar mechanic to setting the alarm). We even considered doing it through phone (similar to provisioning) but again this would have added unecessary difficulties. 
-* **Showing weather at current location on Home Display page** – Unfortunately there does not exist a universal weather library like there does for time. We would need to look into weather API's and potentially GPS which would require a lot of time and dedicated work.
 * **Customisable dawn time** – Perhaps the most reasonable improvement that could have been made had we had a bit more time. Currently dawn is set to come on 4 minutes before the alarm and cannot be changed. 
 * **Set alarm longer than 7 days into the future** – One of the most time consuming features of the project was being able to set an alarm ***up to*** 7 days into the future, from just 24 hours into the future. Implementing this feature would not have come without its unforseen technicalities.
 * **Recurring alarms (more than 1 alarm)** – In addition to adapting the core functionality in many areas of code, we would also need to consider changing many UI elements to accomodate more active alarms.   
