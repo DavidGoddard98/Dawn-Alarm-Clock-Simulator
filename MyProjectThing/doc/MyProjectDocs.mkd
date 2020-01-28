@@ -41,11 +41,11 @@ Before exploring the technicalities, presented below is a general overview of th
 4. **Time to alarm** – The time to alarm will be displayed under the digital time if an alarm has been set. If the time to alarm is greater than a minute it will be formatted in H:M, otherwise a countdown in seconds from a minute will commence. If no alarm has been set, or an alarm has passed, a 'No alarm set' message is shown. 
 
 5. **Temperature** – Displays local temperature in °C and changes colour depending on the value:
-* Less than 0°C ~ White
-* Between 0 and 9.9 ~ Cyan
-* Between 10 and 19.9 ~ Green
-* Between 20 and 29.9 ~ Orange 
-* Over 30 ~ Red
+    - Less than 0°C ~ White
+    - Between 0 and 9.9 ~ Cyan
+    - Between 10 and 19.9 ~ Green
+    - Between 20 and 29.9 ~ Orange 
+    - Over 30 ~ Red<br><br>
 
 6. **Weather description** – Short explanitory text describing the mood of weather
 
