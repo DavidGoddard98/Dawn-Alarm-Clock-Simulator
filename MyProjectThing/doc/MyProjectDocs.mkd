@@ -42,7 +42,7 @@ Before exploring the technicalities, presented below is a general overview of th
 
 <br>
 <div align = "center">
-  <img src="images/home_no_alarm_front.jpg" width="500"/>
+  <img src="images/newDisplay.jpg" width="500"/>
 </div>
 <br>
 
@@ -143,7 +143,7 @@ Before exploring the technicalities, presented below is a general overview of th
 <br>
 <br>
 <div align = "center">
-  <img src="images/home_alarm_2min.jpg" width="500"/>
+  <img src="images/newDisplay2.jpg" width="500"/>
 </div>
 <br>
 
