@@ -16,9 +16,10 @@ void ConfigUIElement::draw(){
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(2);
   m_tft->setCursor(0, 5);
+  m_tft->println("Could not automatically connect to WiFi");
   m_tft->println("Access point has been set up.");
-  m_tft->println("Please connet to WiFi");
-  m_tft->println("through phone.");
+  m_tft->println("Connect to access point:");
+  m_tft->println(apSSID);
 }
 
 //////////////////////////////////////////////////////////////////////////

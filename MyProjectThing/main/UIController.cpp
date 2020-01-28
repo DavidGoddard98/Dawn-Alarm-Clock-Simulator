@@ -147,7 +147,7 @@ bool UIController::gotTouch() {
 
   // calculate distance from previous signal
   fromPrevSig = distanceBetween(p, prevSig);
-  dbgTouch();
+  //dbgTouch();
 
   if(touchDBG)
     D(", sincePrevSig<TIME_SENS.: %d...  ", sincePrevSig<TIME_SENSITIVITY)

@@ -1,11 +1,5 @@
-// main.cpp / sketch.ino
-//*********************************************************************8
-//CHANGE SCREEN ROTATION METHOD
-//from - https://github.com/Bodmer/TFT_HX8357/blob/master/TFT_HX8357.cpp
-//cHANGED SCREEN GETPOINT METHOD
-//from - https://github.com/adafruit/Adafruit_STMPE610/blob/master/Adafruit_STMPE610.cpp
-//PAZ SET SOME CONSTANT COLOURS IN UNPHONE
-//from - https://github.com/adafruit/Adafruit_HX8357_Library/blob/master/examples/gfxbuttontest_featherwing/gfxbuttontest_featherwing.ino
+// main.cpp
+
 
 //***********************************************************************
 // a library or two... ///////////////////////////////////////////////////////
@@ -135,11 +129,6 @@ void setup() {
   //Initialise and setup pixels. Also clears them
   setupPixels();
 
-  //first boot so connect to wifi to get time
-  if (bootCountt == 0 ) {
-    fetchTime(); //connects to wifi and gets time
-  }
-
   //add time esp has been asleep for to current time (using RTC offset from fetchTime method)
   updateTime();
 
@@ -148,6 +137,22 @@ void setup() {
   if(timeinfo->tm_hour - hourFetched >=2) {
     bootCountt = 0;
   }
+
+  //first boot so connect to wifi to get time
+  if (bootCountt == 0 ) {
+    fetchTime(); //connects to wifi and gets time
+  }
+
+  // //add time esp has been asleep for to current time (using RTC offset from fetchTime method)
+  // updateTime();
+  //
+  // //check if its been two hours since last timefetch (from internet)
+  // //if it has restart and fetch again (keep accurate)
+  // if(timeinfo->tm_hour - hourFetched >=2) {
+  //   bootCountt = 0;
+  // }
+
+
 
   //print time to console
   Serial.printf ("%s\n", asctime(timeinfo));
@@ -254,7 +259,7 @@ void loop() {
 }
 
 //==============================================================================
-//////////////////////FUNCTION IMPLEMENTATION////////////////////////////////////
+//////////////////////FUNCTION IMPLEMENTATION///////////////////////////////////
 //==============================================================================
 
 //==============================================================================
@@ -271,9 +276,9 @@ void fetchTime() {
 
   //let wifi AP settle
   if (WiFi.status() != WL_CONNECTED) {
-    uiCont->showUI(ui_config); //show config UI page
     while(WiFi.status() != WL_CONNECTED) {
       if (!powerOn()) powerMode(); //turn off if switch off
+      uiCont->showUI(ui_config); //show config UI page
 
       if (micros() >= 300000000) { //4 mins to connect to AP
         ESP.restart();
@@ -291,7 +296,7 @@ void fetchTime() {
     //stores year - (if < 2018 then time was not retrievied correctly)
     //default is 1970...
     year = yearCheck.tm_year;
-    hourFetched = yearCheck.tm_hour;
+    hourFetched = yearCheck.tm_hour; //record the hour last time fetched
   }
 
   //disconnect WiFi/stop AP as it's no longer needed (SAVE BATTERY)
@@ -422,6 +427,8 @@ void updateTime() {
   //#secs
   int seconds = floor((timeDiff / 1000000));
 
+  seconds = seconds * (1- (seconds * 0.0000016));  //apply calculated offset (the longer it sleeps the larger the offset)
+
   //#milis
   int milis = floor(timeDiff % 1000000);
 
@@ -440,13 +447,11 @@ void updateTime() {
   struct timeval newTime = {.tv_sec = time_now};
   struct timezone timeZon = {.tz_minuteswest = 0 };     /* minutes west of Greenwich */
 
-  int  correct = settimeofday(&newTime, &timeZon );
-  Serial.println("CORRECTLY SET?");
-  Serial.print(correct);
+  settimeofday(&newTime, &timeZon );
+
   time(&time_now);
   timeinfo = localtime (&time_now);
   Serial.printf ("%s\n", asctime(timeinfo));
-
 }
 
 //returns seconds 2 alarm
@@ -582,8 +587,12 @@ void forcedSleep() {
 
   //Turn peripherals off to save power
   IOExpander::digitalWrite(IOExpander::BACKLIGHT, LOW);
+
   pixelsOff();
   delay(1000); //let them settle
+
+  digitalWrite(6, LOW);
+  IOExpander::digitalWrite(6,LOW);
 
   Serial.println("User chose to sleep device with button 2");
 
@@ -592,13 +601,10 @@ void forcedSleep() {
   //Keep track of time before sleep
   sleepTime = rtc_time_slowclk_to_us(rtc_time_get(), esp_clk_slowclk_cal_get()) - offset_time;
   //start deep sleep
-  unPhone::setShipping(true);
   esp_deep_sleep_start();
 }
 
-//==============================================================================
-//////////////////////PROVISIONING//////////////////////////////////////////////
-//==============================================================================
+
 // misc utilities //////////////////////////////////////////////////////////////
 // get the ESP's MAC address
 char *getMAC(char *buf) { // the MAC is 6 bytes; needs careful conversion...

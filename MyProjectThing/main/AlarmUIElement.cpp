@@ -269,13 +269,124 @@ void AlarmUIElement::calcTime2Alarm() {
       addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-hours))*60*60) + (60-(tmMin-mins)) *60;
     }
   }
-
-  Serial.print("seconds added on");
-  Serial.print(addedSeconds );
+  // Serial.println("");
+  // Serial.println("");
+  // Serial.println("");
+  // Serial.println("");
+  //
+  // //Alarm testing//////////////////////////////////////////////////////////////
+  // //SAME DAY
+  // Serial.println("Test 1");
+  // Serial.println("Logical case 1: Same day, hours >, mins >");
+  // testing("Wednesday", 7, 25);
+  //
+  //
+  // Serial.println("Test 2");
+  // Serial.println("Logical case 2: Same day, hours >, mins <");
+  // testing("Wednesday", 7, 15);
+  //
+  // Serial.println("Test 3");
+  // Serial.println("Logical case 3: Same day, hours <, mins >");
+  // testing("Wednesday", 3, 25);
+  //
+  // Serial.println("Test 4");
+  // Serial.println("Logical case 4: Same day, hours <, mins <");
+  // testing("Wednesday", 3, 15);
+  //
+  // //DIFFERENT DAY
+  // Serial.println("Test 5");
+  // Serial.println("Logical case 1: Different day, hours >, mins >");
+  // testing("Friday", 7, 25);
+  //
+  // Serial.println("Test 6");
+  // Serial.println("Logical case 2: Different day, hours >, mins <");
+  // testing("Saturday", 7 , 15);
+  //
+  // Serial.println("Test 7");
+  // Serial.println("Logical case 3: Different day, hours <, mins >");
+  // testing("Monday", 3, 25);
+  //
+  // Serial.println("Test 8");
+  // Serial.println("Logical case 4: Different day, hours <, mins <");
+  // testing("Tuesday", 3, 15);
+  //
+  // //SET FOR NOW
+  // Serial.println("Test 9");
+  // Serial.println("Logical case 1: Right now");
+  // testing("Wednesday", 5, 20);
+  //
+  // delay(10000);
   alarm_time = time_t(time_now) + addedSeconds; //set global alarm_time variable
   dawn_time = alarm_time - 240; //dawn time is 4 minutes from alarm time - set global
   alarmTime = localtime(&alarm_time);
 }
+
+// void AlarmUIElement::testing(String test_day, int test_hours, int test_mins){
+//   //Manually set time
+//   //Time below is - Wednesday 16th January 05:20:00 2019
+//   struct tm* test_time_struc;
+//   String the_day_test;
+//
+//   test_time_struc->tm_sec = 0;
+//   test_time_struc->tm_mon = 0;
+//   test_time_struc->tm_hour = 5;
+//   test_time_struc->tm_min = 20;
+//   test_time_struc->tm_mday = 16;
+//   test_time_struc->tm_year = 119;
+//
+//
+//
+//   counter = 0;
+//   //stores what the time is right now in hours and minutes
+//   the_day_test = "Wednesday";
+//   tmHour = test_time_struc->tm_hour;
+//   tmMin = test_time_struc->tm_min;
+//   addedSeconds; //this will eventually store total time to alarm in seconds
+//
+//   //the_day is day toggled by user
+//   //test_hours is hours toggled by user, test_test_mins is mins toggled by user..
+//   if (the_day_test == test_day && test_hours >= tmHour && test_mins >= tmMin) { //if alarm today and both hours and mins are > timenow ...
+//     Serial.print("1");
+//     addedSeconds = (((test_hours-tmHour)*60*60) + ((test_mins-tmMin))*60);
+//
+//   } else if (the_day_test == test_day && test_hours >= tmHour && test_mins < tmMin) {
+//     addedSeconds = ((test_hours-tmHour-1)*60*60) + ((60-tmMin+test_mins)*60);
+//
+//   } else { //if alarm is for today and time < time now, then must be set for 7 days from now
+//     if (the_day_test == test_day) {
+//       counter = 7;
+//     }
+//     while(the_day_test!=test_day) { //if alarm not for today then iterate until we find day
+//       test_day = getNextDay(test_day);
+//       counter ++; //amount of days away...
+//     }
+//
+//     if (test_hours >= tmHour && test_mins >= tmMin) { // hours and mins toggled are more than current hours and mins .. ect.ect
+//       Serial.print("3");
+//       //the actual calculation to determine time in seconds
+//       addedSeconds = (counter*24*60*60 ) +  ((test_hours-tmHour)*60*60) + ((test_mins-tmMin)*60);
+//
+//     } else if (test_hours >= tmHour && test_mins < tmMin) {
+//       Serial.print("4");
+//
+//       addedSeconds = (counter*24*60*60) + ((test_hours-tmHour-1)*60*60) + (((60-(tmMin-test_mins)))*60);
+//
+//     } else if (test_hours < tmHour && test_mins >= tmMin) {
+//       Serial.print("5");
+//       addedSeconds = ((counter-1)*24*60*60) + ((24-(tmHour-test_hours))*60*60) + ((test_mins-tmMin) *60);
+//
+//     } else  { //(hours < tmHour && mins < tmMin )
+//       Serial.print("6");
+//       addedSeconds = (counter-1)*24*60*60 + ((23-(tmHour-test_hours))*60*60) + (60-(tmMin-test_mins)) *60;
+//     }
+//   }
+//   alarm_time = time_t(time_now) + addedSeconds; //set global alarm_time variable
+//   Serial.println("");
+//   Serial.print("Time to alarm in seconds:");
+//   Serial.println(alarm_time);
+//   dawn_time = alarm_time - 240; //dawn time is 4 minutes from alarm time - set global
+//   alarmTime = localtime(&alarm_time);
+// }
 
 //Increments days, hours and mins
 void AlarmUIElement::changeTimeUR(long x, long y) {
