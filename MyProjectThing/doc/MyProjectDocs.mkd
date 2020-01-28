@@ -345,7 +345,7 @@ des.toCharArray(arrayToStore, des.length()+1); // convert description string to 
 EEPROM.put(0, arrayToStore); // save data in memory address
 EEPROM.commit();
 ```
-`arrayToStore` is then used in the Home Display class as an `extern` variable where the string for weather description is fetched from flash memory `EEPROM.get(0, arrayToStore)`. A limitation of saving data in flash memory however, is that there is a limited number of times it can be written to. Most devices are designed for around [100,000 to 1,000,000](https://randomnerdtutorials.com/esp32-flash-memory/) write operations, but can be read an unlimited number times - even with the lower bound of write operations this should not be an issue as the data will only be stored once every 24 hours when the time is resynchronised and an API request is made during a momentary internet connection.
+`arrayToStore` is then used in the Home Display class as an `extern` variable where the string for weather description is fetched from flash memory `EEPROM.get(0, arrayToStore)`. A limitation of saving data in flash memory however, is that there is a limited number of times it can be written to. Most devices are designed for around [100,000 to 1,000,000](https://randomnerdtutorials.com/esp32-flash-memory/) write operations, but can be read an unlimited number times - even with the lower bound of write operations this should not be an issue as the data will only be stored when the time is resynchronised and an API request is made during a momentary internet connection.
 
 ### 3) The Alarm
 ----------
