@@ -151,12 +151,12 @@ Before exploring the technicalities, presented below is a general overview of th
 -----
 <br>
 <div align = "center">
-  <img src="images/back_diag.jpg" width="500"/>
+  <img src="images/newDisplay2.jpg" width="500"/>
 </div>
 <br>
 <br>
 <div align = "center">
-  <img src="images/newDisplay2.jpg" width="500"/>
+  <img src="images/back_diag.jpg" width="500"/>
 </div>
 <br>
 
@@ -297,7 +297,7 @@ Temperature, weather description, wind speed and humidity shown on the Home Disp
 
 <br>
 <div align = "center">
-  <img src="images/API.PNG" width="300"/>
+  <img src="images/API.png" width="250"/>
 </div>
 <br>
 
@@ -330,7 +330,7 @@ if (respCode == HTTP_CODE_OK) {
 ...
 ```
 
-#### Flash Memory
+##### Flash Memory
 A peculiar issue we ran into when attempting to save the weather data in memory (so that  information can be retrieved and displayed without establishing an internet connection) was that the RTC memory was unable to retain strings or char arrays after wakeup, thus the weather description had to be stored in some other way; **flash** memory. To read and write from the ESP32 flash memory, we need to use the EEPROM library that allows us to write data in specifc memory locations:
 ```c
 #include "EEPROM.h"
@@ -347,7 +347,7 @@ EEPROM.commit();
 ```
 `arrayToStore` is then used in the Home Display class as an `extern` variable where the string for weather description is fetched from flash memory `EEPROM.get(0, arrayToStore)`. A limitation of saving data in flash memory however, is that there is a limited number of times it can be written to. Most devices are designed for around [100,000 to 1,000,000](https://randomnerdtutorials.com/esp32-flash-memory/) write operations, but can be read an unlimited number times - even with the lower bound of write operations this should not be an issue as the data will only be stored once every 24 hours when the time is resynchronised and an API request is made during a momentary internet connection.
 
-### 2) The Alarm
+### 3) The Alarm
 ----------
 
 With accurate time management already in place, implementing alarm functionality wasn't too technical. Most of the troubles came when coding the UI page, calculating the time until an alarm.
@@ -430,7 +430,7 @@ Testing
 
 <br>
 
-### 3) NeoPixel Dawn Simulator 
+### 4) NeoPixel Dawn Simulator 
 ------
 Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
 
@@ -483,7 +483,7 @@ The dawn is only active during the 4 minutes prior to the alarm, which means tha
 
 <br>
 
-### 4) Power Management
+### 5) Power Management
 ----
 With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
 
@@ -560,7 +560,7 @@ If the power switch is used and the ESP is not connected by USB, then the device
 
 <br>
 
-### 5) Updating UI Elements 
+### 6) Updating UI Elements 
 ------
 The user interface implementation as a whole proved to be a lot more technical than first anticipated, especially for changing the apperance of elements on the same screen. Initially there was the idea of refreshing the entire screen each time something changed, however this approach exhibited a lot of constant flickering especially on pages that have a lot of elements or high frequency of changes such as the Home Display or Set Alarm. Instead, we devised a much more sophisticated method that involved placing filled-in rectangles over specfic areas just before they require updating:
 ```c
@@ -606,7 +606,7 @@ if (loopIter % 80 == 0) {
 
 
 
-### 6) Orientation & Touch Management  
+### 7) Orientation & Touch Management  
 ------
 ##### Orientation
 One of the first things that sprung to mind when designing the user interface was changing the orientation from portrait to landscape, as a longer horzontal axis would be ideal for the type of information the Dawn Alarm Clock would be displaying. Browsing through the `Adafruit_HX8357.cpp` library we discovered 4 different `setRotation()` methods for each orientation; 0 (portrait), 1 (right-landscape), 2 (upside-down portrait), 3 (left-landscape). However, when attempting to change the orientation to either landscapes (1 or 3) the display appeared to be mirrored. Further digging into the library we discovered `#define MADCTL_MV  0x20` which is commented as *Reverse mode*. This definition was also included in the rotation that we wanted:
@@ -785,7 +785,7 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
 <br>
 <br> 
 
-### 7) Circuitry
+### 8) Circuitry
 ----------
 
 See below the wiring involved in connecting the Neopixel featherwing and the Open PIR sensor - both of these are attached to the unPhone IOExpander;
