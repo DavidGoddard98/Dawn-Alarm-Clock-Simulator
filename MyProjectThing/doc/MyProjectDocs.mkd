@@ -1,4 +1,3 @@
-
 # <div align="center">Dawn Alarm Clock Documentation</div>
 
 <br>
@@ -41,6 +40,11 @@ Before exploring the technicalities, presented below is a general overview of th
 
 4. **Time to alarm** – The time to alarm will be displayed under the digital time if an alarm has been set. If the time to alarm is greater than a minute it will be formatted in H:M, otherwise a countdown in seconds from a minute will commence. If no alarm has been set, or an alarm has passed, a 'No alarm set' message is shown. 
 
+<br>
+<div align = "center">
+  <img src="images/home_no_alarm_front.jpg" width="500"/>
+</div>
+<br>
 
 ### Menu
 ------
@@ -55,6 +59,12 @@ Before exploring the technicalities, presented below is a general overview of th
 2. **Menu item** – Selecting a menu item will direct the user to that page.
 
 3. **Arrow icon** – Selecting a menu arrow icon will also direct the user to that page.
+
+<br>
+<div align = "center">
+  <img src="images/menu_page.jpg" width="500"/>
+</div>
+<br>
 
 ### Setting an Alarm
 ------
@@ -81,6 +91,12 @@ Before exploring the technicalities, presented below is a general overview of th
 
 9. **Set alarm** – Selecting the 'Set' button will create an alarm based on the time inputted by the user. If the alarm is set 'before' the current time, it will assume it is meant for the future (for instance - given the example in the diagram, setting the alarm for Thursday at 13:32 will create an alarm for 144 hours time).
 
+<br>
+<div align = "center">
+  <img src="images/set_alarm_page.jpg" width="500"/>
+</div>
+<br>
+
 ### Setting a Dawn Color
 ------
 <br>
@@ -93,6 +109,12 @@ Before exploring the technicalities, presented below is a general overview of th
 2. **Menu icon** – Selecting this icon will direct the user to the Menu page.
 
 3. **Colour palette** – This area will display a range of colours to choose from - each box will contain a different colour that the user can pick for the dawn simulation.
+
+<br>
+<div align = "center">
+  <img src="images/set_dawn_page.jpg" width="500"/>
+</div>
+<br>
 
 ### Buttons
 ------
@@ -112,11 +134,25 @@ Before exploring the technicalities, presented below is a general overview of th
 <br>
 <br>
 
+### Result
+-----
+<br>
+<div align = "center">
+  <img src="images/back_diag.jpg" width="500"/>
+</div>
+<br>
+<br>
+<div align = "center">
+  <img src="images/home_alarm_2min.jpg" width="500"/>
+</div>
+<br>
+
+
 # <div align="center">Technical Documentation</div>
 The following section will elaborate more on the technical features of the Dawn Alarm Clock, as well as describing how challenging problems discovered during development were overcome.
 
 
-## 1) Time Management
+### 1) Time Management
 ----
 
 Any alarm clock relies wholeheatedly on accurate time keeping, without which, its uses become entirely redundant. For this reason, implementing strictly correct time mangement was of upmost priority during this project.
@@ -242,7 +278,7 @@ This improvement influenced us to extend the two hour checking period to every 5
 
 <br>
 
-## 2) The Alarm
+### 2) The Alarm
 ----------
 
 With accurate time management already in place, implementing alarm functionality wasn't too technical. Most of the troubles came when coding the UI page, calculating the time until an alarm.
@@ -321,9 +357,11 @@ if (alarm_exist) {
 }
 ```
 
+Testing
+
 <br>
 
-## 3) NeoPixel Dawn Simulator 
+### 3) NeoPixel Dawn Simulator 
 ------
 Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
 
@@ -376,7 +414,7 @@ The dawn is only active during the 4 minutes prior to the alarm, which means tha
 
 <br>
 
-## 4) Power Management
+### 4) Power Management
 ----
 With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
 
@@ -453,7 +491,7 @@ If the power switch is used and the ESP is not connected by USB, then the device
 
 <br>
 
-## 5) Updating UI Elements 
+### 5) Updating UI Elements 
 ------
 The user interface implementation as a whole proved to be a lot more technical than first anticipated, especially for changing the apperance of elements on the same screen. Initially there was the idea of refreshing the entire screen each time something changed, however this approach exhibited a lot of constant flickering especially on pages that have a lot of elements or high frequency of changes such as the Home Display or Set Alarm. Instead, we devised a much more sophisticated method that involved placing filled-in rectangles over specfic areas just before they require updating:
 ```c
@@ -577,6 +615,8 @@ void Adafruit_HX8357::setRotation(uint8_t m) {
   sendCommand(HX8357_MADCTL, &m, 1);
 }
 ```
+*Reference: https://github.com/Bodmer/TFT_HX8357/blob/master/TFT_HX8357.cpp*
+
 ##### Mapping
 Evidently, changing the orientaion did not come with a free lunch - the TFT screen now had to be re-mapped to correctly register points on the touchscreen. The previous configuration meant that the top right of the screen was the origin and had the x-axis running down the right side of the screen and the y-axis along the top:
 
@@ -643,6 +683,8 @@ TS_Point Adafruit_STMPE610::getPoint() {
   return TS_Point(x, y, z);
 }
 ```
+*Reference: https://github.com/adafruit/Adafruit_STMPE610/blob/master/Adafruit_STMPE610.cpp*
+
 Furthermore, we also noticed that there would occasionally be very peculiar readings at point x ~ 16300, y ~ -12500, z ~ 25. A simple `if (p.x > 10000) {return false;}` included in the `gotTouch()` method was enough to omit this reading. 
 
 Before implementing the buffer fix, navigation was impossible; combining these two fixes greatly increased touch accuracy and responsiveness. A very effective debugging tool that was used to test the points being registered was included in the `handleTouch()` method that displayed a tiny green box each time the screen was touched:
@@ -692,6 +734,7 @@ See below the wiring involved in connecting the Neopixel featherwing and the Ope
     
 <br>
 
+
 ### Future Improvements
 ------
 Had we had more time for the project, there were a number of ideas and features that could have made their way into the Dawn Alarm Clock;
@@ -700,3 +743,34 @@ Had we had more time for the project, there were a number of ideas and features 
 * **Customisable dawn time** – Perhaps the most reasonable improvement that could have been made had we had a bit more time. Currently dawn is set to come on 4 minutes before the alarm and cannot be changed. 
 * **Set alarm longer than 7 days into the future** – One of the most time consuming features of the project was being able to set an alarm ***up to*** 7 days into the future, from just 24 hours into the future. Implementing this feature would not have come without its unforseen technicalities.
 * **Recurring alarms (more than 1 alarm)** – In addition to adapting the core functionality in many areas of code, we would also need to consider changing many UI elements to accomodate more active alarms.   
+
+<br>
+
+### Libraries used
+------
+Neopixel - Using the arduino neopixel libraries gave interesting ghosting results. Ended up using a library written for a micropython project - it included functions to accurately setup the timings which can apparently be pretty specific with these featherwings. 
+https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo
+
+LCD screen (Adafruit_HX8357)
+https://github.com/adafruit/Adafruit_HX8357_Library
+
+Touchscreen (STMPE610)
+https://github.com/adafruit/Adafruit_STMPE610
+
+WiFi manager (provisioning)
+https://github.com/tzapu/WiFiManager
+
+unPhone
+https://gitlab.com/hamishcunningham/unphone
+
+HTTPClient 
+https://github.com/espressif/arduino-esp32/tree/master/libraries/HTTPClient
+
+NTPClient-3.2.0
+https://github.com/arduino-libraries/NTPClient
+
+Adafruit-GFX 
+https://github.com/adafruit/Adafruit-GFX-
+
+RTC time 
+https://github.com/espressif/esp-idf/blob/master/components/soc/esp32/include/soc/rtc.h
