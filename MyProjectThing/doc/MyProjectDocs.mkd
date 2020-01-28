@@ -609,7 +609,7 @@ if (loopIter % 80 == 0) {
 ### 7) Orientation & Touch Management  
 ------
 ##### Orientation
-One of the first things that sprung to mind when designing the user interface was changing the orientation from portrait to landscape, as a longer horzontal axis would be ideal for the type of information the Dawn Alarm Clock would be displaying. Browsing through the `Adafruit_HX8357.cpp` library we discovered 4 different `setRotation()` methods for each orientation; 0 (portrait), 1 (right-landscape), 2 (upside-down portrait), 3 (left-landscape). However, when attempting to change the orientation to either landscapes (1 or 3) the display appeared to be mirrored. Further digging into the library we discovered `#define MADCTL_MV  0x20` which is commented as *Reverse mode*. This definition was also included in the rotation that we wanted:
+One of the first things that sprung to mind when designing the user interface was changing the orientation from portrait to landscape, as a longer horzontal axis would be ideal for the type of information the Dawn Alarm Clock would be displaying. Browsing through the `Adafruit_HX8357.cpp` library we discovered 4 different `setRotation()` methods for each orientation; 0 (portrait), 1 (portrait + 90°), 2 (portrait + 180°), 3 (portrait + 270°). However, when attempting to change the orientation to either landscapes (1 or 3) the display appeared to be mirrored. Further digging into the library we discovered `#define MADCTL_MV  0x20` which is commented as *Reverse mode*. This definition was also included in the rotation that we wanted:
 ```c
 void Adafruit_HX8357::setRotation(uint8_t m) {
   rotation = m & 3; // can't be higher than 3
@@ -675,18 +675,19 @@ void TFT_HX8357::setRotation(uint8_t m)
   }
 }
  ```
-`case 1: // Landscape (Portrait + 90)` then became our new `setRotation(3)` in the `Adafruit_HX8357.cpp` library which produced the desired unmirrored landscape orientation:
+`case 1: // Landscape (Portrait + 90)` then became our new `setRotation(1)` in the `Adafruit_HX8357.cpp` library which produced the desired unmirrored landscape orientation:
 ```c
 void Adafruit_HX8357::setRotation(uint8_t m) {
   rotation = m & 3; // can't be higher than 3
   switch(rotation) {
     case 0:
     ...
-    case 3:
+    case 1:
       m       = MADCTL_BGR | MADCTL_MV;
       _width  = HX8357_TFTHEIGHT;
       _height = HX8357_TFTWIDTH;
       break;
+    ...
   }
   sendCommand(HX8357_MADCTL, &m, 1);
 }
