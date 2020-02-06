@@ -596,12 +596,18 @@ The colour of the rectangles contrast with the background in this case for illus
 6. **clearAlarm()** – Updates ~1m or ~1s depending on time to alarm
 7. **clearDate()** – Updates ~24h
 
-Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. To make things more efficient, the UI display was only drawn once every 80 loop iterations as it doesn't require to be updated *very* often and is relatively resource intensive.   
+Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. To make things more efficient, the UI display was only drawn once every 80 loop iterations as it doesn't require to be updated *very* often and is relatively resource intensive.    
 
 ```c
+if (uiCont->gotTouch()) {
+  uiCont->handleTouch();
+  touchTimer = millis();
+}
+//then, after 80 iterations, draw screen.
 if (loopIter % 80 == 0) {
-      uiCont->run();
-    }
+  uiCont->run();
+}
+
 ```
 
 
