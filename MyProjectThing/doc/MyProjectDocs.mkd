@@ -17,14 +17,14 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 
 <br>
 
-## <div align="center">Overview of technical features</div>
+# <div align="center">Overview of features</div>
 Before exploring the technicalities, presented below is a general overview of the Dawn Alarm Clock and it's features. 
 
 ### Home Display
 ------
 <br>
 <div align = "center">
-  <img src="images/home_sketch2.png" width="500"/>
+  <img src="images/updatedSketch.png" width="500"/>
 </div>
 <br>
 
@@ -40,9 +40,22 @@ Before exploring the technicalities, presented below is a general overview of th
 
 4. **Time to alarm** – The time to alarm will be displayed under the digital time if an alarm has been set. If the time to alarm is greater than a minute it will be formatted in H:M, otherwise a countdown in seconds from a minute will commence. If no alarm has been set, or an alarm has passed, a 'No alarm set' message is shown. 
 
+5. **Temperature** – Displays local temperature in °C and changes colour depending on the value:
+    - Less than 0°C ~ White
+    - Between 0 and 9.9 ~ Cyan
+    - Between 10 and 19.9 ~ Green
+    - Between 20 and 29.9 ~ Orange 
+    - Over 30 ~ Red<br><br>
+
+6. **Weather description** – Short explanitory text describing the mood of weather
+
+7. **Wind speed** – Local wind speed in meters per second 
+
+8. **Humidity** – Local humidity %
+
 <br>
 <div align = "center">
-  <img src="images/home_no_alarm_front.jpg" width="500"/>
+  <img src="images/newDisplay.jpg" width="500"/>
 </div>
 <br>
 
@@ -138,12 +151,12 @@ Before exploring the technicalities, presented below is a general overview of th
 -----
 <br>
 <div align = "center">
-  <img src="images/back_diag.jpg" width="500"/>
+  <img src="images/newDisplay2.jpg" width="500"/>
 </div>
 <br>
 <br>
 <div align = "center">
-  <img src="images/home_alarm_2min.jpg" width="500"/>
+  <img src="images/back_diag.jpg" width="500"/>
 </div>
 <br>
 
@@ -278,7 +291,63 @@ This improvement influenced us to extend the two hour checking period to every 5
 
 <br>
 
-### 2) The Alarm
+### 2) Weather API
+----------
+Temperature, weather description, wind speed and humidity shown on the Home Display are pulled from a HTML request made to [Open Weather API](https://openweathermap.org/api). After a free subscription to their API weather service, we could call current weather data for one location using a generated key that came with the subscription: 
+
+<br>
+<div align = "center">
+  <img src="images/API.png" width="250"/>
+</div>
+<br>
+
+A request can be made in various ways such as by city name or geographic coordinates, but we chose by city ID so that the API responds with exact results which had to be looked up in a `city.list.json.gz` file provided by OpenWeather. Using the domain name, city ID and the generated key we can construct the URL for the HTTP request:
+
+```c
+String URL = PSTR("http://api.openweathermap.org/data/2.5/weather?id=") + cityId + F("&APPID=") + owKey;
+```
+
+Once the HTTP request returns a valid response code, we can extract the information we need from the API. OpenWeather uses JSON format by default, so `DynamicJsonBuffer` was used to read and extract the data we wanted:
+
+```c
+if (respCode == HTTP_CODE_OK) {
+      payload = http.getString();
+      DynamicJsonBuffer jsonBuffer;
+      JsonObject& root = jsonBuffer.parseObject(payload);
+
+      if (root.success()) {
+        String name = root["name"];
+        JsonObject& main = root["main"];
+        temperature = main["temp"];             // pull temperature value
+        temperature = temperature - 273.15f;    // convert from kelvin
+        humidity = main["humidity"];            // pull humidity value
+
+        JsonObject& weather = root["weather"][0];
+        String des = weather["description"];    // pull description
+
+        JsonObject& wind = root["wind"];
+        speed = wind["speed"];                  // pull wind speed value
+...
+```
+
+##### Flash Memory
+A peculiar issue we ran into when attempting to save the weather data in memory (so that  information can be retrieved and displayed without establishing an internet connection) was that the RTC memory was unable to retain strings or char arrays after wakeup, thus the weather description had to be stored in some other way; **flash** memory. To read and write from the ESP32 flash memory, we need to use the EEPROM library that allows us to write data in specifc memory locations:
+```c
+#include "EEPROM.h"
+...
+#define EEPROM_SIZE 64 // size in bytes ~1 byte per char
+...
+EEPROM.begin(EEPROM_SIZE); // initialize EEPROM with predefined size
+...
+char arrayToStore[50];
+String des = weather["description"]; // pull weather description 
+des.toCharArray(arrayToStore, des.length()+1); // convert description string to char array
+EEPROM.put(0, arrayToStore); // save data in memory address
+EEPROM.commit();
+```
+`arrayToStore` is then used in the Home Display class as an `extern` variable where the string for weather description is fetched from flash memory `EEPROM.get(0, arrayToStore)`. A limitation of saving data in flash memory however, is that there is a limited number of times it can be written to. Most devices are designed for around [100,000 to 1,000,000](https://randomnerdtutorials.com/esp32-flash-memory/) write operations, but can be read an unlimited number times - even with the lower bound of write operations this should not be an issue as the data will only be stored when the time is resynchronised and an API request is made during a momentary internet connection.
+
+### 3) The Alarm
 ----------
 
 With accurate time management already in place, implementing alarm functionality wasn't too technical. Most of the troubles came when coding the UI page, calculating the time until an alarm.
@@ -361,7 +430,7 @@ Testing
 
 <br>
 
-### 3) NeoPixel Dawn Simulator 
+### 4) NeoPixel Dawn Simulator 
 ------
 Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
 
@@ -414,7 +483,7 @@ The dawn is only active during the 4 minutes prior to the alarm, which means tha
 
 <br>
 
-### 4) Power Management
+### 5) Power Management
 ----
 With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
 
@@ -491,7 +560,7 @@ If the power switch is used and the ESP is not connected by USB, then the device
 
 <br>
 
-### 5) Updating UI Elements 
+### 6) Updating UI Elements 
 ------
 The user interface implementation as a whole proved to be a lot more technical than first anticipated, especially for changing the apperance of elements on the same screen. Initially there was the idea of refreshing the entire screen each time something changed, however this approach exhibited a lot of constant flickering especially on pages that have a lot of elements or high frequency of changes such as the Home Display or Set Alarm. Instead, we devised a much more sophisticated method that involved placing filled-in rectangles over specfic areas just before they require updating:
 ```c
@@ -527,13 +596,26 @@ The colour of the rectangles contrast with the background in this case for illus
 6. **clearAlarm()** – Updates ~1m or ~1s depending on time to alarm
 7. **clearDate()** – Updates ~24h
 
-Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. 
+Another issue we discovered at this point was being able to `handletouch()` on the Home Display. This was not a challenge for other pages because they didn't need to display elements such as current time or date that update continuously, while still being able to register touches in the same dedicated process. To overcome this we needed to essentially run concurrent processes that dealt with the UI elements and touch separately; so the `draw()` method was included in the `runEachTurn()` method in Home Display. To make things more efficient, the UI display was only drawn once every 80 loop iterations as it doesn't require to be updated *very* often and is relatively resource intensive.    
+
+```c
+if (uiCont->gotTouch()) {
+  uiCont->handleTouch();
+  touchTimer = millis();
+}
+//then, after 80 iterations, draw screen.
+if (loopIter % 80 == 0) {
+  uiCont->run();
+}
+
+```
 
 
-### 6) Orientation & Touch Management  
+
+### 7) Orientation & Touch Management  
 ------
 ##### Orientation
-One of the first things that sprung to mind when designing the user interface was changing the orientation from portrait to landscape, as a longer horzontal axis would be ideal for the type of information the Dawn Alarm Clock would be displaying. Browsing through the `Adafruit_HX8357.cpp` library we discovered 4 different `setRotation()` methods for each orientation; 0 (portrait), 1 (right-landscape), 2 (upside-down portrait), 3 (left-landscape). However, when attempting to change the orientation to either landscapes (1 or 3) the display appeared to be mirrored. Further digging into the library we discovered `#define MADCTL_MV  0x20` which is commented as *Reverse mode*. This definition was also included in the rotation that we wanted:
+One of the first things that sprung to mind when designing the user interface was changing the orientation from portrait to landscape, as a longer horzontal axis would be ideal for the type of information the Dawn Alarm Clock would be displaying. Browsing through the `Adafruit_HX8357.cpp` library we discovered 4 different `setRotation()` methods for each orientation; 0 (portrait), 1 (portrait + 90°), 2 (portrait + 180°), 3 (portrait + 270°). However, when attempting to change the orientation to either landscapes (1 or 3) the display appeared to be mirrored. Further digging into the library we discovered `#define MADCTL_MV  0x20` which is commented as *Reverse mode*. This definition was also included in the rotation that we wanted:
 ```c
 void Adafruit_HX8357::setRotation(uint8_t m) {
   rotation = m & 3; // can't be higher than 3
@@ -599,18 +681,19 @@ void TFT_HX8357::setRotation(uint8_t m)
   }
 }
  ```
-`case 1: // Landscape (Portrait + 90)` then became our new `setRotation(3)` in the `Adafruit_HX8357.cpp` library which produced the desired unmirrored landscape orientation:
+`case 1: // Landscape (Portrait + 90)` then became our new `setRotation(1)` in the `Adafruit_HX8357.cpp` library which produced the desired unmirrored landscape orientation:
 ```c
 void Adafruit_HX8357::setRotation(uint8_t m) {
   rotation = m & 3; // can't be higher than 3
   switch(rotation) {
     case 0:
     ...
-    case 3:
+    case 1:
       m       = MADCTL_BGR | MADCTL_MV;
       _width  = HX8357_TFTHEIGHT;
       _height = HX8357_TFTWIDTH;
       break;
+    ...
   }
   sendCommand(HX8357_MADCTL, &m, 1);
 }
@@ -687,11 +770,15 @@ TS_Point Adafruit_STMPE610::getPoint() {
 
 Furthermore, we also noticed that there would occasionally be very peculiar readings at point x ~ 16300, y ~ -12500, z ~ 25. A simple `if (p.x > 10000) {return false;}` included in the `gotTouch()` method was enough to omit this reading. 
 
-Before implementing the buffer fix, navigation was impossible; combining these two fixes greatly increased touch accuracy and responsiveness. A very effective debugging tool that was used to test the points being registered was included in the `handleTouch()` method that displayed a tiny green box each time the screen was touched:
+Before implementing the buffer fix, navigation was impossible; combining these two fixes greatly increased touch accuracy and responsiveness. 
+
+###### Testing
+A very effective debugging tool that was used to test the points being registered was included in the `handleTouch()` method that displayed a tiny green box each time the screen was touched that allowed us to observe touch behaviour with ease:
 
 ```c
 unPhone::tftp->fillRect(p.x-1,p.y-1,2,2,HX835 7_GREEN); // DEBUG touch feedback
 ```
+
 
 ##### Edited unPhone Library
 In order to implment the above changes to orientation and touch buffer amendments were made in the unPhone project folder, specifically the `Adafruit_HX8357.cpp` and `Adafruit_STMPE610.cpp` libraries which are not part of `MyProjectThing`. Therefore, the amended versions of these libraries have been imported in the `lib` directory and referenced in the `component.mk` file: 
@@ -705,7 +792,7 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
 <br>
 <br> 
 
-### 7) Circuitry
+### 8) Circuitry
 ----------
 
 See below the wiring involved in connecting the Neopixel featherwing and the Open PIR sensor - both of these are attached to the unPhone IOExpander;
@@ -739,7 +826,6 @@ See below the wiring involved in connecting the Neopixel featherwing and the Ope
 ------
 Had we had more time for the project, there were a number of ideas and features that could have made their way into the Dawn Alarm Clock;
 * **Personal greeting on Home Display page** – The idea behind this was to allow the user to input their name and have it included in the greeting, for example: ***Good afternoon, Hamish***. One of the main reasons why this was not included was due to the complexities arising from text-based user input such as designing a keyboard or rotating through letters of the alphabet (similar mechanic to setting the alarm). We even considered doing it through phone (similar to provisioning) but again this would have added unecessary difficulties. 
-* **Showing weather at current location on Home Display page** – Unfortunately there does not exist a universal weather library like there does for time. We would need to look into weather API's and potentially GPS which would require a lot of time and dedicated work.
 * **Customisable dawn time** – Perhaps the most reasonable improvement that could have been made had we had a bit more time. Currently dawn is set to come on 4 minutes before the alarm and cannot be changed. 
 * **Set alarm longer than 7 days into the future** – One of the most time consuming features of the project was being able to set an alarm ***up to*** 7 days into the future, from just 24 hours into the future. Implementing this feature would not have come without its unforseen technicalities.
 * **Recurring alarms (more than 1 alarm)** – In addition to adapting the core functionality in many areas of code, we would also need to consider changing many UI elements to accomodate more active alarms.   
