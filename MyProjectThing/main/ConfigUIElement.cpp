@@ -13,12 +13,16 @@ bool ConfigUIElement::handleTouch(long x, long y) {
 
 // display provisioning message ////////////////////////////////////////////
 void ConfigUIElement::draw(){
-  m_tft->setTextColor(CYAN);
+  m_tft->setTextColor(GREEN);
   m_tft->setTextSize(2);
   m_tft->setCursor(0, 5);
-  m_tft->println("Could not automatically connect to WiFi");
-  m_tft->println("Access point has been set up.");
-  m_tft->println("Connect to access point:");
+  m_tft->println("Please wait a few seconds for the device");
+  m_tft->println("to connect to the previously saved WiFi.");
+  m_tft->println();
+  m_tft->println("If unsuccessful, an access point will be");
+  m_tft->println("set up to connect to for 2 minutes: ");
+  m_tft->println();
+  m_tft->setTextColor(CYAN);
   m_tft->println(apSSID);
 }
 

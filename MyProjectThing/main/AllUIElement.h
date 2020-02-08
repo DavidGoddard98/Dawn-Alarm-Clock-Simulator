@@ -31,6 +31,9 @@ public:
   void draw();
   void runEachTurn();
   void clearTime();
+  int normaliseF(float x);
+  int normaliseS(String x);
+  void drawWeather();
   void drawGreeting();
   void clearSec();
   void drawTime();

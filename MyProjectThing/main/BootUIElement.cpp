@@ -13,14 +13,17 @@ bool BootUIElement::handleTouch(long x, long y) {
 
 // display boot message /////////////////////////////////////////////////////
 void BootUIElement::draw(){
-
-  m_tft->setTextColor(CYAN);
-  m_tft->setTextSize(2);
-  m_tft->setCursor(0, 5);
-  m_tft->println("Alarm clock booting...");
+  m_tft->setTextColor(GREEN);
+  m_tft->setTextSize(3);
+  m_tft->setCursor(0, 10);
+  m_tft->print("BOOTING");
+  for (int i = 0; i < 5; i++) {
+    WAIT_MS(250)
+    m_tft->print(".");
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void BootUIElement::runEachTurn(){
-
+  draw();
 }

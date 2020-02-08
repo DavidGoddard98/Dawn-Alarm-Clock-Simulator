@@ -8,6 +8,8 @@
 #include "IOExpander.h"
 #include "UIController.h"
 #include "AllUIElement.h"
+#include <iostream>
+#include <iomanip>
 
 //TIME FUNCTIONS
 #include <soc/rtc.h>
@@ -18,6 +20,7 @@ extern "C" {
 using namespace std;
 
 //GENERAL CONSTANTS AND INSTANTS////////////////////////////////////////////////
+int addr = 0;
 int loopIter = 0;        // loop slices
 const byte BM_I2Cadd   = 0x6b; // the chip lives here on I²C
 const byte BM_Status   = 0x08; // system status register
@@ -39,7 +42,6 @@ String apSSID = String("Paz_Dave_Alarm-"); // SSID of the AP
 String apPassword = _DEFAULT_AP_KEY;     // passkey for the AP
 uint64_t timeDiff, timeNow; //RTC clock variables
 
-
 //NEOPIXEL ESPIDF variant/////////////////////////////////////////////////////
 //imports
 #include	<string.h>
@@ -47,19 +49,24 @@ uint64_t timeDiff, timeNow; //RTC clock variables
 #include	"neopixel.h"
 #include  "neopixel.c"
 #include	<esp_log.h>
+#include <ArduinoJson.h>
+#include <HTTPClient.h>
+#include "EEPROM.h"
 
 //constants and instants
-#define	NEOPIXEL_PORT	A7 //Pin //15
+#define	NEOPIXEL_PORT	15 //Pin A7 || 15
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
 uint32_t	 pixels[NR_LED];
 int rc;
 float pixBr = 0;
+char arrayToStore[50];
 ////////////////////////////////////////////////////////////////////////////////
 // IR SENSOR stuff//////////////////////////////////////////////////////////////
 #define PIR_DOUT 27   // PIR digital output on D2
 #define LED_PIN  13  // LED to illuminate on motion
+#define EEPROM_SIZE 64 // allocate 64 bytes of flash memory for weather description
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,6 +85,9 @@ RTC_DATA_ATTR int fade_time = 240000000;
 RTC_DATA_ATTR time_t alarm_time;
 RTC_DATA_ATTR time_t dawn_time;
 RTC_DATA_ATTR tuple <int,int,int> rgb;
+RTC_DATA_ATTR float temperature;
+RTC_DATA_ATTR float humidity;
+RTC_DATA_ATTR float speed;
 ////////////////////////////////////////////////////////////////////////////////
 
 //DEFINE METHODS////////////////////////////////////////////////////////////////
@@ -86,6 +96,7 @@ void fetchTime();
 void pixelsOff();
 void setupPixels();
 void fadePixels();
+void weather();
 void setDawnColour(uint16_t col);
 void printLocalTime();
 void setTime();
@@ -125,6 +136,8 @@ void setup() {
   //....
   unPhone::printWakeupReason(); // what woke us up?
   unPhone::checkPowerSwitch();  // if power switch is off, shutdown
+
+  EEPROM.begin(EEPROM_SIZE); // initialize EEPROM with predefined size
 
   //Initialise and setup pixels. Also clears them
   setupPixels();
@@ -266,9 +279,8 @@ void loop() {
 //////////////////////TIME MANAGEMENT///////////////////////////////////////////
 //==============================================================================
 void fetchTime() {
-  uiCont->showUI(ui_WiFi); //show connecting to wifi UI
-
   //Connect to saved wifi, if none start AP
+  uiCont->showUI(ui_config); //show config UI page
   Serial.printf("doing wifi manager\n");
   joinmeManageWiFi(apSSID.c_str(), apPassword.c_str());
   Serial.printf("wifi manager done\n\n");
@@ -276,10 +288,9 @@ void fetchTime() {
 
   //let wifi AP settle
   if (WiFi.status() != WL_CONNECTED) {
+    uiCont->showUI(ui_WiFi); //show connecting to wifi UI
     while(WiFi.status() != WL_CONNECTED) {
       if (!powerOn()) powerMode(); //turn off if switch off
-      uiCont->showUI(ui_config); //show config UI page
-
       if (micros() >= 300000000) { //4 mins to connect to AP
         ESP.restart();
       }
@@ -298,6 +309,8 @@ void fetchTime() {
     year = yearCheck.tm_year;
     hourFetched = yearCheck.tm_hour; //record the hour last time fetched
   }
+
+  weather(); // make API request for weather data
 
   //disconnect WiFi/stop AP as it's no longer needed (SAVE BATTERY)
   WiFi.disconnect(true);
@@ -396,6 +409,60 @@ void setDawnColour(uint16_t col) {
   else if (col == HX8357_PINK) {
     rgb = make_tuple(255,20,147);
   }
+}
+
+//==============================================================================
+//////////////////////LOCAL TEMPERATURE ////////////////////////////////////////
+//==============================================================================
+
+void weather() {
+  HTTPClient http;
+  String cityId = "3333193";
+  String countryCode = "uk";
+  String owKey = "94dc8e7b59b910118bbbb2277fc434f9";
+  String URL = PSTR("http://api.openweathermap.org/data/2.5/weather?id=")
+    + cityId + F("&APPID=") + owKey;
+  String payload;
+
+  http.setTimeout(50000);  // increase the timeout of a request
+  http.setReuse(true);
+  http.addHeader("User-Agent", "ESP32");
+
+  if (!http.begin(URL)) Serial.println("get HTTP failed");
+  else {
+    int respCode = http.GET();
+
+    if (respCode == HTTP_CODE_OK) {
+      payload = http.getString();
+      DynamicJsonBuffer jsonBuffer;
+      JsonObject& root = jsonBuffer.parseObject(payload); // read data
+
+      if (root.success()) {
+        String name = root["name"];
+        JsonObject& main = root["main"];
+        temperature = main["temp"];             // pull temperature value
+        temperature = temperature - 273.15f;    // convert from kelvin
+        humidity = main["humidity"];            // pull humidity value
+
+        JsonObject& weather = root["weather"][0];
+        String des = weather["description"];    // pull description
+
+        JsonObject& wind = root["wind"];
+        speed = wind["speed"];                  // pull wind speed value
+
+        /* store description string as char array in flash memory **************
+          ESP is unable to retain Strings or char arrays that are saved
+          in RTC memory after wakeup, but does in flash memory...
+        */
+
+        des.toCharArray(arrayToStore, des.length()+1);
+        EEPROM.put(0, arrayToStore);
+        EEPROM.commit();
+      }
+      Serial.println(payload);
+    }
+    else { Serial.println(respCode); }
+    }
 }
 
 //==============================================================================
@@ -513,7 +580,7 @@ bool powerOn() {
 //other part of power switch. - Checks usb connection and then does the same as
 //the original method
 void powerMode(){
-
+  unPhone::tftp->fillScreen(HX8357_BLACK); // clear screen for wakeup
   bool usbConnected = bitRead(unPhone::getRegister(BM_I2Cadd, BM_Status), 2);
   if (!usbConnected) {
     //turn pixels off
@@ -552,6 +619,7 @@ void inActiveSleep() {
     Serial.println(time2Dawn()-20);
 
   }
+  unPhone::tftp->fillScreen(HX8357_BLACK);
   //wake up with button one
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
 
@@ -574,6 +642,7 @@ void inActiveSleep() {
 
 void forcedSleep() {
   //wake up with button one
+  unPhone::tftp->fillScreen(HX8357_BLACK);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
 
   //or before dawn simulator starts

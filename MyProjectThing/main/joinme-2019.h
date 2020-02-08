@@ -8,7 +8,6 @@
 
 // WiFi provisioning ////////////////////////////////////////////////////////
 bool joinmeManageWiFi(const char *apSSID, const char *apKey); // true if joins
-
 // DNS stuff ////////////////////////////////////////////////////////////////
 void joinmeDNSSetup(void* server, IPAddress apIP); // capture clients
 void joinmeTurn(); // run once per main loop iteration

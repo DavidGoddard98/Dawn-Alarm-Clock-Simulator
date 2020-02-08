@@ -3,8 +3,7 @@
 #include "AllUIElement.h"
 #include <WiFi.h>
 #include <string>
-
-extern String apSSID;
+#include "WiFiManager.h"
 
 // handle touch on this page ////////////////////////////////////////////////
 bool WiFiUIElement::handleTouch(long x, long y) {
@@ -13,14 +12,14 @@ bool WiFiUIElement::handleTouch(long x, long y) {
 
 // display autoconnect message //////////////////////////////////////////////
 void WiFiUIElement::draw(){
-  m_tft->setTextColor(CYAN);
-  m_tft->setTextSize(2);
-  m_tft->setCursor(0, 5);
-  m_tft->println("Attmepting to connect");
-  m_tft->println("to last known WIFI...");
+  m_tft->setTextColor(YELLOW);
+  m_tft->setTextSize(3);
+  m_tft->setCursor(0, 10);
+  m_tft->println("AP timeout exceeded!");
+  m_tft->println();
+  m_tft->println("Please restart.");
 }
 
 //////////////////////////////////////////////////////////////////////////
 void WiFiUIElement::runEachTurn(){
-
 }

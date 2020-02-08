@@ -33,10 +33,28 @@ UIController::UIController(ui_modes_t start_mode) {
 bool UIController::begin() { ////////////////////////////////////////////////
   D("UI.begin()\n")
 
+  unPhone::tftp->setRotation(0);
+  unPhone::tftp->fillScreen(HX8357_RED);
+  WAIT_MS(50)
+  unPhone::tftp->fillScreen(HX8357_BLACK);
+  WAIT_MS(50)
+
+  unPhone::tftp->setRotation(3);
+  unPhone::tftp->fillScreen(HX8357_CYAN);
+  WAIT_MS(50)
+  unPhone::tftp->fillScreen(HX8357_BLACK);
+  WAIT_MS(50)
+
+  unPhone::tftp->setRotation(2);
   unPhone::tftp->fillScreen(HX8357_GREEN);
   WAIT_MS(50)
   unPhone::tftp->fillScreen(HX8357_BLACK);
-  unPhone::tftp->setRotation(3);
+  WAIT_MS(50)
+
+  unPhone::tftp->setRotation(1);
+  unPhone::tftp->fillScreen(HX8357_PURPLE);
+  WAIT_MS(50)
+  unPhone::tftp->fillScreen(HX8357_BLACK);
 
   // define the menu element and the first m_element here
   m_menu = new MenuUIElement(unPhone::tftp, unPhone::tsp);

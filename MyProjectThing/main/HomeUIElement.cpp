@@ -31,6 +31,10 @@ using namespace std;
 extern int firmwareVersion;
 extern String apSSID;
 extern tm * timeinfo;
+extern char arrayToStore[50];
+extern float temperature;
+extern float speed;
+extern float humidity;
 int f_sec;
 int sc;
 int mn;
@@ -50,6 +54,9 @@ long int dot_timer = 0;
 std::pair<int, int> timeUntilDawn(double secs);
 bool cleared = false;
 
+int normaliseF(float x);
+int normaliseS(String x);
+
 // handle touch on this page ////////////////////////////////////////////////
 bool HomeUIElement::handleTouch(long x, long y) {
   // touching anywhere will display menu
@@ -58,6 +65,7 @@ bool HomeUIElement::handleTouch(long x, long y) {
 
 // draw all home display elements ///////////////////////////////////////////
 void HomeUIElement::draw() {
+  drawWeather();
   drawGreeting();
   drawTime();
   drawDate();
@@ -111,9 +119,43 @@ void HomeUIElement::drawGreeting() {
   m_tft->setFont(&FreeMonoBoldOblique9pt7b);
   m_tft->setTextColor(CYAN);
   m_tft->setTextSize(2);
-  m_tft->setCursor(30,30);
+  m_tft->setCursor(5,25);
   m_tft->println(greeting());
   tmp = greeting();
+}
+
+int HomeUIElement::normaliseF(float x) {
+  m_tft->setCursor(0,-100); m_tft->print(x);
+  return m_tft->getCursorX();
+}
+
+int HomeUIElement::normaliseS(String x) {
+  m_tft->setCursor(0,-100); m_tft->print(x);
+  return m_tft->getCursorX();
+}
+
+void HomeUIElement::drawWeather() {
+  m_tft->setFont(&FreeSans9pt7b);
+  m_tft->setTextSize(2);
+
+  if (temperature <= 0) { m_tft->setTextColor(WHITE);}
+  else if (temperature > 0 && temperature <= 10)  { m_tft->setTextColor(CYAN); }
+  else if (temperature > 10 && temperature <= 20) { m_tft->setTextColor(GREEN); }
+  else if (temperature > 20 && temperature <= 30) { m_tft->setTextColor(ORANGE); }
+  else { m_tft->setTextColor(RED); }
+
+  m_tft->setCursor(490-normaliseF(temperature)-normaliseS("*C"),35);
+  m_tft->printf("%.1f",temperature);m_tft->print("*C");
+
+  m_tft->setTextColor(WHITE);
+  m_tft->setCursor(490-normaliseF(speed)-normaliseS("m/s"),255);
+  m_tft->printf("%.1f",speed);m_tft->print("m/s");
+
+  m_tft->setCursor(516-normaliseF(humidity)-normaliseS("%"),295);
+  m_tft->printf("%.f",humidity);m_tft->print("%");
+
+  String description = EEPROM.get(0, arrayToStore);
+  m_tft->setCursor(470-normaliseS(description),72);m_tft->print(description);
 }
 
 // draw time HH:MM:SS
@@ -168,6 +210,7 @@ void HomeUIElement::drawAlarmTime() {
   }
 }
 
+// draw when no active alarm
 void HomeUIElement::drawNoAlarm() {
   if (!cleared) {
     clearAlarm(100);

@@ -134,7 +134,7 @@ void AlarmUIElement::draw(){
   drawRightArrow(xCor+ 25, 265); //dynamically changes depending on length of day...
   m_tft->setTextSize(2);
 
-  m_tft->fillRect(390, 245, 65, 40, ORANGE);
+  m_tft->fillRect(390, 245, 68, 40, ORANGE);
   m_tft->setCursor(390, 277);
   m_tft->print("SET");
 }

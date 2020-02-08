@@ -296,26 +296,26 @@ void Adafruit_HX8357::begin(uint32_t freq) {
 void Adafruit_HX8357::setRotation(uint8_t m) {
   rotation = m & 3; // can't be higher than 3
   switch(rotation) {
-    case 0:
-      m       = MADCTL_MX | MADCTL_MY | MADCTL_RGB;
-      _width  = HX8357_TFTWIDTH;
-      _height = HX8357_TFTHEIGHT;
-      break;
-    case 1:
-      m       = MADCTL_MV | MADCTL_MY | MADCTL_RGB;
-      _width  = HX8357_TFTHEIGHT;
-      _height = HX8357_TFTWIDTH;
-      break;
-    case 2:
-      m       = MADCTL_RGB;
-      _width  = HX8357_TFTWIDTH;
-      _height = HX8357_TFTHEIGHT;
-      break;
-    case 3:
-      m       = (MADCTL_BGR | MADCTL_MV);
-      _width  = HX8357_TFTHEIGHT;
-      _height = HX8357_TFTWIDTH;
-      break;
+    case 0: // Portrait
+     m       = MADCTL_BGR | MADCTL_MX;
+     _width  = HX8357_TFTWIDTH;
+     _height = HX8357_TFTHEIGHT;
+     break;
+   case 1: // Landscape (Portrait + 90)
+     m       = MADCTL_BGR | MADCTL_MV;
+     _width  = HX8357_TFTHEIGHT;
+     _height = HX8357_TFTWIDTH;
+     break;
+   case 2: // Inverter portrait
+     m       = MADCTL_BGR | MADCTL_MY;
+     _width  = HX8357_TFTWIDTH;
+     _height = HX8357_TFTHEIGHT;
+    break;
+   case 3: // Inverted landscape
+     m       = MADCTL_BGR | MADCTL_MV | MADCTL_MX | MADCTL_MY;
+     _width  = HX8357_TFTHEIGHT;
+     _height = HX8357_TFTWIDTH;
+     break;
   }
 
   sendCommand(HX8357_MADCTL, &m, 1);

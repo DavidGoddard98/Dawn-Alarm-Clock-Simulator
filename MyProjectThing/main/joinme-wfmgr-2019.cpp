@@ -3,16 +3,13 @@
 
 #include "joinme-2019.h"
 #include "WiFiManager.h"
-
 WiFiManager wm; // global wm instance
 WiFiManagerParameter custom_field; // global param (for non blocking w params)
 String getParam(String name);
 void saveParamCallback();
-
 bool joinmeManageWiFi(const char *apSSID, const char *apKey) {
   // uncomment for testing
   wm.resetSettings(); // wipe settings
-
   int customFieldLength = 40; // add a custom input field
 
   // new (&custom_field) WiFiManagerParameter("customfieldid", "Custom Field
@@ -23,13 +20,12 @@ bool joinmeManageWiFi(const char *apSSID, const char *apKey) {
   // WiFiManagerParameter("customfieldid", "Custom Field Label", "Custom Field
   // Value", customFieldLength,"placeholder=\"Custom Field Placeholder\"
   // type=\"checkbox\""); // custom html type
-
+  //uiCont->showUI(ui_WiFi)
   // test custom html(radio)
   const char* custom_radio_str = "<br/><label for='customfieldid'>Custom Field Label</label><input type='radio' name='customfieldid' value='1' checked> One<br><input type='radio' name='customfieldid' value='2'> Two<br><input type='radio' name='customfieldid' value='3'> Three";
   new (&custom_field) WiFiManagerParameter(custom_radio_str); // custom i/p
   wm.addParameter(&custom_field);
   wm.setSaveParamsCallback(saveParamCallback);
-
   // custom menu via array or vector
   //
   // menu tokens,
