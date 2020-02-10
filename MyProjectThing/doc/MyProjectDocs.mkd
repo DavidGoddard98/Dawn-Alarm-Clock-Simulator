@@ -103,7 +103,9 @@ Before exploring the technicalities, presented below is a general overview of th
 
 8. **Increment/decrement alarm day** – Selecting the triangle to the right of the alarm day will increment to the next day of the week, and selecting the triangle to the left of the alarm day will decrement to the previous day of the week.
 
-9. **Set alarm** – Selecting the 'Set' button will create an alarm based on the time inputted by the user. If the alarm is set 'before' the current time, it will assume it is meant for the future (for instance - given the example in the diagram, setting the alarm for Monday at 20:08 will create an alarm for 144 hours time).
+9. **Set alarm** – Selecting the 'SET' button will create an alarm based on the time inputted by the user. If the alarm is set 'before' the current time, it will assume it is meant for the future (for instance - given the example in the diagram, setting the alarm for Monday at 20:08 will create an alarm for 144 hours time).
+
+10. **Clear alarm** – Selecting the 'CLR' button will wipe the current alarm 
 
 <br>
 <div align = "center">
