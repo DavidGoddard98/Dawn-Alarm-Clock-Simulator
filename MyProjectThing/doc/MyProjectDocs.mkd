@@ -432,8 +432,81 @@ if (alarm_exist) {
 }
 ```
 
-Testing
+##### Testing
 
+To test the time to alarm calculations, we setup test cases for all of the logical variants in `AlarmUIElement.cpp` . I.e An alarm for the same day but the hours were less than the current hours or an alarm for the same day but the minutes were more than the current minutes. We then output the calculated number of seconds to the terminal along with the current test information.
+
+Below you can see the exact printout to the terminal:
+
+    The test time now is: Wednesday, 5:20
+    
+    Test 1
+    Logical case 1: Same day, hours >, mins >
+    Alarm time set for: Wednesday, 6:21
+    Seconds to Alarm:
+    3660
+    
+    
+    Test 2
+    Logical case 2: Same day, hours >, mins <
+    Alarm time set for: Wednesday, 6:19
+    Seconds to Alarm:
+    3540
+    
+    
+    Test 3
+    Logical case 3: Same day, hours <, mins >
+    Alarm time set for: Wednesday, 4:21
+    Seconds to Alarm:
+    601260
+    
+    
+    Test 4
+    Logical case 4: Same day, hours <, mins <
+    Alarm time set for: Wednesday, 4:19
+    Seconds to Alarm:
+    601140
+    
+    
+    Test 5
+    Logical case 1: Different day, hours >, mins >
+    Alarm time set for: Friday, 6:21
+    Seconds to Alarm:
+    435660
+    
+    
+    Test 6
+    Logical case 2: Different day, hours >, mins <
+    Alarm time set for: Saturday, 6:19
+    Seconds to Alarm:
+    349140
+    
+    
+    Test 7
+    Logical case 3: Different day, hours <, mins >
+    Alarm time set for: Monday, 4:21
+    Seconds to Alarm:
+    169260
+    
+    
+    Test 8
+    Logical case 4: Different day, hours < , mins <
+    Alarm time set for: Tuesday, 4:19
+    Seconds to Alarm:
+    82740
+    
+    
+    Test 9
+    Logical case 1: Right now
+    Alarm time set for: Wednesday, 5:20
+    Seconds to Alarm:
+    0
+
+Using the website: https://www.timeanddate.com/date/durationresult.html?d1=12&m1=2&y1=2020&d2=12&m2=2&y2=2020&h1=05&i1=20&s1=00&h2=06&i2=21&s2=00 you can then calculate the difference between two times. 
+
+After checking our results we discovered all of them were correct.
+
+*Note: To replicte the tests, set the boolean test to true in AlarmUIElement.cpp. When you set an alarm, the tests will be printed to console.* 
 <br>
 
 ### 4) NeoPixel Dawn Simulator 
@@ -487,8 +560,6 @@ void fadePixels() {
 ```
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
-##### Testing 
-***
 
 ### 5) Power Management
 ----
