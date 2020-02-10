@@ -54,7 +54,7 @@ uint64_t timeDiff, timeNow; //RTC clock variables
 #include "EEPROM.h"
 
 //constants and instants
-#define	NEOPIXEL_PORT	15 //Pin A7 || 15
+#define	NEOPIXEL_PORT	A7 //Pin A7 || 15
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
@@ -288,7 +288,6 @@ void fetchTime() {
 
   //let wifi AP settle
   if (WiFi.status() != WL_CONNECTED) {
-    uiCont->showUI(ui_WiFi); //show connecting to wifi UI
     while(WiFi.status() != WL_CONNECTED) {
       if (!powerOn()) powerMode(); //turn off if switch off
       if (micros() >= 300000000) { //4 mins to connect to AP
