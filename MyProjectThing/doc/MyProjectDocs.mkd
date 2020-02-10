@@ -13,6 +13,7 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 - Accurate time management
 - Local temperature and weather information
 - Landscape mode!
+- OTA firmware updates
 
 
 <br>
@@ -787,7 +788,29 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
 ```
 
-### 8) Circuitry
+### 8) OTA Updates
+----------
+###### Why bother with OTA?
+
+The very nature of the Internet of Things makes OTA updating a necessary requirement to ensure firmware is kept up to date. Indeed, millions of devices make-up the IOT and updating these all individually in person is neither a cost-effective nor a practical way to install the latest firmware. This is why OTA processes are so important: it enables manufacturers who incorporate the microcontroller into their device the ability to update the devices over the internet. This very fact describes the importance of provisioning - it enables OTA updates to take place. 
+
+In regards to why we implemented it in our own system, if updates are required such as changing timezone or daylight saving hours, the implementation of an OTA update will be able to correct the error in terms of time. More importantly perhaps, it's more practical when put in the context of bugs - a quick fix can be quickly applied to all devices with an OTA implementation.
+
+###### The implementation in the existing system
+
+
+To upload the latest version of the firmware to Gitlab, so it is ready to be fetched by the ESP, the user writes ‘make push-firmware’ in the terminal. This compiles the firmware and creates a version.txt file which holds the value of the compiled firmwares version number. It then pushes these both to Gitlab in the firmware directory.
+
+The device will check for an update whenever a connection is established during the boot process. It begins by calling a function called joinmeOTAUpdate, which in turn calls another function called joinMeCloudGet. This creates a get request to retrieve an integer value containing the latest version number of the firmware available on Gitlab. It then cross references this with the version of the firmware currently on the ESP. If it is outdated it means the firmware needs to be upgraded. The system therefore makes a final call to joinmeCloudGet which creates another get request to retrieve the (firmwareVersion).bin file from Gitlab. If this is retrieved successfully, it writes this to the ESP and restarts it. The ESP now has the latest version of the firmware successfully installed.
+
+###### Security
+
+On the whole, the existing system is fairly secure. The main reason for this is because the firmware updates are retrieved from Gitlab using a secure transfer protocol known as HTTPS. This is secure for two reasons. One, it ensures the validity of the website you are connected with by checking the validity of the certificate from the server. In the context of the existing system, this means that the firmware will always be downloaded from the legitimate repository on Gitlab preventing the risk of an attacker transferring malicious code to the ESP32. 
+
+Secondly, HTTPS encrypts all communications between the client and the server. Again, in this context this removes the potential for an attacker to eavesdrop on the data transferred which could contain sensitive information such as network credentials. 
+
+
+### 9) Circuitry
 ----------
 
 See below the wiring involved in connecting the Neopixel featherwing and the Open PIR sensor - both of these are attached to the unPhone IOExpander;
