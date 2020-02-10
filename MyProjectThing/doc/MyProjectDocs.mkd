@@ -560,6 +560,44 @@ void fadePixels() {
 ```
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
+##### Testing 
+In addition to manually observing what colours the LEDs were displaying, outputting the incremental RGB values to console during the dawn period ensured that the correct brightness and ratios were being maintained:
+
+Example **purple** dawn colour - note that brightness is rounded to 2 decimal places but the whole float (0.003921569) is used to multiply the colour values.
+
+    Brightness: 0.00
+    1, 0, 1
+    Brightness: 0.01
+    1, 0, 1
+    Brightness: 0.01
+    2, 0, 2
+    Brightness: 0.02
+    2, 0, 2
+    Brightness: 0.02
+    3, 0, 3
+    Brightness: 0.02
+    3, 0, 3
+    Brightness: 0.03
+    4, 0, 4
+    Brightness: 0.03
+    4, 0, 4
+    Brightness: 0.04
+    5, 0, 5
+    Brightness: 0.04
+    5, 0, 5
+    Brightness: 0.04
+    6, 0, 6
+    Brightness: 0.05
+    6, 0, 6
+    Brightness: 0.05
+    7, 0, 7
+    ...
+    
+<br>
+<div align = "center">
+  <img src="images/dawnGif.gif" width="500"/>
+</div>
+<br>
 
 ### 5) Power Management
 ----
