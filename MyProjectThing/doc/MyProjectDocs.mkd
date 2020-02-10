@@ -13,6 +13,7 @@ For our project we decided to implement a Dawn simulator alarm clock. Simply put
 - Accurate time management
 - Local temperature and weather information
 - Landscape mode!
+- OTA firmware updates
 
 
 <br>
@@ -83,7 +84,7 @@ Before exploring the technicalities, presented below is a general overview of th
 ------
 <br>
 <div align = "center">
-  <img src="images/home_sketch4.png" width="500"/>
+  <img src="images/set_alarm_sketchX.png" width="500"/>
 </div>
 <br>
 
@@ -102,11 +103,13 @@ Before exploring the technicalities, presented below is a general overview of th
 
 8. **Increment/decrement alarm day** – Selecting the triangle to the right of the alarm day will increment to the next day of the week, and selecting the triangle to the left of the alarm day will decrement to the previous day of the week.
 
-9. **Set alarm** – Selecting the 'Set' button will create an alarm based on the time inputted by the user. If the alarm is set 'before' the current time, it will assume it is meant for the future (for instance - given the example in the diagram, setting the alarm for Thursday at 13:32 will create an alarm for 144 hours time).
+9. **Set alarm** – Selecting the 'SET' button will create an alarm based on the time inputted by the user. If the alarm is set 'before' the current time, it will assume it is meant for the future (for instance - given the example in the diagram, setting the alarm for Monday at 20:08 will create an alarm for 144 hours time).
+
+10. **Clear alarm** – Selecting the 'CLR' button will wipe the current alarm 
 
 <br>
 <div align = "center">
-  <img src="images/set_alarm_page.jpg" width="500"/>
+  <img src="images/setAlarmX.jpg" width="500"/>
 </div>
 <br>
 
@@ -344,6 +347,12 @@ EEPROM.commit();
 ```
 `arrayToStore` is then used in the Home Display class as an `extern` variable where the string for weather description is fetched from flash memory `EEPROM.get(0, arrayToStore)`. A limitation of saving data in flash memory however, is that there is a limited number of times it can be written to. Most devices are designed for around [100,000 to 1,000,000](https://randomnerdtutorials.com/esp32-flash-memory/) write operations, but can be read an unlimited number times - even with the lower bound of write operations this should not be an issue as the data will only be stored when the time is resynchronised and an API request is made during a momentary internet connection.
 
+Security
+
+The get request is secure as it utilizes the secure transfer protocol known as HTTPS. This is secure for two reasons. One, it ensures the validity of the website you are connected with by checking the validity of the certificate from the server. In the context of the existing system, this means that the firmware will always be downloaded from the legitimate repository on Gitlab preventing the risk of an attacker transferring malicious code to the ESP32.
+
+Secondly, HTTPS encrypts all communications between the client and the server. Again, in this context this removes the potential for an attacker to eavesdrop on the data transferred which could contain sensitive information such as network credentials.
+
 ### 3) The Alarm
 ----------
 
@@ -423,8 +432,81 @@ if (alarm_exist) {
 }
 ```
 
-Testing
+##### Testing
 
+To test the time to alarm calculations, we setup test cases for all of the logical variants in `AlarmUIElement.cpp` . I.e An alarm for the same day but the hours were less than the current hours or an alarm for the same day but the minutes were more than the current minutes. We then output the calculated number of seconds to the terminal along with the current test information.
+
+Below you can see the exact printout to the terminal:
+
+    The test time now is: Wednesday, 5:20
+    
+    Test 1
+    Logical case 1: Same day, hours >, mins >
+    Alarm time set for: Wednesday, 6:21
+    Seconds to Alarm:
+    3660
+    
+    
+    Test 2
+    Logical case 2: Same day, hours >, mins <
+    Alarm time set for: Wednesday, 6:19
+    Seconds to Alarm:
+    3540
+    
+    
+    Test 3
+    Logical case 3: Same day, hours <, mins >
+    Alarm time set for: Wednesday, 4:21
+    Seconds to Alarm:
+    601260
+    
+    
+    Test 4
+    Logical case 4: Same day, hours <, mins <
+    Alarm time set for: Wednesday, 4:19
+    Seconds to Alarm:
+    601140
+    
+    
+    Test 5
+    Logical case 1: Different day, hours >, mins >
+    Alarm time set for: Friday, 6:21
+    Seconds to Alarm:
+    435660
+    
+    
+    Test 6
+    Logical case 2: Different day, hours >, mins <
+    Alarm time set for: Saturday, 6:19
+    Seconds to Alarm:
+    349140
+    
+    
+    Test 7
+    Logical case 3: Different day, hours <, mins >
+    Alarm time set for: Monday, 4:21
+    Seconds to Alarm:
+    169260
+    
+    
+    Test 8
+    Logical case 4: Different day, hours < , mins <
+    Alarm time set for: Tuesday, 4:19
+    Seconds to Alarm:
+    82740
+    
+    
+    Test 9
+    Logical case 1: Right now
+    Alarm time set for: Wednesday, 5:20
+    Seconds to Alarm:
+    0
+
+Using the website: https://www.timeanddate.com/date/durationresult.html?d1=12&m1=2&y1=2020&d2=12&m2=2&y2=2020&h1=05&i1=20&s1=00&h2=06&i2=21&s2=00 you can then calculate the difference between two times. 
+
+After checking our results we discovered all of them were correct.
+
+*Note: To replicte the tests, set the boolean `testingCalc` to true in `AlarmUIElement.cpp`. When you set an alarm, the tests will be printed to console.* 
 <br>
 
 ### 4) NeoPixel Dawn Simulator 
@@ -479,7 +561,41 @@ void fadePixels() {
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
 ##### Testing 
-***
+In addition to manually observing what colours the LEDs were displaying, outputting the incremental RGB values to console during the dawn period ensured that the correct brightness and ratios were being maintained. Example **purple** dawn colour - note that brightness is rounded to 2 decimal places but the whole float (0.003921569) is used to multiply the colour values:
+
+    Brightness: 0.00
+    1, 0, 1
+    Brightness: 0.01
+    1, 0, 1
+    Brightness: 0.01
+    2, 0, 2
+    Brightness: 0.02
+    2, 0, 2
+    Brightness: 0.02
+    3, 0, 3
+    Brightness: 0.02
+    3, 0, 3
+    Brightness: 0.03
+    4, 0, 4
+    Brightness: 0.03
+    4, 0, 4
+    Brightness: 0.04
+    5, 0, 5
+    Brightness: 0.04
+    5, 0, 5
+    Brightness: 0.04
+    6, 0, 6
+    Brightness: 0.05
+    6, 0, 6
+    Brightness: 0.05
+    7, 0, 7
+    ...
+    
+<br>
+<div align = "center">
+  <img src="images/dawnGif.gif" width="500"/>
+</div>
+<br>
 
 ### 5) Power Management
 ----
@@ -787,7 +903,27 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
 ```
 
-### 8) Circuitry
+### 8) OTA Updates
+----------
+###### Why bother with OTA?
+
+The very nature of the Internet of Things makes OTA updating a necessary requirement to ensure firmware is kept up to date. Indeed, millions of devices make-up the IOT and updating these all individually in person is neither a cost-effective nor a practical way to install the latest firmware. This is why OTA processes are so important: it enables manufacturers who incorporate the microcontroller into their device the ability to update the devices over the internet. This very fact describes the importance of provisioning - it enables OTA updates to take place. 
+
+In regards to why we implemented it in our own system, if updates are required such as changing timezone or daylight saving hours, the implementation of an OTA update will be able to correct the error in terms of time. More importantly perhaps, it's more practical when put in the context of bugs - a quick fix can be quickly applied to all devices with an OTA implementation.
+
+###### The implementation in the existing system
+
+
+To upload the latest version of the firmware to Gitlab, so it is ready to be fetched by the ESP, the user writes ‘make push-firmware’ in the terminal. This compiles the firmware and creates a version.txt file which holds the value of the compiled firmwares version number. It then pushes these both to Gitlab in the firmware directory.
+
+The device will check for an update whenever a connection is established during the boot process. It begins by calling a function called joinmeOTAUpdate, which in turn calls another function called joinMeCloudGet. This creates a get request to retrieve an integer value containing the latest version number of the firmware available on Gitlab. It then cross references this with the version of the firmware currently on the ESP. If it is outdated it means the firmware needs to be upgraded. The system therefore makes a final call to joinmeCloudGet which creates another get request to retrieve the (firmwareVersion).bin file from Gitlab. If this is retrieved successfully, it writes this to the ESP and restarts it. The ESP now has the latest version of the firmware successfully installed.
+
+###### Security
+
+The get request to Gitlab is fairly secure. The main reason for this is because the firmware updates are retrieved from Gitlab using a secure transfer protocol known as HTTPS.
+
+
+### 9) Circuitry
 ----------
 
 See below the wiring involved in connecting the Neopixel featherwing and the Open PIR sensor - both of these are attached to the unPhone IOExpander;
