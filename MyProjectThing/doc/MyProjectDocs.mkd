@@ -506,7 +506,7 @@ Using the website: https://www.timeanddate.com/date/durationresult.html?d1=12&m1
 
 After checking our results we discovered all of them were correct.
 
-*Note: To replicte the tests, set the boolean test to true in AlarmUIElement.cpp. When you set an alarm, the tests will be printed to console.* 
+*Note: To replicte the tests, set the boolean `testingCalc` to true in `AlarmUIElement.cpp`. When you set an alarm, the tests will be printed to console.* 
 <br>
 
 ### 4) NeoPixel Dawn Simulator 
