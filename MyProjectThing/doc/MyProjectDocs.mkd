@@ -478,6 +478,9 @@ void fadePixels() {
 ```
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
 
+##### Testing 
+***
+
 ### 5) Power Management
 ----
 With any IOT device, efficient power management is a critical characteristic to manage. While it is true that many projects such as the air quality sensor need to be efficient enough to survive weeks without a charge, the context of an alarm clock means that this is not a requirement with our project. Despite this, we decided to make the device as efficient as possible so that it doesnt have to remain on charge. 
@@ -615,11 +618,12 @@ void Adafruit_HX8357::setRotation(uint8_t m) {
   switch(rotation) {
     case(0):
      ...
-    case(3):
-      m = MADCTL_MX | MADCTL_MV | MADCTL_RGB;
+    case(1):
+      m       = MADCTL_MV | MADCTL_MY | MADCTL_RGB;
       _width  = HX8357_TFTHEIGHT;
       _height = HX8357_TFTWIDTH;
       break;
+     ...
   }
   sendCommand(HX8357_MADCTL, &m, 1);
 }
@@ -674,7 +678,7 @@ void TFT_HX8357::setRotation(uint8_t m)
   }
 }
  ```
-`case 1: // Landscape (Portrait + 90)` then became our new `setRotation(1)` in the `Adafruit_HX8357.cpp` library which produced the desired unmirrored landscape orientation:
+We then adopted `case 1: // Landscape (Portrait + 90)` which became our new `setRotation(1)` in the `Adafruit_HX8357.cpp` library which produced the desired unmirrored landscape orientation:
 ```c
 void Adafruit_HX8357::setRotation(uint8_t m) {
   rotation = m & 3; // can't be higher than 3

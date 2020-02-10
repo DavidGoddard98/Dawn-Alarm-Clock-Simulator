@@ -20,6 +20,7 @@ extern "C" {
 using namespace std;
 
 //GENERAL CONSTANTS AND INSTANTS////////////////////////////////////////////////
+int firmwareVersion = 1;    // keep up-to-date! (used to check for updates)
 int addr = 0;
 int loopIter = 0;        // loop slices
 const byte BM_I2Cadd   = 0x6b; // the chip lives here on I²C
@@ -188,6 +189,8 @@ void loop() {
 
   long int touchTimer = millis(); //counter to determine how long since user touched screen
   while(1) {
+
+    Serial.print("Firmware update");
     setTime(); //update time each iteration
 
     //handles touch
@@ -285,6 +288,10 @@ void fetchTime() {
   joinmeManageWiFi(apSSID.c_str(), apPassword.c_str());
   Serial.printf("wifi manager done\n\n");
   delay(1000); //let wifi settle
+
+  Serial.printf("Checking for firmware updates");
+  joinmeOTAUpdate(firmwareVersion, _GITLAB_PROJ_ID,_GITLAB_TOKEN,"MyProjectThing%2Ffirmware%2F");
+
 
   //let wifi AP settle
   if (WiFi.status() != WL_CONNECTED) {
