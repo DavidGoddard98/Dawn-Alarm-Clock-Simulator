@@ -55,7 +55,7 @@ uint64_t timeDiff, timeNow; //RTC clock variables
 #include "EEPROM.h"
 
 //constants and instants
-#define	NEOPIXEL_PORT	A7 //Pin A7 || 15
+#define	NEOPIXEL_PORT	15 //Pin A7 || 15
 #define	NR_LED 32
 #define	NEOPIXEL_RMT_CHANNEL		RMT_CHANNEL_2
 pixel_settings_t px;
@@ -501,7 +501,7 @@ void updateTime() {
 
   //seconds = seconds * (1- (seconds * 0.0000016));  //apply calculated offset (the longer it sleeps the larger the offset)
 
-  seconds = seconds * 0.9917;
+  seconds = seconds * 0.9890;
 
 
   //#milis

@@ -18,6 +18,8 @@ extern time_t alarm_time;
 extern time_t dawn_time;
 extern time_t time_now;
 
+void pixelsOff();
+
 //Vectors to store positions of UP and RIGHT arrows.. (NOTE THIS IS V.WEIRD IMPLEMENTATION...)
 //Right arrows dynamically change and move around depending on length of day...
 //There are also two up arrows so these are also stored in vector.
@@ -50,7 +52,7 @@ bool AlarmUIElement::handleTouch(long x, long y) {
   //Decrement the displayed time if DOWN or LEFT arrow pressed
   changeTimeDL(x, y);
   //confirm button sets alarm time based on what user has toggled
-  if (confirm(x,y) || x>= 430 && y  <=25) {
+  if (alarmAction(x,y) || x>= 430 && y  <=25) {
     return true;
   }
   return false;
@@ -68,6 +70,8 @@ void AlarmUIElement::draw(){
     the_day = convertToString(date1_str_day);
     toggle = 1;
     dayAsNum = convertDayToNum(the_day); //used for string array of days
+    m_tft->fillRoundRect(390, 215, 80, 42, 15, ORANGE);
+    m_tft->fillRoundRect(390, 270, 80, 42, 15, RED);
   }
   //clear vectors
   x_u_r.clear();
@@ -134,10 +138,11 @@ void AlarmUIElement::draw(){
   yCor = m_tft->getCursorY();
   drawRightArrow(xCor+ 25, 265); //dynamically changes depending on length of day...
   m_tft->setTextSize(2);
-
-  m_tft->fillRect(390, 245, 68, 40, ORANGE);
-  m_tft->setCursor(390, 277);
+  m_tft->setCursor(396, 248);
   m_tft->print("SET");
+  m_tft->setTextColor(YELLOW);
+  m_tft->setCursor(392, 303);
+  m_tft->print("CLR");
 }
 
 //Methods to clear parts of screen to show any update
@@ -158,14 +163,20 @@ void AlarmUIElement::clearMessage() {
 
 }
 
-//When confirm button pressed set alarm to time that has been toggled by user
-bool AlarmUIElement::confirm(long x, long y){
-  if (x>=390 && y >= 245 && y <= 285) { //position of confirm box
+//When confirm button pressed set/clear alarm to time that has been toggled by user
+bool AlarmUIElement::alarmAction(long x, long y){
+  if (x>=390 && y >= 215 && y <= 257) { //position of confirm box
     Serial.print("confirm alarm");
     //this method calculate seconds until alarm based on what user toggled
     calcTime2Alarm();
     alarm_exist = true;
-    alarmNotSet = false;
+    pixelsOff();
+    return true;
+  }
+  else if (x>=390 && y >= 270 && y <= 312) {
+    Serial.print("alarm cleared");
+    alarm_exist = false;
+    pixelsOff();
     return true;
   }
   return false;

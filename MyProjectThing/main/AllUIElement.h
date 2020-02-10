@@ -71,7 +71,7 @@ class AlarmUIElement: public UIElement { ///////////////////////////////////
     String getNextDay(String a_day);
     String convertToString(char* a);
     int convertDayToNum(String a_day);
-    bool confirm(long x, long y);
+    bool alarmAction(long x, long y);
     void clearMessage();
 
 };
