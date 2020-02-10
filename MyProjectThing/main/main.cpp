@@ -20,7 +20,7 @@ extern "C" {
 using namespace std;
 
 //GENERAL CONSTANTS AND INSTANTS////////////////////////////////////////////////
-int firmwareVersion = 1;    // keep up-to-date! (used to check for updates)
+int firmwareVersion = 2;    // keep up-to-date! (used to check for updates)
 int addr = 0;
 int loopIter = 0;        // loop slices
 const byte BM_I2Cadd   = 0x6b; // the chip lives here on I²C
@@ -190,7 +190,6 @@ void loop() {
   long int touchTimer = millis(); //counter to determine how long since user touched screen
   while(1) {
 
-    Serial.print("Firmware update");
     setTime(); //update time each iteration
 
     //handles touch
@@ -500,7 +499,10 @@ void updateTime() {
   //#secs
   int seconds = floor((timeDiff / 1000000));
 
-  seconds = seconds * (1- (seconds * 0.0000016));  //apply calculated offset (the longer it sleeps the larger the offset)
+  //seconds = seconds * (1- (seconds * 0.0000016));  //apply calculated offset (the longer it sleeps the larger the offset)
+
+  seconds = seconds * 0.9917;
+
 
   //#milis
   int milis = floor(timeDiff % 1000000);

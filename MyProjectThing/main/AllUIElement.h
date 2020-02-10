@@ -65,6 +65,7 @@ class AlarmUIElement: public UIElement { ///////////////////////////////////
     void clearMins();
     void clearHours();
     void testing(String test_day, int test_hours, int test_mins);
+    void testTimeCalc();
     void clearDay();
     void calcTime2Alarm();
     String getNextDay(String a_day);
