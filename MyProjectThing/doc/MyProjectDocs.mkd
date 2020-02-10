@@ -164,7 +164,6 @@ Before exploring the technicalities, presented below is a general overview of th
 # <div align="center">Technical Documentation</div>
 The following section will elaborate more on the technical features of the Dawn Alarm Clock, as well as describing how challenging problems discovered during development were overcome.
 
-
 ### 1) Time Management
 ----
 
@@ -289,8 +288,6 @@ E.g
 
 This improvement influenced us to extend the two hour checking period to every 5 hours. A 26.5 second avg drift (5.3*5) didnt seem like a bad price to pay for extended battery life. 
 
-<br>
-
 ### 2) Weather API
 ----------
 Temperature, weather description, wind speed and humidity shown on the Home Display are pulled from a HTML request made to [Open Weather API](https://openweathermap.org/api). After a free subscription to their API weather service, we could call current weather data for one location using a generated key that came with the subscription: 
@@ -331,7 +328,7 @@ if (respCode == HTTP_CODE_OK) {
 ```
 
 ##### Flash Memory
-A peculiar issue we ran into when attempting to save the weather data in memory (so that  information can be retrieved and displayed without establishing an internet connection) was that the RTC memory was unable to retain strings or char arrays after wakeup, thus the weather description had to be stored in some other way; **flash** memory. To read and write from the ESP32 flash memory, we need to use the EEPROM library that allows us to write data in specifc memory locations:
+A peculiar issue we ran into when attempting to save the weather data in memory (so that  information can be retrieved and displayed without establishing an internet connection) was that the RTC memory was unable to retain strings or char arrays after wakeup, thus the weather description had to be stored in some other way - **flash** memory. To read and write from the ESP32 flash memory, we need to use the EEPROM library that allows us to write data in specifc memory locations:
 ```c
 #include "EEPROM.h"
 ...
@@ -434,7 +431,7 @@ Testing
 ------
 Immediately after setting up the NeoPixel libraries and testing the functionality, we came across a subtle but evident ghosting problem with the LEDs. Despite explicitly setting all the pixels to OFF (equivalent to setting their RGB values to 0,0,0), there would be times that seemingly arbitrary pixels would appear in random colours. Cutting the power being supplied from the battery entirely `unPhone::setShipping(true)` would not change the outcome either. 
 
-The NeoPixel LED module was souldered onto 2.54mm breakway male-female header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
+The NeoPixel LED module was souldered onto breakway header connectors over the unPhone expander which allowed for a semi-permanent installation. This proved to be a practical design when attempting to fix the ghosting issue of the pixels, as perhaps it was due to the `NEOPIXEL_PORT` pin that was initially defined for the LEDs. However, disabling the physical pin on the Adafruit NeoPixel and defining a new pin did not solve the issue.
 
 Nevertheless, the main concern was with the first pixel that was consistently not behaving as intended that we did find a solution for. We discovered that explicitly setting the first pixel to OFF followed by a short delay would prevent it from ghosting. Moreover, setting a delay between the state of the pixels and displaying them appeared to ameliorate the ghosting issue as a whole:   
 
@@ -480,8 +477,6 @@ void fadePixels() {
 }
 ```
 The dawn is only active during the 4 minutes prior to the alarm, which means that any snooze executed during that time will temporarily stop the LEDs (as snoozing will add 5 minutes to the alarm time).
-
-<br>
 
 ### 5) Power Management
 ----
@@ -609,8 +604,6 @@ if (loopIter % 80 == 0) {
 }
 
 ```
-
-
 
 ### 7) Orientation & Touch Management  
 ------
@@ -789,8 +782,6 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_HX8357_Library \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
 ```
-<br>
-<br> 
 
 ### 8) Circuitry
 ----------
@@ -829,8 +820,6 @@ Had we had more time for the project, there were a number of ideas and features 
 * **Customisable dawn time** – Perhaps the most reasonable improvement that could have been made had we had a bit more time. Currently dawn is set to come on 4 minutes before the alarm and cannot be changed. 
 * **Set alarm longer than 7 days into the future** – One of the most time consuming features of the project was being able to set an alarm ***up to*** 7 days into the future, from just 24 hours into the future. Implementing this feature would not have come without its unforseen technicalities.
 * **Recurring alarms (more than 1 alarm)** – In addition to adapting the core functionality in many areas of code, we would also need to consider changing many UI elements to accomodate more active alarms.   
-
-<br>
 
 ### Libraries used
 ------
