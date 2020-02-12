@@ -881,8 +881,35 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
   $(COM3505_2019-STUDENT_LIB)/Adafruit_STMPE610 \
 ```
 
-### 8) OTA Updates
+### 8) Provisioning & OTA Updates
 ----------
+
+###### What is provisioning?
+
+Devices that have limited hardware can connect to a Wi-Fi network by a process called provisioning. They can either be set up in station mode which enables them to connect to a previously saved AP (access point), or in AP mode - which is achieved in most cases by using another external device (with a browser) that allows a user to supply the network information via the newly created web server by the IoT device.
+
+###### Implementation in the system
+
+1. On initial startup (or when the time and weather need to be fetched), the ESP sets up in station mode (allows to connect itself to a Wi-Fi network) and attempts to connect to a previously saved AP.
+
+2. If unsuccessful, it moves into Access Point mode to create its own network and starts a DNS and WebServer for other devices to connect to it.
+
+3. Connecting to the newly created AP via any Wi-Fi enabled device with a browser will prompt the user to enter the apKey (if any) of the AP.
+
+4. Once successfully connected to the AP, a pop-up will be displayed showing the configuration portal, or attempting to visit any domain will redirect to the configuration portal due to the Captive Portal and DNS server.
+
+5. After selecting and entering the password for one of the scanned APs, the ESP will attempt to connect – if successful, the application is now in control with an established Wi-Fi connection. If not, reconnect to the AP and reconfigure.
+
+##### Security 
+
+The password to the ESPs access point is stored in a seperate file called private.h rather than in plain text in the main file where the access point is setup. Then, upon compiling it is flashed into memory.  This means that if an attacker was able to snoop on the connection between Gitlab and the ESP, although they would see the compiled .bin file, it would be difficult to detect what the password was. In other words, the implementation has security through obscurity.
+
+One aspect of the provisioning implementation that isnt secure  is the fact that the ESPs mac address is used as the APs SSID. The vulnerability of this is that if an attacker is on the same network as you they could intercept your traffic by posing as the networks router. It would therefore be a better idea to use store the SSID as a different term. 
+
+A further insecurity is the fact that on the config portal, the password is stored as plain text and therefore if anyone was listening in on the network they would be able to see the user inputted credentials. A solution to this, would include replacing the text area password input field with a suitable password input.
+
+### OTA
+
 ###### Why bother with OTA?
 
 The very nature of the Internet of Things makes OTA updating a necessary requirement to ensure firmware is kept up to date. Indeed, millions of devices make-up the IOT and updating these all individually in person is neither a cost-effective nor a practical way to install the latest firmware. This is why OTA processes are so important: it enables manufacturers who incorporate the microcontroller into their device the ability to update the devices over the internet. This very fact describes the importance of provisioning - it enables OTA updates to take place. 
@@ -898,8 +925,7 @@ The device will check for an update whenever a connection is established during 
 
 ###### Security
 
-The get request to Gitlab is fairly secure. The main reason for this is because the firmware updates are retrieved from Gitlab using a secure transfer protocol known as HTTPS.
-
+The get request to Gitlab is fairly secure. The main reason for this is because the firmware updates are retrieved from Gitlab using a secure transfer protocol known as HTTPS. See the weather API section for more on this.
 
 ### 9) Circuitry
 ----------
