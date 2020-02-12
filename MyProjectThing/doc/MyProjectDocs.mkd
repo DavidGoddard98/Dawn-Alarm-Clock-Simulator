@@ -888,7 +888,7 @@ BIGDEMOIDF_LIBS := $(UNPHONE_SRC_DIR) \
 
 Devices that have limited hardware can connect to a Wi-Fi network by a process called provisioning. They can either be set up in station mode which enables them to connect to a previously saved AP (access point), or in AP mode - which is achieved in most cases by using another external device (with a browser) that allows a user to supply the network information via the newly created web server by the IoT device.
 
-###### Implementation in the system
+###### Implementation in the system - Using WiFi manager library
 
 1. On initial startup (or when the time and weather need to be fetched), the ESP sets up in station mode (allows to connect itself to a Wi-Fi network) and attempts to connect to a previously saved AP.
 
@@ -898,7 +898,21 @@ Devices that have limited hardware can connect to a Wi-Fi network by a process c
 
 4. Once successfully connected to the AP, a pop-up will be displayed showing the configuration portal, or attempting to visit any domain will redirect to the configuration portal due to the Captive Portal and DNS server.
 
-5. After selecting and entering the password for one of the scanned APs, the ESP will attempt to connect – if successful, the application is now in control with an established Wi-Fi connection. If not, reconnect to the AP and reconfigure.
+5. After selecting and entering the password for one of the scanned APs, the ESP will attempt to connect – if successful, the application is now in control with an established Wi-Fi connection. If not, there is four minutes given to connect to the AP, afterwhich the ESP will restart.
+    
+```c++
+   joinmeManageWiFi(apSSID.c_str(), apPassword.c_str());
+    //...   
+    //let wifi AP settle
+      if (WiFi.status() != WL_CONNECTED) {
+        while(WiFi.status() != WL_CONNECTED) {
+          if (!powerOn()) powerMode(); //turn off if switch off
+          if (micros() >= 300000000) { //4 mins to connect to AP
+            ESP.restart();
+          }
+        }
+      }
+```
 
 ##### Security 
 
