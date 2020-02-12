@@ -952,6 +952,22 @@ See below the wiring involved in connecting the Neopixel featherwing and the Ope
     
 <br>
 
+### Size of Firmware
+------
+
+With any IOT application it is important to restrict the size of the firmware and ensure efficiency at any stage. After running the command `make size` in the directory of the project a calculation is made to estimate the size of the firmware. See below;
+
+    Total sizes:
+    DRAM .data size:    14812 bytes
+    DRAM .bss  size:    34672 bytes
+    Used static DRAM:   49484 bytes ( 131252 available, 27.4% used)
+    Used static IRAM:   94584 bytes (  36488 available, 72.2% used)
+    Flash code:         889186 bytes
+    Flash rodata:       297328 bytes
+    Total image size:~1295910 bytes (.bin may be padded larger)
+    
+As shown there is still a fair amount of space left meaning any future improvements (see below) could be sufficiently implemented. 
+
 
 ### Future Improvements
 ------
