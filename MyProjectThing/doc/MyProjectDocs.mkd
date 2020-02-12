@@ -181,7 +181,6 @@ Early implementations involved setting the time manually and then using the `int
 | 14:30:30           | 15:30:30 | 15:31:58      | 1 hour  | 88s             |
 | 12:24:35           | 14:24:35 | 14:27:44      | 2 hours | 189s            |
 | 15:34:02           | 16:34:02 | 16:38:40      | 3 hours | 278s            |
-
 *Avg drift p/hour = 27.7s*
 
 Although this early implementation provided a way of tracking the time, it was clearly not an approriate solution by itself to be used for telling the time. For one, there was no way of resetting the time except from manually burning new firmware. This meant the drift would continue to make the time more and more inaccurate. Also, if the ESP was reset or the power was lost, the memory allocated to holding the time would be wiped. These problems prompted us to implement a function `fetchTime()` which would semi-frequently automatically syncronize the time to an atomic clock using a `Network Time Protocol (NTP)`. This solution would ensure that an accurate time could be frequently obtained, avoiding the issue of an inaccurate clock. Also, if the device was ever reset, then the time could be reset automatically.
@@ -347,7 +346,7 @@ EEPROM.commit();
 ```
 `arrayToStore` is then used in the Home Display class as an `extern` variable where the string for weather description is fetched from flash memory `EEPROM.get(0, arrayToStore)`. A limitation of saving data in flash memory however, is that there is a limited number of times it can be written to. Most devices are designed for around [100,000 to 1,000,000](https://randomnerdtutorials.com/esp32-flash-memory/) write operations, but can be read an unlimited number times - even with the lower bound of write operations this should not be an issue as the data will only be stored when the time is resynchronised and an API request is made during a momentary internet connection.
 
-Security
+##### Security
 
 The get request is secure as it utilizes the secure transfer protocol known as HTTPS. This is secure for two reasons. One, it ensures the validity of the website you are connected with by checking the validity of the certificate from the server. In the context of the existing system, this means that the firmware will always be downloaded from the legitimate repository on Gitlab preventing the risk of an attacker transferring malicious code to the ESP32.
 
@@ -771,26 +770,7 @@ void TFT_HX8357::setRotation(uint8_t m)
      _width  = HX8357_TFTHEIGHT;
      _height = HX8357_TFTWIDTH;
      break;
-   case 4: // Portrait
-     writedata(MADCTL_BGR | MADCTL_MX | MADCTL_MY);
-     _width  = HX8357_TFTWIDTH;
-     _height = HX8357_TFTHEIGHT;
-     break;
-   case 5: // Landscape (Portrait + 90)
-     writedata(MADCTL_BGR | MADCTL_MV | MADCTL_MX);
-     _width  = HX8357_TFTHEIGHT;
-     _height = HX8357_TFTWIDTH;
-     break;
-   case 6: // Inverter portrait
-     writedata( MADCTL_BGR);
-     _width  = HX8357_TFTWIDTH;
-     _height = HX8357_TFTHEIGHT;
-     break;
-   case 7: // Inverted landscape
-     writedata(MADCTL_BGR | MADCTL_MV | MADCTL_MY);
-     _width  = HX8357_TFTHEIGHT;
-     _height = HX8357_TFTWIDTH;
-     break;
+    ...
   }
 }
  ```
@@ -865,7 +845,7 @@ void UIController::handleTouch() {
 This will position the origin at the top left of the screen and have the x-axis running along the top and y-axis running down the side. 
 
 ##### Getting Touch Point
-Something that became very apparent when interacting with elements on the screen was the delayed response between registering touches. For instance, touching anywhere on the Home Display would bring up the Menu, but then selecting a menu item would not normally direct you to that page because it would register the previous point that was touched on the Home Display as the one touched in the Menu. In other words, it was executing touches in a 'queue' that did not correspond correctly to the elements on the current page. This erroneous behaviour was due to not reading all the data in the buffer and resetting all ints when the buffer was empty:
+Something that became very apparent when interacting with elements on the screen was the delayed response between registering touches. For instance, touching anywhere on the Home Display would bring up the Menu, but then selecting a menu item would not normally direct you to the desired page because it would register the previous point that was touched on the Home Display. In other words, it was executing touches in a queue that did not correspond correctly to the elements on the current page. This erroneous behaviour was due to not reading all the data in the buffer and resetting all ints when the buffer was empty:
 ```c
 TS_Point Adafruit_STMPE610::getPoint() {
   uint16_t x, y;
