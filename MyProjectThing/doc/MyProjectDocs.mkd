@@ -671,7 +671,6 @@ In an attempt to make the calculations easier we'll say all 4 components listed 
 ##### Shipping mode
 If the power switch is used and the ESP is not connected by USB, then the device is put into shipping mode. This tells the BM to stop supplying power and therefore means 0mA are used (the most power efficient option). This does however mean that when the device is switched back on, all the memory has been wiped and therefore any desired alarms must be reset.
 
-<br>
 
 ### 6) Updating UI Elements 
 ------
