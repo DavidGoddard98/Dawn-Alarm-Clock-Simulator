@@ -148,7 +148,6 @@ Before exploring the technicalities, presented below is a general overview of th
 
 -----
 <br>
-<br>
 
 ### Result
 -----
@@ -915,7 +914,6 @@ See below the wiring involved in connecting the Neopixel featherwing and the Ope
 
 ###### Sparkfun Open PIR module   (Feather wing slot #3)
 
-<br>
 
     Ground: GRD
     OUT: Pin 27
@@ -923,13 +921,12 @@ See below the wiring involved in connecting the Neopixel featherwing and the Ope
     
 ###### Neopixel featherwing
 
-<br>
     
     Souldered onto 2.54mm breakway male-female header connectors
     VCC: VBAT / VUSB ( whichever gives greater V)
     Control pin: 6
     
-<br>
+
 
 ### Size of Firmware
 ------
