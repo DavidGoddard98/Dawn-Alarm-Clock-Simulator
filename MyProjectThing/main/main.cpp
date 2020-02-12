@@ -499,9 +499,7 @@ void updateTime() {
   //#secs
   int seconds = floor((timeDiff / 1000000));
 
-  //seconds = seconds * (1- (seconds * 0.0000016));  //apply calculated offset (the longer it sleeps the larger the offset)
-
-  seconds = seconds * 0.9890;
+  seconds = seconds * (1- (seconds * 0.0000016));  //apply calculated offset (the longer it sleeps the larger the offset)
 
 
   //#milis
