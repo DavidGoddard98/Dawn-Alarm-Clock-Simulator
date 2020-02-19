@@ -1,0 +1,355 @@
+Dear Theo Koorehpaz,
+
+Here are your preliminary marks for COM3505 project lab assessment, based on your Git repo at
+https://gitlab.com/tkoorehpaz1/com3505-2019-student/tree/bd55f741a1a782d901a1e7bbe097e264ad91e30b
+and your lab demo.
+
+Data indicates that your partner (if any) for this work was: David Goddard.
+
+Below details of what we found in your docs and code, followed by a summary of some of the data points we have for your work.
+
+We have preliminarily evaluated your work to be first class (approx. 90.0%): that's really excellent work, well done!
+
+If you find anything factually incorrect (especially in relation to the Git commit number I've used, or who you were partnering with, please let me know ASAP.
+
+All the best,
+Hamish
+
+
+This is a truly excellent project, well done! Documentation is clear and
+detailed with plenty of useful images, and the code well-structured. There is
+a lot of functionality in the device, and the use of the PIR and LED array a
+great bit of design. I particularly like the very thorough investigation and
+documentation of the touch screen issues, the landscape mode UI, and the clock
+drift compensation calculation. It would probably be better to check the
+status of the power switch before drawing anything on screen, and some
+references to source materials (e.g. on RTC drift) could have been nice, but
+I'm being very picky. One of the best I've seen. Good stuff!
+
+(Re. the neopixel ghosting issue, this is a known problem with the timing
+sensitivity of long strings of pixels, that has proved difficult or impossible
+to fix with the ESP. If you want to do another version using dotstar LEDs --
+which are less timing critical -- I'll provide you with the hardware, just let
+me know.)
+
+We found strong evidence of some or all of the following:
+
+- choice of viable project
+- base functionality and extensions
+- documentation
+  - exhibits understanding of the field
+  - comprehesive
+  - concise
+  - illustrations
+  - references
+  - clarity
+  - basic requirements
+  - enhancements made
+  - possible future enhancements
+  - specifics covered:
+    - how secure is the implementation?
+    - how efficient is the implementation?
+    - are there [m]any bugs?!
+    - how might it be improved?
+    - pseudocode for the main algorithm?
+- good code quality
+  - structure, readability, maintainability
+  - commenting and style
+  - interfaces minimal, simplicity maximal
+- process
+  - gitlab records
+  - GTA demo positive
+  - code and docs in the right places
+- testing
+  - documentation of appropriate testing
+  - implementation of testing
+  - data collection routines
+- teamwork
+
+
+
+Git data point summary:
+
+
+* bd55f74 -  (HEAD -> master, origin/master, origin/HEAD) Update MyProjectDocs.mkd (2020-02-12 12:00:03 +0000) <David Goddard>
+* e2affb0 -  Added provisioning (2020-02-12 11:56:51 +0000) <David Goddard>
+* 5d86e7c -  Update MyProjectDocs.mkd (2020-02-12 11:55:40 +0000) <Theo Koorehpaz>
+* 1a8f868 -  Update MyProjectDocs.mkd (2020-02-12 11:53:41 +0000) <Theo Koorehpaz>
+* 83a2a0d -  Update MyProjectDocs.mkd (2020-02-12 11:51:23 +0000) <Theo Koorehpaz>
+* 72fd0d3 -  Size of firmware (2020-02-12 11:32:34 +0000) <David Goddard>
+* 4da7dd5 -  Update main.cpp (2020-02-12 11:07:43 +0000) <David Goddard>
+* c38ca28 -  Update MyProjectDocs.mkd (2020-02-11 02:12:34 +0000) <Theo Koorehpaz>
+* 29d6814 -  added OTA firmware version 3 (2020-02-10 23:59:04 +0000) <Theo Koorehpaz>
+* c9086ae -  it's been a long ride (2020-02-10 23:50:20 +0000) <Theo Koorehpaz>
+*   eb270e7 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2020-02-10 23:16:19 +0000) <David goddard>
+|\  
+| * 458ed6f -  Update MyProjectDocs.mkd (2020-02-10 22:44:51 +0000) <Theo Koorehpaz>
+| * 0c2e86e -  Update MyProjectDocs.mkd (2020-02-10 22:42:13 +0000) <Theo Koorehpaz>
+| * 5fea015 -  Update MyProjectDocs.mkd (2020-02-10 22:37:47 +0000) <David Goddard>
+| * 6144641 -  Update MyProjectDocs.mkd (2020-02-10 22:34:08 +0000) <David Goddard>
+| * 6435fa9 -  Upload New File (2020-02-10 21:53:20 +0000) <Theo Koorehpaz>
+| * 890e085 -  Update MyProjectDocs.mkd (2020-02-10 21:34:13 +0000) <Theo Koorehpaz>
+| * 4f282d2 -  Update MyProjectDocs.mkd (2020-02-10 21:30:51 +0000) <Theo Koorehpaz>
+| * f4e7fe8 -  Update MyProjectDocs.mkd (2020-02-10 21:23:29 +0000) <David Goddard>
+| * d5cfb96 -  Upload New File (2020-02-10 21:21:26 +0000) <Theo Koorehpaz>
+| * 02f04a6 -  Upload New File (2020-02-10 21:20:56 +0000) <Theo Koorehpaz>
+| * 040750d -  Update MyProjectDocs.mkd (2020-02-10 21:13:57 +0000) <David Goddard>
+| * 956c2c3 -  Delete home_alarm_set.jpg (2020-02-10 21:05:36 +0000) <Theo Koorehpaz>
+| * 51ab2e9 -  Delete home_front.jpg (2020-02-10 21:05:19 +0000) <Theo Koorehpaz>
+| * d10f9dc -  Delete back_top.jpg (2020-02-10 21:03:17 +0000) <Theo Koorehpaz>
+* | 38b04de -  testing for time calculations done (2020-02-10 23:16:03 +0000) <David goddard>
+|/  
+* c077d0e -  added OTA firmware version 2 (2020-02-10 21:02:33 +0000) <David goddard>
+* bd069c6 -  Delete home_no_alarm2.jpg (2020-02-10 21:01:54 +0000) <Theo Koorehpaz>
+* 2471711 -  Delete home_no_alarm_front.jpg (2020-02-10 21:01:42 +0000) <Theo Koorehpaz>
+* 93f9645 -  Delete back_led.jpg (2020-02-10 21:01:04 +0000) <Theo Koorehpaz>
+* 2aaf164 -  Delete home_sketch4.png (2020-02-10 21:00:25 +0000) <Theo Koorehpaz>
+* 5b30d6a -  Delete home_no_alarm.jpg (2020-02-10 20:59:12 +0000) <Theo Koorehpaz>
+* a17d543 -  Delete home_alarm_dawn.jpg (2020-02-10 20:58:46 +0000) <Theo Koorehpaz>
+* e6ae8f7 -  Delete home_sketch.png (2020-02-10 20:58:01 +0000) <Theo Koorehpaz>
+* b2e02b8 -  Delete home_sketch2.png (2020-02-10 20:57:50 +0000) <Theo Koorehpaz>
+* 49d1677 -  Delete newhome_sketch.png (2020-02-10 20:57:36 +0000) <Theo Koorehpaz>
+* 88ba3b7 -  Delete home_alarm_4min.jpg (2020-02-10 20:56:41 +0000) <Theo Koorehpaz>
+* 9f4c514 -  Delete home_alarm_2min.jpg (2020-02-10 20:56:31 +0000) <Theo Koorehpaz>
+* e8ac131 -  Delete back2.jpg (2020-02-10 20:51:51 +0000) <Theo Koorehpaz>
+* 16cf41a -  Delete back.jpg (2020-02-10 20:51:16 +0000) <Theo Koorehpaz>
+* dbad50f -  Delete alarm_sketch3.png (2020-02-10 20:51:02 +0000) <Theo Koorehpaz>
+*   9f64e53 -  hm (2020-02-10 20:45:30 +0000) <David goddard>
+|\  
+| * e18f204 -  Update MyProjectDocs.mkd (2020-02-10 20:19:49 +0000) <Theo Koorehpaz>
+* | 58b39cb -  added OTA firmware version 1 (2020-02-10 20:40:22 +0000) <David goddard>
+|/  
+* 6fb13e9 -  UI config update (2020-02-10 19:46:39 +0000) <David goddard>
+* b024e08 -  Update MyProjectDocs.mkd (2020-02-10 17:26:40 +0000) <Theo Koorehpaz>
+*   a0be3d0 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2020-02-08 00:39:21 +0000) <Theo Koorehpaz>
+|\  
+| * b1512c2 -  Update MyProjectDocs.mkd (2020-02-08 00:38:05 +0000) <Theo Koorehpaz>
+* | 298af2f -  big merge boi (2020-02-08 00:38:47 +0000) <Theo Koorehpaz>
+|/  
+*   d534f87 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2020-02-07 18:57:18 +0000) <David goddard>
+|\  
+| * 147883b -  Update MyProjectDocs.mkd (2020-02-06 18:09:37 +0000) <Theo Koorehpaz>
+| * 64629a9 -  Update MyProjectDocs.mkd (2020-01-28 23:54:21 +0000) <Theo Koorehpaz>
+| * aba98d1 -  Update MyProjectDocs.mkd (2020-01-28 23:52:08 +0000) <Theo Koorehpaz>
+| * b3ecdb3 -  Update MyProjectDocs.mkd (2020-01-28 22:09:29 +0000) <Theo Koorehpaz>
+| * ccbd38d -  Update MyProjectDocs.mkd (2020-01-28 21:31:52 +0000) <Theo Koorehpaz>
+| * a24cc6d -  Update MyProjectDocs.mkd (2020-01-28 21:30:19 +0000) <Theo Koorehpaz>
+| * 630bae7 -  Update MyProjectDocs.mkd (2020-01-28 20:50:05 +0000) <Theo Koorehpaz>
+| * 752fee3 -  Upload New File (2020-01-28 20:45:43 +0000) <Theo Koorehpaz>
+| * 2238e12 -  Update MyProjectDocs.mkd (2020-01-28 20:44:43 +0000) <Theo Koorehpaz>
+| * c80c1dc -  Update MyProjectDocs.mkd (2020-01-28 18:21:41 +0000) <Theo Koorehpaz>
+| * 76785b7 -  Upload New File (2020-01-28 17:54:39 +0000) <Theo Koorehpaz>
+| * cf80684 -  Delete updatedSketch.png (2020-01-28 17:54:23 +0000) <Theo Koorehpaz>
+| * 8caa876 -  Upload New File (2020-01-28 17:54:17 +0000) <Theo Koorehpaz>
+| * 6da8248 -  Update MyProjectDocs.mkd (2020-01-28 17:53:56 +0000) <Theo Koorehpaz>
+| * 8bb374a -  Upload New File (2020-01-28 17:47:03 +0000) <Theo Koorehpaz>
+| * d6f4d45 -  Delete newDisplay.jpg (2020-01-28 17:46:46 +0000) <Theo Koorehpaz>
+| * 40a3e3f -  Upload New File (2020-01-28 17:46:29 +0000) <Theo Koorehpaz>
+| * 18b7eaa -  Upload New File (2020-01-28 17:45:40 +0000) <Theo Koorehpaz>
+| * db1dc98 -  Delete newDisplay.jpg (2020-01-28 17:45:23 +0000) <Theo Koorehpaz>
+| * 0cd49ee -  Upload New File (2020-01-28 17:44:20 +0000) <Theo Koorehpaz>
+| * fb000f1 -  Delete newhome_sketch.png (2020-01-28 17:38:36 +0000) <Theo Koorehpaz>
+| * ce64c3b -  Upload New File (2020-01-28 17:37:35 +0000) <Theo Koorehpaz>
+| * 8e4675f -  Upload New File (2020-01-28 17:36:12 +0000) <Theo Koorehpaz>
+| * b198624 -  Delete newhome_sketch.png (2020-01-28 17:36:00 +0000) <Theo Koorehpaz>
+| * e1616d1 -  Upload New File (2020-01-28 17:34:26 +0000) <Theo Koorehpaz>
+* |   7f6ed3d -  Committing (2020-02-07 18:53:10 +0000) <David goddard>
+|\ \  
+| |/  
+| * 18484e6 -  Update MyProjectDocs.mkd (2020-01-28 00:56:04 +0000) <David Goddard>
+| * 5390b6d -  Update MyProjectDocs.mkd (2020-01-27 23:02:01 +0000) <David Goddard>
+| * 6d0e1b2 -  Update MyProjectDocs.mkd (2020-01-27 20:49:55 +0000) <David Goddard>
+* | 50ad668 -  Started testing alarm (2020-01-28 00:57:25 +0000) <David goddard>
+|/  
+*   93e9061 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2020-01-27 00:57:37 +0000) <David goddard>
+|\  
+| * 6fc3da5 -  Update MyProjectDocs.mkd (2020-01-27 00:54:50 +0000) <David Goddard>
+| * cf44ef7 -  Added future improvements to documantation (2020-01-27 00:49:18 +0000) <Theo Koorehpaz>
+| * a1e82e0 -  Update MyProjectDocs.mkd (2020-01-26 23:51:14 +0000) <Theo Koorehpaz>
+| * 8a12746 -  Update MyProjectDocs.mkd (2020-01-26 23:48:22 +0000) <Theo Koorehpaz>
+| * 32aa5c5 -  Minor edit (2020-01-26 23:42:30 +0000) <Theo Koorehpaz>
+| * 3322d2d -  Added orientation and touch management to documentation (2020-01-26 23:41:19 +0000) <Theo Koorehpaz>
+* | 692a6c3 -  Implemented time offset (2020-01-27 00:57:12 +0000) <David goddard>
+|/  
+* c5a4283 -  Upload New File (2020-01-26 19:58:24 +0000) <Theo Koorehpaz>
+* 7433afc -  Upload New File (2020-01-26 19:58:01 +0000) <Theo Koorehpaz>
+* 3b01faa -  .. (2020-01-26 19:52:37 +0000) <David goddard>
+*   74b6fc6 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2020-01-26 19:47:53 +0000) <David goddard>
+|\  
+| * 499916d -  Update MyProjectDocs.mkd (2020-01-26 18:28:46 +0000) <David Goddard>
+| * 475fe81 -  More minor edits (2020-01-26 17:59:24 +0000) <Theo Koorehpaz>
+| * 0e40996 -  Minor edits (2020-01-26 17:54:30 +0000) <Theo Koorehpaz>
+| * 67314f6 -  Typo (2020-01-26 17:41:19 +0000) <Theo Koorehpaz>
+| * d0590cd -  Added Updating UI Elements in documentation (2020-01-26 17:37:47 +0000) <Theo Koorehpaz>
+| * bdeaa23 -  Upload New File (2020-01-26 16:01:39 +0000) <Theo Koorehpaz>
+| * 0824f5d -  Upload New File (2020-01-26 14:49:14 +0000) <Theo Koorehpaz>
+| * 37df5c3 -  Added NeoPixel & Dawn technical stuff (2020-01-25 20:17:40 +0000) <Theo Koorehpaz>
+| * 3861fd8 -  Update MyProjectDocs.mkd (2020-01-25 20:02:45 +0000) <David Goddard>
+* | f9dc272 -  Bug fixes in relation to time 2 alarm) (2020-01-26 19:47:14 +0000) <David goddard>
+|/  
+*   015483b -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2020-01-25 17:05:46 +0000) <David goddard>
+|\  
+| * 320ace1 -  Polished formatting (2020-01-25 15:58:01 +0000) <Theo Koorehpaz>
+| * b6a8750 -  Upload New File (2020-01-25 15:37:10 +0000) <Theo Koorehpaz>
+| * 1fe01fb -  Quick title fix (2020-01-24 22:34:36 +0000) <Theo Koorehpaz>
+| * 417ece1 -  Overview of pages (2020-01-24 22:31:58 +0000) <Theo Koorehpaz>
+* | 5d7e43b -  Fixed provisioning (2020-01-25 17:05:17 +0000) <David goddard>
+|/  
+*   7117664 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2020-01-24 22:23:34 +0000) <David goddard>
+|\  
+| * 6c12b8e -  Upload New File (2020-01-24 22:19:34 +0000) <Theo Koorehpaz>
+| * dbc1db1 -  Upload New File (2020-01-24 22:16:27 +0000) <Theo Koorehpaz>
+* | f72f8d4 -  Fixed bug in changing days on alarm page, moved some unphone libraries to into MyProjectFolder lib due to significant changes (2020-01-24 22:23:01 +0000) <David goddard>
+|/  
+*   8430145 -  fixed merge conflicts (2020-01-24 21:44:24 +0000) <David goddard>
+|\  
+| * 27b8c9d -  Update MenuUIElement.cpp (2020-01-24 21:40:53 +0000) <David Goddard>
+| * 8f8b31c -  Upload New File (2020-01-24 20:44:42 +0000) <Theo Koorehpaz>
+| * 4d299a3 -  upload image test (2020-01-24 20:02:55 +0000) <Theo Koorehpaz>
+| * 12020e0 -  Upload New File (2020-01-24 19:49:20 +0000) <Theo Koorehpaz>
+| * 29c27f7 -  Upload New File (2020-01-24 19:49:07 +0000) <Theo Koorehpaz>
+| * 8fdf36e -  Upload New File (2020-01-24 19:48:55 +0000) <Theo Koorehpaz>
+| * d16693d -  Upload New File (2020-01-24 19:48:39 +0000) <Theo Koorehpaz>
+| * dac3576 -  Upload New File (2020-01-24 19:48:26 +0000) <Theo Koorehpaz>
+| * ad82b9c -  Upload New File (2020-01-24 19:48:13 +0000) <Theo Koorehpaz>
+| * 5130962 -  Upload New File (2020-01-24 19:47:48 +0000) <Theo Koorehpaz>
+| * d26e7b1 -  Upload New File (2020-01-24 19:47:32 +0000) <Theo Koorehpaz>
+| * 7c354d7 -  Upload New File (2020-01-24 19:46:40 +0000) <Theo Koorehpaz>
+| * 262fefa -  Upload New File (2020-01-24 19:46:27 +0000) <Theo Koorehpaz>
+| * d746bcc -  Upload New File (2020-01-24 19:46:14 +0000) <Theo Koorehpaz>
+| * 8295d4e -  Upload New File (2020-01-24 19:45:43 +0000) <Theo Koorehpaz>
+| * c6f7f49 -  Upload New File (2020-01-24 19:45:10 +0000) <Theo Koorehpaz>
+| * 4cb8e49 -  Upload New File (2020-01-24 19:44:56 +0000) <Theo Koorehpaz>
+| * 73b4d36 -  Upload New File (2020-01-24 19:44:34 +0000) <Theo Koorehpaz>
+| * 9f02b6c -  Upload New File (2020-01-24 19:44:20 +0000) <Theo Koorehpaz>
+| * 82e51b8 -  Upload New File (2020-01-24 19:43:59 +0000) <Theo Koorehpaz>
+| * 8b4b14b -  Upload New File (2020-01-24 19:43:28 +0000) <Theo Koorehpaz>
+| * 35549f5 -  Upload New File (2020-01-24 19:43:15 +0000) <Theo Koorehpaz>
+| * fc4859e -  Upload New File (2020-01-24 19:42:50 +0000) <Theo Koorehpaz>
+| * 6492662 -  Upload New File (2020-01-24 19:42:31 +0000) <Theo Koorehpaz>
+| * 62255d5 -  Upload New File (2020-01-24 19:41:56 +0000) <Theo Koorehpaz>
+| * 0359e46 -  Images directory for documentation (2020-01-24 19:39:30 +0000) <Theo Koorehpaz>
+| * cb1e6f5 -  Added more comments to HomeUIElement (2020-01-24 19:00:53 +0000) <Theo Koorehpaz>
+| * d1b6635 -  Added more comments (2020-01-24 18:47:58 +0000) <Theo Koorehpaz>
+* | a2d3afa -  Commented code (2020-01-24 21:34:57 +0000) <David goddard>
+|/  
+* 174a5c8 -  .. (2020-01-24 18:15:17 +0000) <David goddard>
+* 53d1966 -  Fixed errors (auto fill now works, and some bugs on setting alarm (2020-01-24 18:10:55 +0000) <David goddard>
+* f7ceacd -  Update MyProjectDocs.mkd (2020-01-24 18:07:23 +0000) <David Goddard>
+* ac7fc4e -  Added comments to AllUIElement & UIController (2020-01-24 16:25:54 +0000) <Theo Koorehpaz>
+* f0a5413 -  Added comments in UIController and DawnUIElement (2020-01-24 16:18:51 +0000) <Theo Koorehpaz>
+* 720410f -  changed wifi manager/added notes about changes in unphone directory (2020-01-07 18:35:39 +0000) <David Goddard>
+* 41072ad -  PRoper finito (2019-12-20 20:57:10 +0000) <David goddard>
+*   300bddc -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-20 19:59:14 +0000) <Theo Koorehpaz>
+|\  
+| * 58d81d5 -  Some minor bug fixes (2019-12-20 19:57:41 +0000) <David goddard>
+* | 06e49d9 -  Minor changes (2019-12-20 19:58:59 +0000) <Theo Koorehpaz>
+|/  
+* e2d9f22 -  Smol fix (2019-12-20 19:50:05 +0000) <Theo Koorehpaz>
+*   31fd625 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-20 19:44:17 +0000) <Theo Koorehpaz>
+|\  
+| * b3b8f1b -  (origin/safeBranch) Project finito (2019-12-20 19:36:15 +0000) <David goddard>
+* | ccdc815 -  Finishing touches (2019-12-20 19:43:46 +0000) <Theo Koorehpaz>
+|/  
+* d5c3cbb -  (origin/newBranch) dd (2019-12-20 18:13:09 +0000) <David goddard>
+* 79a405a -  merged our work sucessfully (2019-12-20 18:00:59 +0000) <David goddard>
+*   b416467 -  (origin/merger) merging? (2019-12-20 17:04:54 +0000) <David goddard>
+|\  
+| * 29b087f -  Fully functional dawn colour (2019-12-20 13:07:34 +0000) <Theo Koorehpaz>
+| * fc9224b -  Fully functional menu (2019-12-20 05:02:26 +0000) <Theo Koorehpaz>
+* | eb541fd -  Ui page to set alarm is now done (2019-12-20 17:01:07 +0000) <David goddard>
+|/  
+* 5d5ef2c -  touch screen now responsive - Not one touch behind git add . (2019-12-20 04:20:43 +0000) <David goddard>
+* b2acdf7 -  More touch debugs (2019-12-20 01:31:36 +0000) <Theo Koorehpaz>
+*   505c0a1 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-20 00:03:39 +0000) <Theo Koorehpaz>
+|\  
+| *   7639016 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-19 23:26:08 +0000) <David goddard>
+| |\  
+| * | 5b1588d -  Motion sensor working to snooze alarm. Few improvements on home display (2019-12-19 23:25:36 +0000) <David goddard>
+* | | bc97143 -  Debugging handleTouch() (2019-12-20 00:03:26 +0000) <Theo Koorehpaz>
+| |/  
+|/|   
+* | c7cd659 -  Tidied up Menu UI (2019-12-19 02:05:44 +0000) <Theo Koorehpaz>
+|/  
+*   5f5782f -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-19 02:02:56 +0000) <David goddard>
+|\  
+| * 708863e -  Fixed IR Sensor (2019-12-18 23:25:10 +0000) <Theo Koorehpaz>
+* | d4a4669 -  Some bug fixes| Can now delete alarm and this is done when stop is pressed | Home page updates correctly (2019-12-19 02:02:14 +0000) <David goddard>
+|/  
+* 497137e -  Home alarm screen is now responsive. Still a few bugs... (2019-12-18 23:00:49 +0000) <David goddard>
+* a2dc5af -  More IR Sensor stuff (2019-12-18 20:37:55 +0000) <Theo Koorehpaz>
+* 2602acd -  Minor changes (2019-12-18 03:22:14 +0000) <Theo Koorehpaz>
+* 28f93a0 -  Added boot page (2019-12-18 03:12:27 +0000) <David goddard>
+*   54e3d53 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-18 03:04:36 +0000) <Theo Koorehpaz>
+|\  
+| * cc81eff -  l (2019-12-18 03:02:19 +0000) <David goddard>
+* | 366ccb9 -  Tidied up Home Display (2019-12-18 03:03:59 +0000) <Theo Koorehpaz>
+* | 0f0b929 -  IR stuff (2019-12-18 02:41:45 +0000) <Theo Koorehpaz>
+|/  
+*   e76cc60 -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-18 02:19:18 +0000) <David goddard>
+|\  
+| * af88768 -  Fixed noon/evening trigger (2019-12-17 20:32:59 +0000) <Theo Koorehpaz>
+* | e1944dd -  Improvements (bug fixes)  to dawn and alarm made. Neatend code. (2019-12-18 02:18:46 +0000) <David goddard>
+|/  
+* 8aaf498 -  Change to new nepixel libraary and different wifi manager (2019-12-17 20:26:52 +0000) <David goddard>
+*   47b284a -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-17 14:52:50 +0000) <David goddard>
+|\  
+| * df9230f -   merged our work (2019-12-16 04:38:34 +0000) <Theo Koorehpaz>
+| *   14419bb -  Merge branch 'master' of https://gitlab.com/tkoorehpaz1/com3505-2019-student (2019-12-16 03:40:49 +0000) <Theo Koorehpaz>
+| |\  
+| * | d52e1b4 -  Graphics n dat (2019-12-16 03:40:03 +0000) <Theo Koorehpaz>
+* | | f91a4db -  Change ssid (2019-12-17 14:52:41 +0000) <David goddard>
+| |/  
+|/|   
+* | 4714ec4 -  Snooze and off button work, esp goes into deep sleep every 30 seconds - wakes up on button 1 press or timetoalarm/2 (2019-12-16 03:35:59 +0000) <David goddard>
+* | 2effad0 -  (origin/offline_time) Offline timer is acurate to within 2 secs after 30 mins (2019-12-15 23:52:19 +0000) <David goddard>
+|/  
+* ff87b45 -  Tidied up and commented code (2019-12-15 14:18:35 +0000) <David goddard>
+* a85a29b -  Added alarm time (2019-12-15 00:49:21 +0000) <Theo Koorehpaz>
+* e969d7a -  time not fetched on boot and stored (2019-12-14 23:52:17 +0000) <David goddard>
+* 8adbc84 -  implemented basic clock (2019-12-14 16:20:38 +0000) <David goddard>
+* 38604ce -  changed pair order (2019-12-14 14:53:09 +0000) <David goddard>
+* 71b5d70 -  test commit (2019-12-14 14:51:31 +0000) <David goddard>
+* a71ebcd -  Added IOExpander files (2019-12-14 14:25:55 +0000) <Theo Koorehpaz>
+* b55e5a4 -  Updated main (2019-12-14 14:22:26 +0000) <Theo Koorehpaz>
+* cdffcaa -  Update README.mkd (2019-11-11 05:17:52 +0000) <Theo Koorehpaz>
+* 879d07a -  Update README.mkd (2019-11-11 05:15:45 +0000) <Theo Koorehpaz>
+* 0d6d80b -  Update README.mkd (2019-11-11 05:13:20 +0000) <Theo Koorehpaz>
+* aac21e7 -  Update README.mkd (2019-11-11 04:25:48 +0000) <David Goddard>
+* f34c298 -  Upload New File (2019-11-11 04:25:08 +0000) <David Goddard>
+* 35765ce -  Delete OTA_flowchart__1_.png (2019-11-11 04:24:24 +0000) <David Goddard>
+* a553cd5 -  Upload New File (2019-11-11 04:21:44 +0000) <David Goddard>
+* 188e299 -  Update README.mkd (2019-11-11 04:20:00 +0000) <David Goddard>
+* 4665788 -  Update README.mkd (2019-11-11 04:00:17 +0000) <Theo Koorehpaz>
+* 956dffe -  Update README.mkd (2019-11-11 03:57:12 +0000) <David Goddard>
+* bd3ddb7 -  Update README.mkd (2019-11-11 03:51:59 +0000) <Theo Koorehpaz>
+* 442fc08 -  Update README.mkd (2019-11-11 03:49:15 +0000) <Theo Koorehpaz>
+* f2102a0 -  Update README.mkd (2019-11-11 03:40:05 +0000) <Theo Koorehpaz>
+* 2909383 -  Update README.mkd (2019-11-11 03:18:47 +0000) <Theo Koorehpaz>
+* f28d990 -  Update README.mkd (2019-11-11 03:07:13 +0000) <Theo Koorehpaz>
+* 9d2435b -  Upload New File (2019-11-11 03:02:16 +0000) <Theo Koorehpaz>
+* ba2080a -  Delete power_consumption.png (2019-11-11 03:01:30 +0000) <Theo Koorehpaz>
+* 7501ca0 -  Update README.mkd (2019-11-11 02:55:58 +0000) <Theo Koorehpaz>
+* c6f350c -  Upload New File (2019-11-11 02:49:59 +0000) <Theo Koorehpaz>
+* 63d86d0 -  Delete _Basic_Flowchart.png (2019-11-11 02:49:37 +0000) <Theo Koorehpaz>
+* 3212fdd -  Update README.mkd (2019-11-11 02:33:48 +0000) <Theo Koorehpaz>
+* c103672 -  Update README.mkd (2019-11-11 02:24:46 +0000) <Theo Koorehpaz>
+* e32c32c -  Update README.mkd (2019-11-11 01:39:48 +0000) <Theo Koorehpaz>
+* 1bae1ac -  Update README.mkd (2019-11-11 01:38:14 +0000) <David Goddard>
+* 885b228 -  Update README.mkd (2019-11-11 01:30:51 +0000) <David Goddard>
+* f1ec100 -  Upload New File (2019-11-10 21:21:09 +0000) <Theo Koorehpaz>
+* caac0b1 -  added OTA firmware version 43 (2019-11-09 16:16:06 +0000) <Theo Paz>
+* b02ae4f -  Update README.mkd (2019-11-08 18:37:48 +0000) <Theo Koorehpaz>
+* 16885c2 -  Update README.mkd (2019-11-08 18:36:01 +0000) <Theo Koorehpaz>
+* f4e0845 -  Update README.mkd (2019-11-08 18:35:30 +0000) <Theo Koorehpaz>
+* aa22659 -  Update README.mkd (2019-11-08 18:34:38 +0000) <Theo Koorehpaz>
+* 2f04c5f -  Update README.mkd (2019-11-08 18:33:58 +0000) <Theo Koorehpaz>
+* 5454a05 -  Update README.mkd (2019-11-08 18:33:06 +0000) <Theo Koorehpaz>
+* a98cc32 -  Update README.mkd (2019-11-08 18:30:38 +0000) <Theo Koorehpaz>
+* 4e2180e -  Update README.mkd (2019-11-08 18:27:15 +0000) <Theo Koorehpaz>
+* 63e226c -  Update README.mkd (2019-11-08 18:25:51 +0000) <Theo Koorehpaz>
+* 79c3ef6 -  Update README.mkd (2019-11-08 18:23:07 +0000) <Theo Koorehpaz>
+* 4c972e2 -  provisioning_flowchart (2019-11-08 18:21:15 +0000) <Theo Koorehpaz>
+* 8885929 -  pair file (2019-10-30 11:04:48 +0000) <Theo Koorehpaz>
+* 205b4c5 -  Initial commit (2019-10-01 13:22:10 +0000) <Theo Koorehpaz>
+
