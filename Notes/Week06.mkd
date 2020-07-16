@@ -1,6 +1,0 @@
-COM3505 week 06 notes
-===
-
-There is no lecture this week. First complete formal assessment 1 (see [last
-week's notes](Week05.mkd)), then use the time to prepare for next week's
-(mock) exam.

@@ -1,3 +1,0 @@
-# Course Notes for COM3505, Week 8
-
-[See Projects.mkd](Projects.mkd).
